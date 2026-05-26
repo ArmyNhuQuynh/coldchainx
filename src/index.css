@@ -1,0 +1,2086 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/Inter-Thin.otf") format("truetype");
+  font-weight: 100;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/Inter-ExtraLight.otf") format("truetype");
+  font-weight: 200;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/Inter-Light.otf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/Inter-Regular.otf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/Inter-Medium.otf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/Inter-SemiBold.otf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/Inter-Bold.otf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/Inter-ExtraBold.otf") format("truetype");
+  font-weight: 800;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/Inter-Black.otf") format("truetype");
+  font-weight: 900;
+  font-style: normal;
+}
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-inter: Inter, sans-serif;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-label: var(--sidebar-label);
+  --color-table-header: var(--table-header);
+
+  --color-purple-10: var(--purple-10);
+  --color-purple-20: var(--purple-20);
+  --color-purple-30: var(--purple-30);
+  --color-purple-40: var(--purple-40);
+  --color-purple-50: var(--purple-50);
+  --color-purple-60: var(--purple-60);
+  --color-purple-70: var(--purple-70);
+  --color-purple-80: var(--purple-80);
+  --color-purple-90: var(--purple-90);
+  --color-purple-100: var(--purple-100);
+
+  --color-blueberry-10: var(--blueberry-10);
+  --color-blueberry-20: var(--blueberry-20);
+  --color-blueberry-30: var(--blueberry-30);
+  --color-blueberry-40: var(--blueberry-40);
+  --color-blueberry-50: var(--blueberry-50);
+  --color-blueberry-60: var(--blueberry-60);
+  --color-blueberry-70: var(--blueberry-70);
+  --color-blueberry-80: var(--blueberry-80);
+  --color-blueberry-90: var(--blueberry-90);
+  --color-blueberry-100: var(--blueberry-100);
+
+  --color-indigo-10: var(--indigo-10);
+  --color-indigo-20: var(--indigo-20);
+  --color-indigo-30: var(--indigo-30);
+  --color-indigo-40: var(--indigo-40);
+  --color-indigo-50: var(--indigo-50);
+  --color-indigo-60: var(--indigo-60);
+  --color-indigo-70: var(--indigo-70);
+  --color-indigo-80: var(--indigo-80);
+  --color-indigo-90: var(--indigo-90);
+  --color-indigo-100: var(--indigo-100);
+
+  --color-teal-10: var(--teal-10);
+  --color-teal-20: var(--teal-20);
+  --color-teal-30: var(--teal-30);
+  --color-teal-40: var(--teal-40);
+  --color-teal-50: var(--teal-50);
+  --color-teal-60: var(--teal-60);
+  --color-teal-70: var(--teal-70);
+  --color-teal-80: var(--teal-80);
+  --color-teal-90: var(--teal-90);
+  --color-teal-100: var(--teal-100);
+
+  --color-green-mint-10: var(--green-mint-10);
+  --color-green-mint-20: var(--green-mint-20);
+  --color-green-mint-30: var(--green-mint-30);
+  --color-green-mint-40: var(--green-mint-40);
+  --color-green-mint-50: var(--green-mint-50);
+  --color-green-mint-60: var(--green-mint-60);
+  --color-green-mint-70: var(--green-mint-70);
+  --color-green-mint-80: var(--green-mint-80);
+  --color-green-mint-90: var(--green-mint-90);
+  --color-green-mint-100: var(--green-mint-100);
+
+  --color-watermelon-10: var(--watermelon-10);
+  --color-watermelon-20: var(--watermelon-20);
+  --color-watermelon-30: var(--watermelon-30);
+  --color-watermelon-40: var(--watermelon-40);
+  --color-watermelon-50: var(--watermelon-50);
+  --color-watermelon-60: var(--watermelon-60);
+  --color-watermelon-70: var(--watermelon-70);
+  --color-watermelon-80: var(--watermelon-80);
+  --color-watermelon-90: var(--watermelon-90);
+  --color-watermelon-100: var(--watermelon-100);
+
+  --color-cempedak-10: var(--cempedak-10);
+  --color-cempedak-20: var(--cempedak-20);
+  --color-cempedak-30: var(--cempedak-30);
+  --color-cempedak-40: var(--cempedak-40);
+  --color-cempedak-50: var(--cempedak-50);
+  --color-cempedak-60: var(--cempedak-60);
+  --color-cempedak-70: var(--cempedak-70);
+  --color-cempedak-80: var(--cempedak-80);
+  --color-cempedak-90: var(--cempedak-90);
+  --color-cempedak-100: var(--cempedak-100);
+
+  --color-rambutant-10: var(--rambutant-10);
+  --color-rambutant-20: var(--rambutant-20);
+  --color-rambutant-30: var(--rambutant-30);
+  --color-rambutant-40: var(--rambutant-40);
+  --color-rambutant-50: var(--rambutant-50);
+  --color-rambutant-60: var(--rambutant-60);
+  --color-rambutant-70: var(--rambutant-70);
+  --color-rambutant-80: var(--rambutant-80);
+  --color-rambutant-90: var(--rambutant-90);
+  --color-rambutant-100: var(--rambutant-100);
+
+  --color-mono-0: var(--mono-0);
+  --color-mono-20: var(--mono-20);
+  --color-mono-40: var(--mono-40);
+  --color-mono-60: var(--mono-60);
+  --color-mono-80: var(--mono-80);
+  --color-mono-90: var(--mono-90);
+  --color-mono-100: var(--mono-100);
+
+  --color-neutral-0: var(--neutral-0);
+  --color-neutral-10: var(--neutral-10);
+  --color-neutral-20: var(--neutral-20);
+  --color-neutral-30: var(--neutral-30);
+  --color-neutral-40: var(--neutral-40);
+  --color-neutral-50: var(--neutral-50);
+  --color-neutral-60: var(--neutral-60);
+  --color-neutral-70: var(--neutral-70);
+  --color-neutral-80: var(--neutral-80);
+  --color-neutral-90: var(--neutral-90);
+  --color-neutral-100: var(--neutral-100);
+
+  --color-gradient-0: var(--gradient-0);
+  --color-gradient-10: var(--gradient-10);
+  --color-gradient-20: var(--gradient-20);
+  --color-gradient-40: var(--gradient-40);
+  --color-gradient-60: var(--gradient-60);
+  --color-gradient-80: var(--gradient-80);
+  --color-gradient-100: var(--gradient-100);
+
+  --color-red-10: var(--red-10);
+  --color-red-20: var(--red-20);
+  --color-red-30: var(--red-30);
+  --color-red-40: var(--red-40);
+  --color-red-50: var(--red-50);
+  --color-red-60: var(--red-60);
+  --color-red-70: var(--red-70);
+  --color-red-80: var(--red-80);
+  --color-red-90: var(--red-90);
+  --color-red-100: var(--red-100);
+
+  --color-orange-10: var(--orange-10);
+  --color-orange-20: var(--orange-20);
+  --color-orange-30: var(--orange-30);
+  --color-orange-40: var(--orange-40);
+  --color-orange-50: var(--orange-50);
+  --color-orange-60: var(--orange-60);
+  --color-orange-70: var(--orange-70);
+  --color-orange-80: var(--orange-80);
+  --color-orange-90: var(--orange-90);
+  --color-orange-100: var(--orange-100);
+}
+
+@layer utilities {
+  .bg-purple-0 {
+    background-color: var(--purple-0);
+  }
+  .bg-purple-10 {
+    background-color: var(--purple-10);
+  }
+  .bg-purple-20 {
+    background-color: var(--purple-20);
+  }
+  .bg-purple-30 {
+    background-color: var(--purple-30);
+  }
+  .bg-purple-40 {
+    background-color: var(--purple-40);
+  }
+  .bg-purple-50 {
+    background-color: var(--purple-50);
+  }
+  .bg-purple-60 {
+    background-color: var(--purple-60);
+  }
+  .bg-purple-70 {
+    background-color: var(--purple-70);
+  }
+  .bg-purple-80 {
+    background-color: var(--purple-80);
+  }
+  .bg-purple-90 {
+    background-color: var(--purple-90);
+  }
+  .bg-purple-100 {
+    background-color: var(--purple-100);
+  }
+
+  .text-purple-0 {
+    color: var(--purple-0);
+  }
+  .text-purple-10 {
+    color: var(--purple-10);
+  }
+  .text-purple-20 {
+    color: var(--purple-20);
+  }
+  .text-purple-30 {
+    color: var(--purple-30);
+  }
+  .text-purple-40 {
+    color: var(--purple-40);
+  }
+  .text-purple-50 {
+    color: var(--purple-50);
+  }
+  .text-purple-60 {
+    color: var(--purple-60);
+  }
+  .text-purple-70 {
+    color: var(--purple-70);
+  }
+  .text-purple-80 {
+    color: var(--purple-80);
+  }
+  .text-purple-90 {
+    color: var(--purple-90);
+  }
+  .text-purple-100 {
+    color: var(--purple-100);
+  }
+
+  .hover\:bg-purple-0:hover {
+    background-color: var(--purple-0);
+  }
+  .hover\:bg-purple-10:hover {
+    background-color: var(--purple-10);
+  }
+  .hover\:bg-purple-20:hover {
+    background-color: var(--purple-20);
+  }
+  .hover\:bg-purple-30:hover {
+    background-color: var(--purple-30);
+  }
+  .hover\:bg-purple-40:hover {
+    background-color: var(--purple-40);
+  }
+  .hover\:bg-purple-50:hover {
+    background-color: var(--purple-50);
+  }
+  .hover\:bg-purple-60:hover {
+    background-color: var(--purple-60);
+  }
+  .hover\:bg-purple-70:hover {
+    background-color: var(--purple-70);
+  }
+  .hover\:bg-purple-80:hover {
+    background-color: var(--purple-80);
+  }
+  .hover\:bg-purple-90:hover {
+    background-color: var(--purple-90);
+  }
+  .hover\:bg-purple-100:hover {
+    background-color: var(--purple-100);
+  }
+
+  .hover\:text-purple-0:hover {
+    color: var(--purple-0);
+  }
+  .hover\:text-purple-10:hover {
+    color: var(--purple-10);
+  }
+  .hover\:text-purple-20:hover {
+    color: var(--purple-20);
+  }
+  .hover\:text-purple-30:hover {
+    color: var(--purple-30);
+  }
+  .hover\:text-purple-40:hover {
+    color: var(--purple-40);
+  }
+  .hover\:text-purple-50:hover {
+    color: var(--purple-50);
+  }
+  .hover\:text-purple-60:hover {
+    color: var(--purple-60);
+  }
+  .hover\:text-purple-70:hover {
+    color: var(--purple-70);
+  }
+  .hover\:text-purple-80:hover {
+    color: var(--purple-80);
+  }
+  .hover\:text-purple-90:hover {
+    color: var(--purple-90);
+  }
+  .hover\:text-purple-100:hover {
+    color: var(--purple-100);
+  }
+
+  .bg-blueberry-10 {
+    background-color: var(--blueberry-10);
+  }
+  .text-blueberry-10 {
+    color: var(--blueberry-10);
+  }
+  .hover\:bg-blueberry-10:hover {
+    background-color: var(--blueberry-10);
+  }
+  .hover\:text-blueberry-10:hover {
+    color: var(--blueberry-10);
+  }
+  .bg-blueberry-20 {
+    background-color: var(--blueberry-20);
+  }
+  .text-blueberry-20 {
+    color: var(--blueberry-20);
+  }
+  .hover\:bg-blueberry-20:hover {
+    background-color: var(--blueberry-20);
+  }
+  .hover\:text-blueberry-20:hover {
+    color: var(--blueberry-20);
+  }
+  .bg-blueberry-30 {
+    background-color: var(--blueberry-30);
+  }
+  .text-blueberry-30 {
+    color: var(--blueberry-30);
+  }
+  .hover\:bg-blueberry-30:hover {
+    background-color: var(--blueberry-30);
+  }
+  .hover\:text-blueberry-30:hover {
+    color: var(--blueberry-30);
+  }
+  .bg-blueberry-40 {
+    background-color: var(--blueberry-40);
+  }
+  .text-blueberry-40 {
+    color: var(--blueberry-40);
+  }
+  .hover\:bg-blueberry-40:hover {
+    background-color: var(--blueberry-40);
+  }
+  .hover\:text-blueberry-40:hover {
+    color: var(--blueberry-40);
+  }
+  .bg-blueberry-50 {
+    background-color: var(--blueberry-50);
+  }
+  .text-blueberry-50 {
+    color: var(--blueberry-50);
+  }
+  .hover\:bg-blueberry-50:hover {
+    background-color: var(--blueberry-50);
+  }
+  .hover\:text-blueberry-50:hover {
+    color: var(--blueberry-50);
+  }
+  .bg-blueberry-60 {
+    background-color: var(--blueberry-60);
+  }
+  .text-blueberry-60 {
+    color: var(--blueberry-60);
+  }
+  .hover\:bg-blueberry-60:hover {
+    background-color: var(--blueberry-60);
+  }
+  .hover\:text-blueberry-60:hover {
+    color: var(--blueberry-60);
+  }
+  .bg-blueberry-70 {
+    background-color: var(--blueberry-70);
+  }
+  .text-blueberry-70 {
+    color: var(--blueberry-70);
+  }
+  .hover\:bg-blueberry-70:hover {
+    background-color: var(--blueberry-70);
+  }
+  .hover\:text-blueberry-70:hover {
+    color: var(--blueberry-70);
+  }
+  .bg-blueberry-80 {
+    background-color: var(--blueberry-80);
+  }
+  .text-blueberry-80 {
+    color: var(--blueberry-80);
+  }
+  .hover\:bg-blueberry-80:hover {
+    background-color: var(--blueberry-80);
+  }
+  .hover\:text-blueberry-80:hover {
+    color: var(--blueberry-80);
+  }
+  .bg-blueberry-90 {
+    background-color: var(--blueberry-90);
+  }
+  .text-blueberry-90 {
+    color: var(--blueberry-90);
+  }
+  .hover\:bg-blueberry-90:hover {
+    background-color: var(--blueberry-90);
+  }
+  .hover\:text-blueberry-90:hover {
+    color: var(--blueberry-90);
+  }
+  .bg-blueberry-100 {
+    background-color: var(--blueberry-100);
+  }
+  .text-blueberry-100 {
+    color: var(--blueberry-100);
+  }
+  .hover\:bg-blueberry-100:hover {
+    background-color: var(--blueberry-100);
+  }
+  .hover\:text-blueberry-100:hover {
+    color: var(--blueberry-100);
+  }
+  .bg-indigo-10 {
+    background-color: var(--indigo-10);
+  }
+  .text-indigo-10 {
+    color: var(--indigo-10);
+  }
+  .hover\:bg-indigo-10:hover {
+    background-color: var(--indigo-10);
+  }
+  .hover\:text-indigo-10:hover {
+    color: var(--indigo-10);
+  }
+  .bg-indigo-20 {
+    background-color: var(--indigo-20);
+  }
+  .text-indigo-20 {
+    color: var(--indigo-20);
+  }
+  .hover\:bg-indigo-20:hover {
+    background-color: var(--indigo-20);
+  }
+  .hover\:text-indigo-20:hover {
+    color: var(--indigo-20);
+  }
+  .bg-indigo-30 {
+    background-color: var(--indigo-30);
+  }
+  .text-indigo-30 {
+    color: var(--indigo-30);
+  }
+  .hover\:bg-indigo-30:hover {
+    background-color: var(--indigo-30);
+  }
+  .hover\:text-indigo-30:hover {
+    color: var(--indigo-30);
+  }
+  .bg-indigo-40 {
+    background-color: var(--indigo-40);
+  }
+  .text-indigo-40 {
+    color: var(--indigo-40);
+  }
+  .hover\:bg-indigo-40:hover {
+    background-color: var(--indigo-40);
+  }
+  .hover\:text-indigo-40:hover {
+    color: var(--indigo-40);
+  }
+  .bg-indigo-50 {
+    background-color: var(--indigo-50);
+  }
+  .text-indigo-50 {
+    color: var(--indigo-50);
+  }
+  .hover\:bg-indigo-50:hover {
+    background-color: var(--indigo-50);
+  }
+  .hover\:text-indigo-50:hover {
+    color: var(--indigo-50);
+  }
+  .bg-indigo-60 {
+    background-color: var(--indigo-60);
+  }
+  .text-indigo-60 {
+    color: var(--indigo-60);
+  }
+  .hover\:bg-indigo-60:hover {
+    background-color: var(--indigo-60);
+  }
+  .hover\:text-indigo-60:hover {
+    color: var(--indigo-60);
+  }
+  .bg-indigo-70 {
+    background-color: var(--indigo-70);
+  }
+  .text-indigo-70 {
+    color: var(--indigo-70);
+  }
+  .hover\:bg-indigo-70:hover {
+    background-color: var(--indigo-70);
+  }
+  .hover\:text-indigo-70:hover {
+    color: var(--indigo-70);
+  }
+  .bg-indigo-80 {
+    background-color: var(--indigo-80);
+  }
+  .text-indigo-80 {
+    color: var(--indigo-80);
+  }
+  .hover\:bg-indigo-80:hover {
+    background-color: var(--indigo-80);
+  }
+  .hover\:text-indigo-80:hover {
+    color: var(--indigo-80);
+  }
+  .bg-indigo-90 {
+    background-color: var(--indigo-90);
+  }
+  .text-indigo-90 {
+    color: var(--indigo-90);
+  }
+  .hover\:bg-indigo-90:hover {
+    background-color: var(--indigo-90);
+  }
+  .hover\:text-indigo-90:hover {
+    color: var(--indigo-90);
+  }
+  .bg-indigo-100 {
+    background-color: var(--indigo-100);
+  }
+  .text-indigo-100 {
+    color: var(--indigo-100);
+  }
+  .hover\:bg-indigo-100:hover {
+    background-color: var(--indigo-100);
+  }
+  .hover\:text-indigo-100:hover {
+    color: var(--indigo-100);
+  }
+  .bg-teal-10 {
+    background-color: var(--teal-10);
+  }
+  .text-teal-10 {
+    color: var(--teal-10);
+  }
+  .hover\:bg-teal-10:hover {
+    background-color: var(--teal-10);
+  }
+  .hover\:text-teal-10:hover {
+    color: var(--teal-10);
+  }
+  .bg-teal-20 {
+    background-color: var(--teal-20);
+  }
+  .text-teal-20 {
+    color: var(--teal-20);
+  }
+  .hover\:bg-teal-20:hover {
+    background-color: var(--teal-20);
+  }
+  .hover\:text-teal-20:hover {
+    color: var(--teal-20);
+  }
+  .bg-teal-30 {
+    background-color: var(--teal-30);
+  }
+  .text-teal-30 {
+    color: var(--teal-30);
+  }
+  .hover\:bg-teal-30:hover {
+    background-color: var(--teal-30);
+  }
+  .hover\:text-teal-30:hover {
+    color: var(--teal-30);
+  }
+  .bg-teal-40 {
+    background-color: var(--teal-40);
+  }
+  .text-teal-40 {
+    color: var(--teal-40);
+  }
+  .hover\:bg-teal-40:hover {
+    background-color: var(--teal-40);
+  }
+  .hover\:text-teal-40:hover {
+    color: var(--teal-40);
+  }
+  .bg-teal-50 {
+    background-color: var(--teal-50);
+  }
+  .text-teal-50 {
+    color: var(--teal-50);
+  }
+  .hover\:bg-teal-50:hover {
+    background-color: var(--teal-50);
+  }
+  .hover\:text-teal-50:hover {
+    color: var(--teal-50);
+  }
+  .bg-teal-60 {
+    background-color: var(--teal-60);
+  }
+  .text-teal-60 {
+    color: var(--teal-60);
+  }
+  .hover\:bg-teal-60:hover {
+    background-color: var(--teal-60);
+  }
+  .hover\:text-teal-60:hover {
+    color: var(--teal-60);
+  }
+  .bg-teal-70 {
+    background-color: var(--teal-70);
+  }
+  .text-teal-70 {
+    color: var(--teal-70);
+  }
+  .hover\:bg-teal-70:hover {
+    background-color: var(--teal-70);
+  }
+  .hover\:text-teal-70:hover {
+    color: var(--teal-70);
+  }
+  .bg-teal-80 {
+    background-color: var(--teal-80);
+  }
+  .text-teal-80 {
+    color: var(--teal-80);
+  }
+  .hover\:bg-teal-80:hover {
+    background-color: var(--teal-80);
+  }
+  .hover\:text-teal-80:hover {
+    color: var(--teal-80);
+  }
+  .bg-teal-90 {
+    background-color: var(--teal-90);
+  }
+  .text-teal-90 {
+    color: var(--teal-90);
+  }
+  .hover\:bg-teal-90:hover {
+    background-color: var(--teal-90);
+  }
+  .hover\:text-teal-90:hover {
+    color: var(--teal-90);
+  }
+  .bg-teal-100 {
+    background-color: var(--teal-100);
+  }
+  .text-teal-100 {
+    color: var(--teal-100);
+  }
+  .hover\:bg-teal-100:hover {
+    background-color: var(--teal-100);
+  }
+  .hover\:text-teal-100:hover {
+    color: var(--teal-100);
+  }
+  .bg-green-mint-10 {
+    background-color: var(--green-mint-10);
+  }
+  .text-green-mint-10 {
+    color: var(--green-mint-10);
+  }
+  .hover\:bg-green-mint-10:hover {
+    background-color: var(--green-mint-10);
+  }
+  .hover\:text-green-mint-10:hover {
+    color: var(--green-mint-10);
+  }
+  .bg-green-mint-20 {
+    background-color: var(--green-mint-20);
+  }
+  .text-green-mint-20 {
+    color: var(--green-mint-20);
+  }
+  .hover\:bg-green-mint-20:hover {
+    background-color: var(--green-mint-20);
+  }
+  .hover\:text-green-mint-20:hover {
+    color: var(--green-mint-20);
+  }
+  .bg-green-mint-30 {
+    background-color: var(--green-mint-30);
+  }
+  .text-green-mint-30 {
+    color: var(--green-mint-30);
+  }
+  .hover\:bg-green-mint-30:hover {
+    background-color: var(--green-mint-30);
+  }
+  .hover\:text-green-mint-30:hover {
+    color: var(--green-mint-30);
+  }
+  .bg-green-mint-40 {
+    background-color: var(--green-mint-40);
+  }
+  .text-green-mint-40 {
+    color: var(--green-mint-40);
+  }
+  .hover\:bg-green-mint-40:hover {
+    background-color: var(--green-mint-40);
+  }
+  .hover\:text-green-mint-40:hover {
+    color: var(--green-mint-40);
+  }
+  .bg-green-mint-50 {
+    background-color: var(--green-mint-50);
+  }
+  .text-green-mint-50 {
+    color: var(--green-mint-50);
+  }
+  .hover\:bg-green-mint-50:hover {
+    background-color: var(--green-mint-50);
+  }
+  .hover\:text-green-mint-50:hover {
+    color: var(--green-mint-50);
+  }
+  .bg-green-mint-60 {
+    background-color: var(--green-mint-60);
+  }
+  .text-green-mint-60 {
+    color: var(--green-mint-60);
+  }
+  .hover\:bg-green-mint-60:hover {
+    background-color: var(--green-mint-60);
+  }
+  .hover\:text-green-mint-60:hover {
+    color: var(--green-mint-60);
+  }
+  .bg-green-mint-70 {
+    background-color: var(--green-mint-70);
+  }
+  .text-green-mint-70 {
+    color: var(--green-mint-70);
+  }
+  .hover\:bg-green-mint-70:hover {
+    background-color: var(--green-mint-70);
+  }
+  .hover\:text-green-mint-70:hover {
+    color: var(--green-mint-70);
+  }
+  .bg-green-mint-80 {
+    background-color: var(--green-mint-80);
+  }
+  .text-green-mint-80 {
+    color: var(--green-mint-80);
+  }
+  .hover\:bg-green-mint-80:hover {
+    background-color: var(--green-mint-80);
+  }
+  .hover\:text-green-mint-80:hover {
+    color: var(--green-mint-80);
+  }
+  .bg-green-mint-90 {
+    background-color: var(--green-mint-90);
+  }
+  .text-green-mint-90 {
+    color: var(--green-mint-90);
+  }
+  .hover\:bg-green-mint-90:hover {
+    background-color: var(--green-mint-90);
+  }
+  .hover\:text-green-mint-90:hover {
+    color: var(--green-mint-90);
+  }
+  .bg-green-mint-100 {
+    background-color: var(--green-mint-100);
+  }
+  .text-green-mint-100 {
+    color: var(--green-mint-100);
+  }
+  .hover\:bg-green-mint-100:hover {
+    background-color: var(--green-mint-100);
+  }
+  .hover\:text-green-mint-100:hover {
+    color: var(--green-mint-100);
+  }
+  .bg-watermelon-10 {
+    background-color: var(--watermelon-10);
+  }
+  .text-watermelon-10 {
+    color: var(--watermelon-10);
+  }
+  .hover\:bg-watermelon-10:hover {
+    background-color: var(--watermelon-10);
+  }
+  .hover\:text-watermelon-10:hover {
+    color: var(--watermelon-10);
+  }
+  .bg-watermelon-20 {
+    background-color: var(--watermelon-20);
+  }
+  .text-watermelon-20 {
+    color: var(--watermelon-20);
+  }
+  .hover\:bg-watermelon-20:hover {
+    background-color: var(--watermelon-20);
+  }
+  .hover\:text-watermelon-20:hover {
+    color: var(--watermelon-20);
+  }
+  .bg-watermelon-30 {
+    background-color: var(--watermelon-30);
+  }
+  .text-watermelon-30 {
+    color: var(--watermelon-30);
+  }
+  .hover\:bg-watermelon-30:hover {
+    background-color: var(--watermelon-30);
+  }
+  .hover\:text-watermelon-30:hover {
+    color: var(--watermelon-30);
+  }
+  .bg-watermelon-40 {
+    background-color: var(--watermelon-40);
+  }
+  .text-watermelon-40 {
+    color: var(--watermelon-40);
+  }
+  .hover\:bg-watermelon-40:hover {
+    background-color: var(--watermelon-40);
+  }
+  .hover\:text-watermelon-40:hover {
+    color: var(--watermelon-40);
+  }
+  .bg-watermelon-50 {
+    background-color: var(--watermelon-50);
+  }
+  .text-watermelon-50 {
+    color: var(--watermelon-50);
+  }
+  .hover\:bg-watermelon-50:hover {
+    background-color: var(--watermelon-50);
+  }
+  .hover\:text-watermelon-50:hover {
+    color: var(--watermelon-50);
+  }
+  .bg-watermelon-60 {
+    background-color: var(--watermelon-60);
+  }
+  .text-watermelon-60 {
+    color: var(--watermelon-60);
+  }
+  .hover\:bg-watermelon-60:hover {
+    background-color: var(--watermelon-60);
+  }
+  .hover\:text-watermelon-60:hover {
+    color: var(--watermelon-60);
+  }
+  .bg-watermelon-70 {
+    background-color: var(--watermelon-70);
+  }
+  .text-watermelon-70 {
+    color: var(--watermelon-70);
+  }
+  .hover\:bg-watermelon-70:hover {
+    background-color: var(--watermelon-70);
+  }
+  .hover\:text-watermelon-70:hover {
+    color: var(--watermelon-70);
+  }
+  .bg-watermelon-80 {
+    background-color: var(--watermelon-80);
+  }
+  .text-watermelon-80 {
+    color: var(--watermelon-80);
+  }
+  .hover\:bg-watermelon-80:hover {
+    background-color: var(--watermelon-80);
+  }
+  .hover\:text-watermelon-80:hover {
+    color: var(--watermelon-80);
+  }
+  .bg-watermelon-90 {
+    background-color: var(--watermelon-90);
+  }
+  .text-watermelon-90 {
+    color: var(--watermelon-90);
+  }
+  .hover\:bg-watermelon-90:hover {
+    background-color: var(--watermelon-90);
+  }
+  .hover\:text-watermelon-90:hover {
+    color: var(--watermelon-90);
+  }
+  .bg-watermelon-100 {
+    background-color: var(--watermelon-100);
+  }
+  .text-watermelon-100 {
+    color: var(--watermelon-100);
+  }
+  .hover\:bg-watermelon-100:hover {
+    background-color: var(--watermelon-100);
+  }
+  .hover\:text-watermelon-100:hover {
+    color: var(--watermelon-100);
+  }
+  .bg-cempedak-10 {
+    background-color: var(--cempedak-10);
+  }
+  .text-cempedak-10 {
+    color: var(--cempedak-10);
+  }
+  .hover\:bg-cempedak-10:hover {
+    background-color: var(--cempedak-10);
+  }
+  .hover\:text-cempedak-10:hover {
+    color: var(--cempedak-10);
+  }
+  .bg-cempedak-20 {
+    background-color: var(--cempedak-20);
+  }
+  .text-cempedak-20 {
+    color: var(--cempedak-20);
+  }
+  .hover\:bg-cempedak-20:hover {
+    background-color: var(--cempedak-20);
+  }
+  .hover\:text-cempedak-20:hover {
+    color: var(--cempedak-20);
+  }
+  .bg-cempedak-30 {
+    background-color: var(--cempedak-30);
+  }
+  .text-cempedak-30 {
+    color: var(--cempedak-30);
+  }
+  .hover\:bg-cempedak-30:hover {
+    background-color: var(--cempedak-30);
+  }
+  .hover\:text-cempedak-30:hover {
+    color: var(--cempedak-30);
+  }
+  .bg-cempedak-40 {
+    background-color: var(--cempedak-40);
+  }
+  .text-cempedak-40 {
+    color: var(--cempedak-40);
+  }
+  .hover\:bg-cempedak-40:hover {
+    background-color: var(--cempedak-40);
+  }
+  .hover\:text-cempedak-40:hover {
+    color: var(--cempedak-40);
+  }
+  .bg-cempedak-50 {
+    background-color: var(--cempedak-50);
+  }
+  .text-cempedak-50 {
+    color: var(--cempedak-50);
+  }
+  .hover\:bg-cempedak-50:hover {
+    background-color: var(--cempedak-50);
+  }
+  .hover\:text-cempedak-50:hover {
+    color: var(--cempedak-50);
+  }
+  .bg-cempedak-60 {
+    background-color: var(--cempedak-60);
+  }
+  .text-cempedak-60 {
+    color: var(--cempedak-60);
+  }
+  .hover\:bg-cempedak-60:hover {
+    background-color: var(--cempedak-60);
+  }
+  .hover\:text-cempedak-60:hover {
+    color: var(--cempedak-60);
+  }
+  .bg-cempedak-70 {
+    background-color: var(--cempedak-70);
+  }
+  .text-cempedak-70 {
+    color: var(--cempedak-70);
+  }
+  .hover\:bg-cempedak-70:hover {
+    background-color: var(--cempedak-70);
+  }
+  .hover\:text-cempedak-70:hover {
+    color: var(--cempedak-70);
+  }
+  .bg-cempedak-80 {
+    background-color: var(--cempedak-80);
+  }
+  .text-cempedak-80 {
+    color: var(--cempedak-80);
+  }
+  .hover\:bg-cempedak-80:hover {
+    background-color: var(--cempedak-80);
+  }
+  .hover\:text-cempedak-80:hover {
+    color: var(--cempedak-80);
+  }
+  .bg-cempedak-90 {
+    background-color: var(--cempedak-90);
+  }
+  .text-cempedak-90 {
+    color: var(--cempedak-90);
+  }
+  .hover\:bg-cempedak-90:hover {
+    background-color: var(--cempedak-90);
+  }
+  .hover\:text-cempedak-90:hover {
+    color: var(--cempedak-90);
+  }
+  .bg-cempedak-100 {
+    background-color: var(--cempedak-100);
+  }
+  .text-cempedak-100 {
+    color: var(--cempedak-100);
+  }
+  .hover\:bg-cempedak-100:hover {
+    background-color: var(--cempedak-100);
+  }
+  .hover\:text-cempedak-100:hover {
+    color: var(--cempedak-100);
+  }
+  .bg-rambutant-10 {
+    background-color: var(--rambutant-10);
+  }
+  .text-rambutant-10 {
+    color: var(--rambutant-10);
+  }
+  .hover\:bg-rambutant-10:hover {
+    background-color: var(--rambutant-10);
+  }
+  .hover\:text-rambutant-10:hover {
+    color: var(--rambutant-10);
+  }
+  .bg-rambutant-20 {
+    background-color: var(--rambutant-20);
+  }
+  .text-rambutant-20 {
+    color: var(--rambutant-20);
+  }
+  .hover\:bg-rambutant-20:hover {
+    background-color: var(--rambutant-20);
+  }
+  .hover\:text-rambutant-20:hover {
+    color: var(--rambutant-20);
+  }
+  .bg-rambutant-30 {
+    background-color: var(--rambutant-30);
+  }
+  .text-rambutant-30 {
+    color: var(--rambutant-30);
+  }
+  .hover\:bg-rambutant-30:hover {
+    background-color: var(--rambutant-30);
+  }
+  .hover\:text-rambutant-30:hover {
+    color: var(--rambutant-30);
+  }
+  .bg-rambutant-40 {
+    background-color: var(--rambutant-40);
+  }
+  .text-rambutant-40 {
+    color: var(--rambutant-40);
+  }
+  .hover\:bg-rambutant-40:hover {
+    background-color: var(--rambutant-40);
+  }
+  .hover\:text-rambutant-40:hover {
+    color: var(--rambutant-40);
+  }
+  .bg-rambutant-50 {
+    background-color: var(--rambutant-50);
+  }
+  .text-rambutant-50 {
+    color: var(--rambutant-50);
+  }
+  .hover\:bg-rambutant-50:hover {
+    background-color: var(--rambutant-50);
+  }
+  .hover\:text-rambutant-50:hover {
+    color: var(--rambutant-50);
+  }
+  .bg-rambutant-60 {
+    background-color: var(--rambutant-60);
+  }
+  .text-rambutant-60 {
+    color: var(--rambutant-60);
+  }
+  .hover\:bg-rambutant-60:hover {
+    background-color: var(--rambutant-60);
+  }
+  .hover\:text-rambutant-60:hover {
+    color: var(--rambutant-60);
+  }
+  .bg-rambutant-70 {
+    background-color: var(--rambutant-70);
+  }
+  .text-rambutant-70 {
+    color: var(--rambutant-70);
+  }
+  .hover\:bg-rambutant-70:hover {
+    background-color: var(--rambutant-70);
+  }
+  .hover\:text-rambutant-70:hover {
+    color: var(--rambutant-70);
+  }
+  .bg-rambutant-80 {
+    background-color: var(--rambutant-80);
+  }
+  .text-rambutant-80 {
+    color: var(--rambutant-80);
+  }
+  .hover\:bg-rambutant-80:hover {
+    background-color: var(--rambutant-80);
+  }
+  .hover\:text-rambutant-80:hover {
+    color: var(--rambutant-80);
+  }
+  .bg-rambutant-90 {
+    background-color: var(--rambutant-90);
+  }
+  .text-rambutant-90 {
+    color: var(--rambutant-90);
+  }
+  .hover\:bg-rambutant-90:hover {
+    background-color: var(--rambutant-90);
+  }
+  .hover\:text-rambutant-90:hover {
+    color: var(--rambutant-90);
+  }
+  .bg-rambutant-100 {
+    background-color: var(--rambutant-100);
+  }
+  .text-rambutant-100 {
+    color: var(--rambutant-100);
+  }
+  .hover\:bg-rambutant-100:hover {
+    background-color: var(--rambutant-100);
+  }
+  .hover\:text-rambutant-100:hover {
+    color: var(--rambutant-100);
+  }
+  .bg-mono-0 {
+    background-color: var(--mono-0);
+  }
+  .text-mono-0 {
+    color: var(--mono-0);
+  }
+  .hover\:bg-mono-0:hover {
+    background-color: var(--mono-0);
+  }
+  .hover\:text-mono-0:hover {
+    color: var(--mono-0);
+  }
+  .bg-mono-20 {
+    background-color: var(--mono-20);
+  }
+  .text-mono-20 {
+    color: var(--mono-20);
+  }
+  .hover\:bg-mono-20:hover {
+    background-color: var(--mono-20);
+  }
+  .hover\:text-mono-20:hover {
+    color: var(--mono-20);
+  }
+  .bg-mono-40 {
+    background-color: var(--mono-40);
+  }
+  .text-mono-40 {
+    color: var(--mono-40);
+  }
+  .hover\:bg-mono-40:hover {
+    background-color: var(--mono-40);
+  }
+  .hover\:text-mono-40:hover {
+    color: var(--mono-40);
+  }
+  .bg-mono-60 {
+    background-color: var(--mono-60);
+  }
+  .text-mono-60 {
+    color: var(--mono-60);
+  }
+  .hover\:bg-mono-60:hover {
+    background-color: var(--mono-60);
+  }
+  .hover\:text-mono-60:hover {
+    color: var(--mono-60);
+  }
+  .bg-mono-80 {
+    background-color: var(--mono-80);
+  }
+  .text-mono-80 {
+    color: var(--mono-80);
+  }
+  .hover\:bg-mono-80:hover {
+    background-color: var(--mono-80);
+  }
+  .hover\:text-mono-80:hover {
+    color: var(--mono-80);
+  }
+  .bg-mono-90 {
+    background-color: var(--mono-90);
+  }
+  .text-mono-90 {
+    color: var(--mono-90);
+  }
+  .hover\:bg-mono-90:hover {
+    background-color: var(--mono-90);
+  }
+  .hover\:text-mono-90:hover {
+    color: var(--mono-90);
+  }
+  .bg-mono-100 {
+    background-color: var(--mono-100);
+  }
+  .text-mono-100 {
+    color: var(--mono-100);
+  }
+  .hover\:bg-mono-100:hover {
+    background-color: var(--mono-100);
+  }
+  .hover\:text-mono-100:hover {
+    color: var(--mono-100);
+  }
+  .bg-neutral-0 {
+    background-color: var(--neutral-0);
+  }
+  .text-neutral-0 {
+    color: var(--neutral-0);
+  }
+  .hover\:bg-neutral-0:hover {
+    background-color: var(--neutral-0);
+  }
+  .hover\:text-neutral-0:hover {
+    color: var(--neutral-0);
+  }
+  .bg-neutral-10 {
+    background-color: var(--neutral-10);
+  }
+  .text-neutral-10 {
+    color: var(--neutral-10);
+  }
+  .hover\:bg-neutral-10:hover {
+    background-color: var(--neutral-10);
+  }
+  .hover\:text-neutral-10:hover {
+    color: var(--neutral-10);
+  }
+  .bg-neutral-20 {
+    background-color: var(--neutral-20);
+  }
+  .text-neutral-20 {
+    color: var(--neutral-20);
+  }
+  .hover\:bg-neutral-20:hover {
+    background-color: var(--neutral-20);
+  }
+  .hover\:text-neutral-20:hover {
+    color: var(--neutral-20);
+  }
+  .bg-neutral-30 {
+    background-color: var(--neutral-30);
+  }
+  .text-neutral-30 {
+    color: var(--neutral-30);
+  }
+  .hover\:bg-neutral-30:hover {
+    background-color: var(--neutral-30);
+  }
+  .hover\:text-neutral-30:hover {
+    color: var(--neutral-30);
+  }
+  .bg-neutral-40 {
+    background-color: var(--neutral-40);
+  }
+  .text-neutral-40 {
+    color: var(--neutral-40);
+  }
+  .hover\:bg-neutral-40:hover {
+    background-color: var(--neutral-40);
+  }
+  .hover\:text-neutral-40:hover {
+    color: var(--neutral-40);
+  }
+  .bg-neutral-50 {
+    background-color: var(--neutral-50);
+  }
+  .text-neutral-50 {
+    color: var(--neutral-50);
+  }
+  .hover\:bg-neutral-50:hover {
+    background-color: var(--neutral-50);
+  }
+  .hover\:text-neutral-50:hover {
+    color: var(--neutral-50);
+  }
+  .bg-neutral-60 {
+    background-color: var(--neutral-60);
+  }
+  .text-neutral-60 {
+    color: var(--neutral-60);
+  }
+  .hover\:bg-neutral-60:hover {
+    background-color: var(--neutral-60);
+  }
+  .hover\:text-neutral-60:hover {
+    color: var(--neutral-60);
+  }
+  .bg-neutral-70 {
+    background-color: var(--neutral-70);
+  }
+  .text-neutral-70 {
+    color: var(--neutral-70);
+  }
+  .hover\:bg-neutral-70:hover {
+    background-color: var(--neutral-70);
+  }
+  .hover\:text-neutral-70:hover {
+    color: var(--neutral-70);
+  }
+  .bg-neutral-80 {
+    background-color: var(--neutral-80);
+  }
+  .text-neutral-80 {
+    color: var(--neutral-80);
+  }
+  .hover\:bg-neutral-80:hover {
+    background-color: var(--neutral-80);
+  }
+  .hover\:text-neutral-80:hover {
+    color: var(--neutral-80);
+  }
+  .bg-neutral-90 {
+    background-color: var(--neutral-90);
+  }
+  .text-neutral-90 {
+    color: var(--neutral-90);
+  }
+  .hover\:bg-neutral-90:hover {
+    background-color: var(--neutral-90);
+  }
+  .hover\:text-neutral-90:hover {
+    color: var(--neutral-90);
+  }
+  .bg-neutral-100 {
+    background-color: var(--neutral-100);
+  }
+  .text-neutral-100 {
+    color: var(--neutral-100);
+  }
+  .hover\:bg-neutral-100:hover {
+    background-color: var(--neutral-100);
+  }
+  .hover\:text-neutral-100:hover {
+    color: var(--neutral-100);
+  }
+  .bg-gradient-0 {
+    background-color: var(--gradient-0);
+  }
+  .text-gradient-0 {
+    color: var(--gradient-0);
+  }
+  .hover\:bg-gradient-0:hover {
+    background-color: var(--gradient-0);
+  }
+  .hover\:text-gradient-0:hover {
+    color: var(--gradient-0);
+  }
+  .bg-gradient-10 {
+    background-color: var(--gradient-10);
+  }
+  .text-gradient-10 {
+    color: var(--gradient-10);
+  }
+  .hover\:bg-gradient-10:hover {
+    background-color: var(--gradient-10);
+  }
+  .hover\:text-gradient-10:hover {
+    color: var(--gradient-10);
+  }
+  .bg-gradient-20 {
+    background-color: var(--gradient-20);
+  }
+  .text-gradient-20 {
+    color: var(--gradient-20);
+  }
+  .hover\:bg-gradient-20:hover {
+    background-color: var(--gradient-20);
+  }
+  .hover\:text-gradient-20:hover {
+    color: var(--gradient-20);
+  }
+  .bg-gradient-40 {
+    background-color: var(--gradient-40);
+  }
+  .text-gradient-40 {
+    color: var(--gradient-40);
+  }
+  .hover\:bg-gradient-40:hover {
+    background-color: var(--gradient-40);
+  }
+  .hover\:text-gradient-40:hover {
+    color: var(--gradient-40);
+  }
+  .bg-gradient-60 {
+    background-color: var(--gradient-60);
+  }
+  .text-gradient-60 {
+    color: var(--gradient-60);
+  }
+  .hover\:bg-gradient-60:hover {
+    background-color: var(--gradient-60);
+  }
+  .hover\:text-gradient-60:hover {
+    color: var(--gradient-60);
+  }
+  .bg-gradient-80 {
+    background-color: var(--gradient-80);
+  }
+  .text-gradient-80 {
+    color: var(--gradient-80);
+  }
+  .hover\:bg-gradient-80:hover {
+    background-color: var(--gradient-80);
+  }
+  .hover\:text-gradient-80:hover {
+    color: var(--gradient-80);
+  }
+  .bg-gradient-100 {
+    background-color: var(--gradient-100);
+  }
+  .text-gradient-100 {
+    color: var(--gradient-100);
+  }
+  .hover\:bg-gradient-100:hover {
+    background-color: var(--gradient-100);
+  }
+  .hover\:text-gradient-100:hover {
+    color: var(--gradient-100);
+  }
+
+  .bg-red-0 {
+    background-color: var(--red-0);
+  }
+  .text-red-0 {
+    color: var(--red-0);
+  }
+  .hover\:bg-red-0:hover {
+    background-color: var(--red-0);
+  }
+  .hover\:text-red-0:hover {
+    color: var(--red-0);
+  }
+
+  .bg-red-10 {
+    background-color: var(--red-10);
+  }
+  .text-red-10 {
+    color: var(--red-10);
+  }
+  .hover\:bg-red-10:hover {
+    background-color: var(--red-10);
+  }
+  .hover\:text-red-10:hover {
+    color: var(--red-10);
+  }
+
+  .bg-red-20 {
+    background-color: var(--red-20);
+  }
+  .text-red-20 {
+    color: var(--red-20);
+  }
+  .hover\:bg-red-20:hover {
+    background-color: var(--red-20);
+  }
+  .hover\:text-red-20:hover {
+    color: var(--red-20);
+  }
+
+  .bg-red-30 {
+    background-color: var(--red-30);
+  }
+  .text-red-30 {
+    color: var(--red-30);
+  }
+  .hover\:bg-red-30:hover {
+    background-color: var(--red-30);
+  }
+  .hover\:text-red-30:hover {
+    color: var(--red-30);
+  }
+
+  .bg-red-40 {
+    background-color: var(--red-40);
+  }
+  .text-red-40 {
+    color: var(--red-40);
+  }
+  .hover\:bg-red-40:hover {
+    background-color: var(--red-40);
+  }
+  .hover\:text-red-40:hover {
+    color: var(--red-40);
+  }
+
+  .bg-red-50 {
+    background-color: var(--red-50);
+  }
+  .text-red-50 {
+    color: var(--red-50);
+  }
+  .hover\:bg-red-50:hover {
+    background-color: var(--red-50);
+  }
+  .hover\:text-red-50:hover {
+    color: var(--red-50);
+  }
+
+  .bg-red-60 {
+    background-color: var(--red-60);
+  }
+  .text-red-60 {
+    color: var(--red-60);
+  }
+  .hover\:bg-red-60:hover {
+    background-color: var(--red-60);
+  }
+  .hover\:text-red-60:hover {
+    color: var(--red-60);
+  }
+
+  .bg-red-70 {
+    background-color: var(--red-70);
+  }
+  .text-red-70 {
+    color: var(--red-70);
+  }
+  .hover\:bg-red-70:hover {
+    background-color: var(--red-70);
+  }
+  .hover\:text-red-70:hover {
+    color: var(--red-70);
+  }
+
+  .bg-red-80 {
+    background-color: var(--red-80);
+  }
+  .text-red-80 {
+    color: var(--red-80);
+  }
+  .hover\:bg-red-80:hover {
+    background-color: var(--red-80);
+  }
+  .hover\:text-red-80:hover {
+    color: var(--red-80);
+  }
+
+  .bg-red-90 {
+    background-color: var(--red-90);
+  }
+  .text-red-90 {
+    color: var(--red-90);
+  }
+  .hover\:bg-red-90:hover {
+    background-color: var(--red-90);
+  }
+  .hover\:text-red-90:hover {
+    color: var(--red-90);
+  }
+
+  .bg-red-100 {
+    background-color: var(--red-100);
+  }
+  .text-red-100 {
+    color: var(--red-100);
+  }
+  .hover\:bg-red-100:hover {
+    background-color: var(--red-100);
+  }
+  .hover\:text-red-100:hover {
+    color: var(--red-100);
+  }
+
+  .bg-orange-0 {
+    background-color: var(--orange-0);
+  }
+  .text-orange-0 {
+    color: var(--orange-0);
+  }
+  .hover\:bg-orange-0:hover {
+    background-color: var(--orange-0);
+  }
+  .hover\:text-orange-0:hover {
+    color: var(--orange-0);
+  }
+
+  .bg-orange-10 {
+    background-color: var(--orange-10);
+  }
+  .text-orange-10 {
+    color: var(--orange-10);
+  }
+  .hover\:bg-orange-10:hover {
+    background-color: var(--orange-10);
+  }
+  .hover\:text-orange-10:hover {
+    color: var(--orange-10);
+  }
+
+  .bg-orange-20 {
+    background-color: var(--orange-20);
+  }
+  .text-orange-20 {
+    color: var(--orange-20);
+  }
+  .hover\:bg-orange-20:hover {
+    background-color: var(--orange-20);
+  }
+  .hover\:text-orange-20:hover {
+    color: var(--orange-20);
+  }
+
+  .bg-orange-30 {
+    background-color: var(--orange-30);
+  }
+  .text-orange-30 {
+    color: var(--orange-30);
+  }
+  .hover\:bg-orange-30:hover {
+    background-color: var(--orange-30);
+  }
+  .hover\:text-orange-30:hover {
+    color: var(--orange-30);
+  }
+
+  .bg-orange-40 {
+    background-color: var(--orange-40);
+  }
+  .text-orange-40 {
+    color: var(--orange-40);
+  }
+  .hover\:bg-orange-40:hover {
+    background-color: var(--orange-40);
+  }
+  .hover\:text-orange-40:hover {
+    color: var(--orange-40);
+  }
+
+  .bg-orange-50 {
+    background-color: var(--orange-50);
+  }
+  .text-orange-50 {
+    color: var(--orange-50);
+  }
+  .hover\:bg-orange-50:hover {
+    background-color: var(--orange-50);
+  }
+  .hover\:text-orange-50:hover {
+    color: var(--orange-50);
+  }
+
+  .bg-orange-60 {
+    background-color: var(--orange-60);
+  }
+  .text-orange-60 {
+    color: var(--orange-60);
+  }
+  .hover\:bg-orange-60:hover {
+    background-color: var(--orange-60);
+  }
+  .hover\:text-orange-60:hover {
+    color: var(--orange-60);
+  }
+
+  .bg-orange-70 {
+    background-color: var(--orange-70);
+  }
+  .text-orange-70 {
+    color: var(--orange-70);
+  }
+  .hover\:bg-orange-70:hover {
+    background-color: var(--orange-70);
+  }
+  .hover\:text-orange-70:hover {
+    color: var(--orange-70);
+  }
+
+  .bg-orange-80 {
+    background-color: var(--orange-80);
+  }
+  .text-orange-80 {
+    color: var(--orange-80);
+  }
+  .hover\:bg-orange-80:hover {
+    background-color: var(--orange-80);
+  }
+  .hover\:text-orange-80:hover {
+    color: var(--orange-80);
+  }
+
+  .bg-orange-90 {
+    background-color: var(--orange-90);
+  }
+  .text-orange-90 {
+    color: var(--orange-90);
+  }
+  .hover\:bg-orange-90:hover {
+    background-color: var(--orange-90);
+  }
+  .hover\:text-orange-90:hover {
+    color: var(--orange-90);
+  }
+
+  .bg-orange-100 {
+    background-color: var(--orange-100);
+  }
+  .text-orange-100 {
+    color: var(--orange-100);
+  }
+  .hover\:bg-orange-100:hover {
+    background-color: var(--orange-100);
+  }
+  .hover\:text-orange-100:hover {
+    color: var(--orange-100);
+  }
+  .bg-normal-sonner {
+    background-color: var(--popover);
+  }
+  .text-normal-sonner {
+    color: var(--popover-foreground);
+  }
+  .border-normal-sonner {
+    border-color: var(--border);
+  }
+}
+
+:root {
+  --radius: 0.625rem;
+  --background: oklch(0.9825 0.0054 274.97);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.5705 0.229965 22.2926);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(1 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.9465 0.0243 8.17);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar-label: oklch(0.6195 0.0473 276.35);
+  --table-header: oklch(0.8935 0.0236 275.34);
+  --order-status-pending-bg: oklch(0.97 0.05 60);
+  --order-status-pending-fg: oklch(0.68 0.2 60);
+
+  --order-status-completed-bg: oklch(0.95 0.1 150);
+  --order-status-completed-fg: oklch(0.4 0.18 150);
+
+  --order-status-cancelled-bg: oklch(0.94 0.01 270);
+  --order-status-cancelled-fg: oklch(0.4 0 0);
+  --blueberry-10: #e5f4ff;
+  --blueberry-20: #cce9ff;
+  --blueberry-30: #b3dfff;
+  --blueberry-40: #99d4ff;
+  --blueberry-50: #80c9ff;
+  --blueberry-60: #66beff;
+  --blueberry-70: #4cb3ff;
+  --blueberry-80: #33a9ff;
+  --blueberry-90: #1a9eff;
+  --blueberry-100: #0093ff;
+
+  --indigo-10: #e5e5ff;
+  --indigo-20: #ccccff;
+  --indigo-30: #b3b3ff;
+  --indigo-40: #9999ff;
+  --indigo-50: #8080ff;
+  --indigo-60: #6666ff;
+  --indigo-70: #4d4dff;
+  --indigo-80: #3333ff;
+  --indigo-90: #1a1aff;
+  --indigo-100: #0000ff;
+
+  --teal-10: #e5ffff;
+  --teal-20: #ccffff;
+  --teal-30: #b3ffff;
+  --teal-40: #99ffff;
+  --teal-50: #80ffff;
+  --teal-60: #66ffff;
+  --teal-70: #4dffff;
+  --teal-80: #33ffff;
+  --teal-90: #1affff;
+  --teal-100: #00ffff;
+
+  --green-mint-10: #e5fff2;
+  --green-mint-20: #ccffe5;
+  --green-mint-30: #b3ffd8;
+  --green-mint-40: #99ffcc;
+  --green-mint-50: #80ffbf;
+  --green-mint-60: #66ffb3;
+  --green-mint-70: #4dffa6;
+  --green-mint-80: #33ff99;
+  --green-mint-90: #1aff8c;
+  --green-mint-100: #00ff7f;
+
+  --watermelon-10: #e6f3f0;
+  --watermelon-20: #cde7e0;
+  --watermelon-30: #b4dbd1;
+  --watermelon-40: #9bcfc1;
+  --watermelon-50: #81c2b2;
+  --watermelon-60: #68b6a3;
+  --watermelon-70: #4faa93;
+  --watermelon-80: #369e84;
+  --watermelon-90: #1d9274;
+  --watermelon-100: #048665;
+
+  --cempedak-10: #fff8e8;
+  --cempedak-20: #fff2d0;
+  --cempedak-30: #ffecb9;
+  --cempedak-40: #ffe5a1;
+  --cempedak-50: #ffdf8a;
+  --cempedak-60: #ffd873;
+  --cempedak-70: #ffd15b;
+  --cempedak-80: #ffcb44;
+  --cempedak-90: #ffc42c;
+  --cempedak-100: #ffbe15;
+
+  --rambutant-10: #fde7ec;
+  --rambutant-20: #facfd9;
+  --rambutant-30: #f8b7c6;
+  --rambutant-40: #f59fb3;
+  --rambutant-50: #f387a0;
+  --rambutant-60: #f06f8d;
+  --rambutant-70: #ed577a;
+  --rambutant-80: #eb3f67;
+  --rambutant-90: #e82754;
+  --rambutant-100: #df0031;
+
+  --mono-0: #ffffff;
+  --mono-20: #efefef;
+  --mono-40: #bebebe;
+  --mono-60: #8f8f8f;
+  --mono-80: #606060;
+  --mono-90: #404040;
+  --mono-100: #222222;
+
+  --neutral-0: #ffffff;
+  --neutral-10: #f3f3f3;
+  --neutral-20: #e0e0e0;
+  --neutral-30: #cccccc;
+  --neutral-40: #b8b8b8;
+  --neutral-50: #a3a3a3;
+  --neutral-60: #8f8f8f;
+  --neutral-70: #7a7a7a;
+  --neutral-80: #666666;
+  --neutral-90: #4f4f4f;
+  --neutral-100: #313131;
+
+  --red-0: #fff5f5;
+  --red-10: #ffe3e3;
+  --red-20: #ffc9c9;
+  --red-30: #ffa8a8;
+  --red-40: #ff8787;
+  --red-50: #ff6b6b;
+  --red-60: #fa5252;
+  --red-70: #f03e3e;
+  --red-80: #e03131;
+  --red-90: #c92a2a;
+  --red-100: #a51111;
+
+  --orange-0: #fff4e6;
+  --orange-10: #ffe8cc;
+  --orange-20: #ffd8a8;
+  --orange-30: #ffc078;
+  --orange-40: #ffa94d;
+  --orange-50: #ff922b;
+  --orange-60: #fd7e14;
+  --orange-70: #f76707;
+  --orange-80: #e8590c;
+  --orange-90: #d9480f;
+  --orange-100: #b13800;
+
+  --gradient-0: #00000000;
+  --gradient-10: #1a000000;
+  --gradient-20: #33000000;
+  --gradient-40: #66000000;
+  --gradient-60: #99000000;
+  --gradient-80: #cc000000;
+  --gradient-100: #ff000000;
+
+  --purple-0: #f5eefe;
+  --purple-10: #e9d7fb;
+  --purple-20: #d3b5f7;
+  --purple-30: #b98ef0;
+  --purple-40: #9e66e8;
+  --purple-50: #8441dd;
+  --purple-60: #6c3baa;
+  --purple-70: #592f8b;
+  --purple-80: #47256d;
+  --purple-90: #351c50;
+  --purple-100: #241234;
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  @keyframes progress {
+    0% {
+      transform: translateX(-100%);
+    }
+    50% {
+      transform: translateX(0%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  .animate-progress-bar {
+    animation: progress 1.2s ease-in-out infinite;
+  }
+}
+
+::-webkit-scrollbar {
+  @apply w-2.5 h-2.5;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply rounded-full bg-border border-[1px] border-transparent border-solid bg-clip-padding;
+}
+@layer utilities {
+  .status-pending {
+    background-color: var(--order-status-pending-bg);
+    color: var(--order-status-pending-fg);
+  }
+  .status-completed {
+    background-color: var(--order-status-completed-bg);
+    color: var(--order-status-completed-fg);
+  }
+  .status-cancelled {
+    background-color: var(--order-status-cancelled-bg);
+    color: var(--order-status-cancelled-fg);
+  }
+}
