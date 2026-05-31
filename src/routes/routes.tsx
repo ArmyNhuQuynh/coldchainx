@@ -1,8 +1,7 @@
 // routes.tsx
 // import LoadingScreen from "@/components/loading-screen";
-import LoadingScreen from "#/components/loading-screen";
 import { ErrorFallback } from "@/components/error-fallback";
-import AuthGuard from "@/guards/auth-guard";
+import LoadingScreen from "@/components/loading-screen";
 import RoleBasedGuard from "@/guards/role-based-guard";
 import DashBoardLayout from "@/layouts/dashboard/dash-board-layout";
 import Logout from "@/pages/auth/logout/logout";
@@ -34,6 +33,7 @@ const Loadable = (Component: ElementType) => (props: any) => {
 };
 //
 const LoginPage = Loadable(lazy(() => import("@/pages/auth/login")));
+
 
 // const GeneralAppPage = Loadable(lazy(() => import("@/pages/general-app")));
 // const GeneralEcommercePage = Loadable(
@@ -87,19 +87,19 @@ export const AppRoutes = () =>
         },
       ],
     },
-    // Store Admin Dashboard routes
     {
-      path: "/",
+      path: PATH_MANAGER_DASHBOARD.root,
       element: (
-        <AuthGuard>
+        <RoleBasedGuard role="SystemManager">
           <DashBoardLayout />
-        </AuthGuard>
+        </RoleBasedGuard>
       ),
       children: [
         {
           element: <Navigate to={PATH_MANAGER_DASHBOARD.root} replace />,
           index: true,
         },
+
       ],
     },
     // Add the 404 route

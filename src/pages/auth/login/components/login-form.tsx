@@ -219,7 +219,7 @@ export function LoginForm({
               <div className="relative z-10 text-center">
                 {/* <RandomIllustration className="w-80 h-80 mx-auto drop-shadow-2xl" /> */}
                 <div className="mt-8 text-primary-foreground">
-                  <h2 className="text-2xl font-bold mb-2">DimPos Management</h2>
+                  <h2 className="text-2xl font-bold mb-2">ColdchainX Management</h2>
                   <p className="text-primary-foreground/80 text-sm leading-relaxed">
                     Hệ thống quản lý hiện đại, dễ sử dụng và hiệu quả cho doanh nghiệp của bạn
                   </p>
