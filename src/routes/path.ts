@@ -4,8 +4,8 @@ const path = (root: string, sublink: string) => {
 }
 
 const ROOTS_AUTH = '/auth';
-const ROOTS_MANAGER_DASHBOARD = '/admin/dashboard';
-const ROOTS_ADMIN_DASHBOARD = '/manager/dashboard';
+const ROOTS_MANAGER_DASHBOARD = '/manager/dashboard';
+const ROOTS_ADMIN_DASHBOARD = '/admin/dashboard';
 
 export const PATH_AUTH = {
   root: ROOTS_AUTH,
@@ -23,6 +23,10 @@ export const PATH_MANAGER_DASHBOARD = {
     root: path(ROOTS_MANAGER_DASHBOARD, '/category'),
     create: path(ROOTS_MANAGER_DASHBOARD, '/category/new'),
     edit: (id: string) => path(ROOTS_MANAGER_DASHBOARD, `/category/${id}`),
+  },
+  shipment: {
+    root: path(ROOTS_MANAGER_DASHBOARD, '/shipment'),
+    edit: (id: string) => path(ROOTS_MANAGER_DASHBOARD, `/shipment/${id}`),
   },
 }
 
