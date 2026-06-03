@@ -33,6 +33,9 @@ const Loadable = (Component: ElementType) => (props: any) => {
 };
 //
 const LoginPage = Loadable(lazy(() => import("@/pages/auth/login")));
+const ShipmentPage = Loadable(
+  lazy(() => import("@/pages/manager/shipment/list-shipments/list-shipment-page"))
+);
 
 
 // const GeneralAppPage = Loadable(lazy(() => import("@/pages/general-app")));
@@ -47,6 +50,10 @@ const Page404 = Loadable(lazy(() => import("@/pages/page-404")));
 
 export const AppRoutes = () =>
   useRoutes([
+    {
+      path: "/",
+      element: <Navigate to={PATH_AUTH.login} replace />,
+    },
     {
       path: PATH_AUTH.root,
       children: [
@@ -96,8 +103,12 @@ export const AppRoutes = () =>
       ),
       children: [
         {
-          element: <Navigate to={PATH_MANAGER_DASHBOARD.root} replace />,
+          element: <Navigate to={PATH_MANAGER_DASHBOARD.shipment.root} replace />,
           index: true,
+        },
+        {
+          path: "shipment",
+          element: <ShipmentPage />,
         },
 
       ],

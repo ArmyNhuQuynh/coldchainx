@@ -17,7 +17,7 @@ export default function GuestGuard({ children }: GuestGuardProps) {
             case 'Admin':
                 return <Navigate to={PATH_ADMIN_DASHBOARD.general.app} />;
             case 'Manager':
-                return <Navigate to={PATH_MANAGER_DASHBOARD.general.app} />;
+                return <Navigate to={PATH_MANAGER_DASHBOARD.shipment.root} />;
             default:
                 return <Navigate to='/404' />;
         }

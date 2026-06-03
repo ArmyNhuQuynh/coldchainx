@@ -12,12 +12,10 @@ import { Input, PasswordInput } from "@/components/ui/input"
 import { handleApiError } from "@/lib/error"
 import { cn } from "@/lib/utils"
 import { setUser } from "@/redux/User/user-slice"
-import { jwtDecode } from "jwt-decode"
 import { useMemo, useEffect, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { useDispatch } from "react-redux"
 import { zodResolver } from "@hookform/resolvers/zod";
-import { RoleSchema } from "@/schemas/role.schema"
 import { useAuth } from "@/hooks/use-auth"
 import { LoginRequestSchema, type TLoginRequest } from "@/schemas/auth.schema"
 
@@ -41,32 +39,10 @@ export function LoginForm({
     if (loginMutation.isPending) return;
     try {
       const result = await loginMutation.mutateAsync(data);
-      console.log(result);
+      dispatch(setUser(result.data.data));
     } catch (error) {
-
+      handleApiError(error);
     }
-    // try {
-    //   const result = await loginMutation.mutateAsync(data);
-    //   const accessToken = result.data.data.accessToken;
-    //   const role = (jwtDecode(accessToken) as any).role;
-    //   //console.log( "Decoded role:", role );
-    //   if (RoleSchema.safeParse(role).error) {
-    //     throw {
-    //       response: {
-    //         status: 403,
-    //         data: {
-    //           status: 403,
-    //           message: "Tài khoản không có quyền truy cập.",
-    //           data: "Bạn không có quyền truy cập vào tài nguyên này.",
-    //         },
-    //       },
-    //     };
-    //   }
-    //   // await connect( accessToken );
-    //   dispatch(setUser(result.data.data));
-    // } catch (error) {
-    //   handleApiError(error);
-    // }
   };
 
   const RandomIllustration = useMemo(() => {
@@ -107,7 +83,7 @@ export function LoginForm({
             {/* Left side - Form */}
             <div className="relative">
               {/* Background overlay */}
-              <div className="absolute inset-0 bg-gradient-to-br from-background via-card to-background" />
+              <div className="absolute inset-0 bg-linear-to-br from-background via-card to-background" />
 
               {/* Form content */}
               <div className="relative z-10">
@@ -115,7 +91,7 @@ export function LoginForm({
                   <form className="p-8 md:p-12 space-y-8" onSubmit={form.handleSubmit(onSubmit)} noValidate>
                     {/* Header section with improved styling */}
                     <div className="text-center space-y-4">
-                      <div className="mx-auto w-16 h-16 bg-gradient-to-br from-primary/30 via-primary/60 to-primary rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+                      <div className="mx-auto w-16 h-16 bg-linear-to-br from-primary/30 via-primary/60 to-primary rounded-2xl flex items-center justify-center mb-6 shadow-lg">
                         <svg className="w-8 h-8 text-primary-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                         </svg>
@@ -177,7 +153,7 @@ export function LoginForm({
                       {/* Enhanced submit button */}
                       <Button
                         type="submit"
-                        className="w-full h-12 bg-gradient-to-r from-primary/40 via-primary/80 to-primary hover:from-primary/40 hover:via-primary/80 hover:to-primary text-primary-foreground font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
+                        className="w-full h-12 bg-linear-to-r from-primary/40 via-primary/80 to-primary hover:from-primary/40 hover:via-primary/80 hover:to-primary text-primary-foreground font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
                         disabled={loginMutation.isPending}
                         size="lg"
                       >
@@ -209,7 +185,7 @@ export function LoginForm({
             </div>
 
             {/* Right side - Illustration with enhanced styling */}
-            <div className="relative bg-gradient-to-br from-primary/30 via-primary/60 to-primary hidden md:flex items-center justify-center p-8 md:p-12">
+            <div className="relative bg-linear-to-br from-primary/30 via-primary/60 to-primary hidden md:flex items-center justify-center p-8 md:p-12">
               {/* Decorative elements */}
               <div className="absolute inset-0 bg-black/10" />
               <div className="absolute top-4 right-4 w-32 h-32 bg-white/10 rounded-full blur-xl" />
