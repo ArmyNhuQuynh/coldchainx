@@ -26,6 +26,7 @@ export const PATH_MANAGER_DASHBOARD = {
   },
   shipment: {
     root: path(ROOTS_MANAGER_DASHBOARD, '/shipment'),
+    create: path(ROOTS_MANAGER_DASHBOARD, '/shipment/new'),
     edit: (id: string) => path(ROOTS_MANAGER_DASHBOARD, `/shipment/${id}`),
   },
 }
