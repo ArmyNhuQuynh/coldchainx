@@ -1,6 +1,6 @@
 import { apiRequest } from "@/lib/http";
 import type { TAuthResponse } from "@/schemas/auth.schema";
-import type { TRole } from "@/schemas/role.schema";
+import { RoleSchema, type TRole } from "@/schemas/role.schema";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { jwtDecode } from "jwt-decode";
 
@@ -50,6 +50,58 @@ const clearStoredAuthData = () => {
     clearAuthorizationHeaders();
 };
 
+const normalizeRole = (role: unknown): TRole | null => {
+    if (typeof role === "string") {
+        const normalized = role.trim();
+        const legacyRoleMap: Record<string, TRole> = {
+            SystemAdmin: "Admin",
+            SystemManager: "Manager",
+        };
+
+        if (legacyRoleMap[normalized]) {
+            return legacyRoleMap[normalized];
+        }
+
+        if (RoleSchema.safeParse(normalized).success) {
+            return normalized as TRole;
+        }
+    }
+
+    if (typeof role === "number") {
+        const roleByValue: Record<number, TRole> = {
+            0: "Admin",
+            1: "Manager",
+        };
+
+        return roleByValue[role] ?? null;
+    }
+
+    return null;
+};
+
+const getRoleFromToken = (decodedToken: any): TRole | null => {
+    const claimRole =
+        decodedToken.role ??
+        decodedToken.Role ??
+        decodedToken.roles ??
+        decodedToken[
+        "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+        ];
+
+    if (Array.isArray(claimRole)) {
+        return claimRole.map(normalizeRole).find(Boolean) ?? null;
+    }
+
+    return normalizeRole(claimRole);
+};
+
+const getUserRole = (
+    userData: TAuthResponse,
+    decodedToken: any
+): TRole | null => {
+    return getRoleFromToken(decodedToken) ?? normalizeRole(userData.role);
+};
+
 const userSlice = createSlice({
     name: "user",
     initialState,
@@ -76,13 +128,27 @@ const userSlice = createSlice({
 
             try {
                 const decodedToken = jwtDecode(userData.accessToken) as any;
+                const role = getUserRole(userData, decodedToken);
+
+                if (!role) {
+                    console.warn("Unable to resolve user role from login response");
+                    state.user = null;
+                    state.isAuthenticated = false;
+                    state.role = null;
+                    clearStoredAuthData();
+                    return;
+                }
 
                 state.user = userData;
                 state.isAuthenticated = true;
-                state.role = decodedToken.role;
+                state.role = role;
 
                 localStorage.setItem("accessToken", userData.accessToken);
-                localStorage.setItem("refreshToken", userData.refreshToken);
+                if (userData.refreshToken) {
+                    localStorage.setItem("refreshToken", userData.refreshToken);
+                } else {
+                    localStorage.removeItem("refreshToken");
+                }
                 localStorage.setItem("user", JSON.stringify(userData));
 
                 setAuthorizationHeaders(userData.accessToken);
@@ -99,11 +165,10 @@ const userSlice = createSlice({
         loadUserFromStorage(state) {
             try {
                 const accessToken = localStorage.getItem("accessToken");
-                const refreshToken = localStorage.getItem("refreshToken");
                 const storedUserData = localStorage.getItem("user");
 
                 // Check if we have the minimum required data
-                if (!accessToken || !refreshToken || !storedUserData) {
+                if (!accessToken || !storedUserData) {
                     //console.log( 'Missing authentication data in localStorage' );
                     clearStoredAuthData();
                     return;
@@ -121,10 +186,19 @@ const userSlice = createSlice({
 
                 const userData = JSON.parse(storedUserData);
                 const decodedToken = jwtDecode(accessToken) as any;
+                const role = getUserRole(userData, decodedToken);
+
+                if (!role) {
+                    clearStoredAuthData();
+                    state.user = null;
+                    state.isAuthenticated = false;
+                    state.role = null;
+                    return;
+                }
 
                 state.user = userData;
                 state.isAuthenticated = true;
-                state.role = decodedToken.role;
+                state.role = role;
 
                 setAuthorizationHeaders(accessToken);
             } catch (error) {

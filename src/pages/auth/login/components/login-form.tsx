@@ -17,7 +17,19 @@ import { useForm } from "react-hook-form"
 import { useDispatch } from "react-redux"
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/hooks/use-auth"
-import { LoginRequestSchema, type TLoginRequest } from "@/schemas/auth.schema"
+import { LoginRequestSchema, type TAuthResponse, type TLoginRequest } from "@/schemas/auth.schema"
+
+const getAuthResponseData = (responseData: unknown): TAuthResponse | null => {
+  const maybeAuthResponse = responseData as TAuthResponse | undefined;
+
+  if (maybeAuthResponse?.accessToken) {
+    return maybeAuthResponse;
+  }
+
+  const maybeBaseResponse = responseData as { data?: TAuthResponse } | undefined;
+
+  return maybeBaseResponse?.data?.accessToken ? maybeBaseResponse.data : null;
+};
 
 
 export function LoginForm({
@@ -39,7 +51,13 @@ export function LoginForm({
     if (loginMutation.isPending) return;
     try {
       const result = await loginMutation.mutateAsync(data);
-      dispatch(setUser(result.data.data));
+      const authData = getAuthResponseData(result.data);
+
+      if (!authData) {
+        throw new Error("Login response does not include an access token");
+      }
+
+      dispatch(setUser(authData));
     } catch (error) {
       handleApiError(error);
     }

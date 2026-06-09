@@ -1,18 +1,17 @@
 import { z } from "zod"
-
 export const LoginRequestSchema = z.object({
     email: z.string().email({ message: "Địa chỉ email không hợp lệ" }),
     password: z.string().min(1, { message: "Mật khẩu không được bỏ trống" }).max(50, { message: "Mật khẩu không được quá 50 ký tự" }),
 }).strict();
 
 export const AuthResponseSchema = z.object({
-    userId: z.string(),
-    fullName: z.string(),
-    email: z.string().email(),
-    role: z.number(),
+    userId: z.string().optional().nullable(),
+    fullName: z.string().optional().nullable(),
+    email: z.string().email().optional().nullable(),
+    role: z.union([z.string(), z.number()]).optional().nullable(),
     accessToken: z.string(),
-    refreshToken: z.string(),
-    accessTokenExpiresAt: z.number(),
+    refreshToken: z.string().optional().nullable(),
+    accessTokenExpiresAt: z.number().optional().nullable(),
 });
 
 

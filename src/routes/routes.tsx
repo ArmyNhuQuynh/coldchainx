@@ -79,7 +79,7 @@ export const AppRoutes = () =>
     {
       path: PATH_ADMIN_DASHBOARD.root,
       element: (
-        <RoleBasedGuard role="SystemAdmin">
+        <RoleBasedGuard role="Admin">
           <DashBoardLayout />
         </RoleBasedGuard>
       ),
@@ -97,7 +97,7 @@ export const AppRoutes = () =>
     {
       path: PATH_MANAGER_DASHBOARD.root,
       element: (
-        <RoleBasedGuard role="SystemManager">
+        <RoleBasedGuard role="Manager">
           <DashBoardLayout />
         </RoleBasedGuard>
       ),

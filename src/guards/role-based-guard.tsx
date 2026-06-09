@@ -1,7 +1,7 @@
-import { RoleSchema, type TRole } from '#/schemas/role.schema';
 import { LoginForm } from '@/pages/auth/login/components/login-form';
 import type { RootState } from '@/redux/store';
 import { PATH_ADMIN_DASHBOARD, PATH_MANAGER_DASHBOARD } from '@/routes/path';
+import { RoleSchema, type TRole } from '@/schemas/role.schema';
 import { useState, type ReactNode } from 'react';
 import { useSelector } from 'react-redux';
 import { Navigate, useLocation } from 'react-router-dom';
