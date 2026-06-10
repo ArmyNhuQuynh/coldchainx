@@ -1,5 +1,5 @@
 import type { RootState } from "@/redux/store";
-import { PATH_ADMIN_DASHBOARD, PATH_MANAGER_DASHBOARD } from "@/routes/path";
+import { PATH_ADMIN_DASHBOARD, PATH_DISPATCHER_DASHBOARD, PATH_MANAGER_DASHBOARD, PATH_SALE_DASHBOARD } from "@/routes/path";
 // import type { PATH_BRAND_DASHBOARD } from "@/routes/path";
 import type { ReactNode } from "react";
 import { useSelector } from "react-redux";
@@ -18,6 +18,10 @@ export default function GuestGuard({ children }: GuestGuardProps) {
                 return <Navigate to={PATH_ADMIN_DASHBOARD.general.app} />;
             case 'Manager':
                 return <Navigate to={PATH_MANAGER_DASHBOARD.shipment.root} />;
+            case 'Sale':
+                return <Navigate to={PATH_SALE_DASHBOARD.shipment.root} />;
+            case 'Dispatcher':
+                return <Navigate to={PATH_DISPATCHER_DASHBOARD.shipment.root} />;
             default:
                 return <Navigate to='/404' />;
         }

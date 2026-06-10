@@ -7,9 +7,13 @@ import {
   useSidebar
 } from "@/components/ui/sidebar";
 import type { RootState } from "@/redux/store";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { HomeIcon } from "lucide-react";
-import { PATH_MANAGER_DASHBOARD } from "@/routes/path";
+import {
+  PATH_DISPATCHER_DASHBOARD,
+  PATH_MANAGER_DASHBOARD,
+  PATH_SALE_DASHBOARD,
+} from "@/routes/path";
 import { ERole } from "@/types/enums/role.enum";
 import { NavMain } from "./nav-main";
 
@@ -24,13 +28,12 @@ const managerRoutes = {
       },
     ],
   },
-
   operations: {
     mainTitle: "Vận hành",
     items: [
       {
         title: "Lô hàng",
-        url: "",
+        url: PATH_MANAGER_DASHBOARD.shipment.root,
         icon: HomeIcon,
       },
       {
@@ -48,8 +51,7 @@ const managerRoutes = {
         url: "",
         icon: HomeIcon,
       },
-
-    ]
+    ],
   },
   coordinationAndManagement: {
     mainTitle: "Điều phối & Quản lý",
@@ -63,19 +65,18 @@ const managerRoutes = {
         title: "Sự cố",
         url: "",
         icon: HomeIcon,
-      }
-    ]
+      },
+    ],
   },
   customer: {
     mainTitle: "Khách hàng",
     items: [
-
       {
         title: "Tư vấn",
         url: "",
         icon: HomeIcon,
       },
-    ]
+    ],
   },
   management: {
     mainTitle: "Quản lý",
@@ -85,7 +86,7 @@ const managerRoutes = {
         url: "",
         icon: HomeIcon,
       },
-    ]
+    ],
   },
   settings: {
     mainTitle: "Cài đặt",
@@ -95,47 +96,60 @@ const managerRoutes = {
         url: "",
         icon: HomeIcon,
       },
-    ]
+    ],
   },
-}
+};
 
-// const adminRoutes = {
-//   dashboard: {
-//     mainTitle: "Dashboard",
-//     items: [
-//       {
-//         title: "Nhật ký hệ thống",
-//         url: PATH_ADMIN_DASHBOARD..root,
-//         icon: HomeIcon,
-//       },
-//     ],
-//   },
-//   brand: {
-//     mainTitle: "Quản lý thương hiệu",
-//     items: [
-//       {
-//         title: "Danh sách thương hiệu",
-//         url: PATH_ADMIN_DASHBOARD.brand.root,
-//         icon: HomeIcon,
-//       },
-//     ],
-//   },
-//   systemManagement: {
-//     mainTitle: "Quản lý hệ thống",
-//     items: [
-//       {
-//         title: "Phương thức thanh toán",
-//         url: PATH_ADMIN_DASHBOARD.systemPaymentMethod.root,
-//         icon: GeneralAppIcon,
-//       },
-//     ],
-//   },
-// };
+const saleRoutes = {
+  dashboard: {
+    mainTitle: "Dashboard",
+    items: [
+      {
+        title: "Quản lý",
+        url: PATH_SALE_DASHBOARD.root,
+        icon: HomeIcon,
+      },
+    ],
+  },
+  operations: {
+    mainTitle: "Vận hành",
+    items: [
+      {
+        title: "Lô hàng",
+        url: PATH_SALE_DASHBOARD.shipment.root,
+        icon: HomeIcon,
+      },
+    ],
+  },
+};
 
+const dispatcherRoutes = {
+  dashboard: {
+    mainTitle: "Dashboard",
+    items: [
+      {
+        title: "Quản lý",
+        url: PATH_DISPATCHER_DASHBOARD.root,
+        icon: HomeIcon,
+      },
+    ],
+  },
+  operations: {
+    mainTitle: "Vận hành",
+    items: [
+      {
+        title: "Lô hàng",
+        url: PATH_DISPATCHER_DASHBOARD.shipment.root,
+        icon: HomeIcon,
+      },
+    ],
+  },
+};
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { role } = useSelector((state: RootState) => state.user);
   const { toggleSidebar, open } = useSidebar();
+
   return (
     <Sidebar variant="sidebar" collapsible="icon" {...props}>
       <SidebarHeader>
@@ -144,25 +158,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             className="cursor-pointer"
             onClick={open ? undefined : toggleSidebar}
           >
-            {/* <img
-              className={cn(open ? "size-15" : "size-8", "duration-300")}
-              src={brandData?.data.data.pictureUrl || storeLogoImage || "https://s3-hcm5-r1.longvan.net/19429498-dimpos/0a8eae54-e987-4205-9fb8-c0e3b5266f9f.jpg"}
-              alt="Ảnh đại diện"
-            /> */}
+            {/* Logo */}
           </div>
           {open && (
             <div className="cursor-pointer" onClick={toggleSidebar}>
-              {/* <CollapseIcon className="size-6 cursor-pointer text-gray-500 hover:text-gray-700 transition-colors duration-200" /> */}
+              {/* CollapseIcon */}
             </div>
           )}
         </div>
       </SidebarHeader>
+
       {(() => {
         switch (role) {
           case ERole.Admin:
-            return (
-              null
-            );
+            return null;
+
           case ERole.Manager:
             return (
               <SidebarContent>
@@ -174,10 +184,28 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <NavMain content={managerRoutes.settings} />
               </SidebarContent>
             );
+
+          case ERole.Sale:
+            return (
+              <SidebarContent>
+                <NavMain content={saleRoutes.dashboard} />
+                <NavMain content={saleRoutes.operations} />
+              </SidebarContent>
+            );
+
+          case ERole.Dispatcher:
+            return (
+              <SidebarContent>
+                <NavMain content={dispatcherRoutes.dashboard} />
+                <NavMain content={dispatcherRoutes.operations} />
+              </SidebarContent>
+            );
+
           default:
             return null;
         }
       })()}
+
       <SidebarRail />
     </Sidebar>
   );

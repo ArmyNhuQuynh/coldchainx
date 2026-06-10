@@ -6,6 +6,8 @@ const path = (root: string, sublink: string) => {
 const ROOTS_AUTH = '/auth';
 const ROOTS_MANAGER_DASHBOARD = '/manager/dashboard';
 const ROOTS_ADMIN_DASHBOARD = '/admin/dashboard';
+const ROOTS_SALE_DASHBOARD = '/sale/dashboard';
+const ROOTS_DISPATCHER_DASHBOARD = '/dispatcher/dashboard';
 
 export const PATH_AUTH = {
   root: ROOTS_AUTH,
@@ -19,11 +21,7 @@ export const PATH_MANAGER_DASHBOARD = {
   general: {
     app: path(ROOTS_MANAGER_DASHBOARD, "/general"),
   },
-  category: {
-    root: path(ROOTS_MANAGER_DASHBOARD, '/category'),
-    create: path(ROOTS_MANAGER_DASHBOARD, '/category/new'),
-    edit: (id: string) => path(ROOTS_MANAGER_DASHBOARD, `/category/${id}`),
-  },
+  
   shipment: {
     root: path(ROOTS_MANAGER_DASHBOARD, '/shipment'),
     create: path(ROOTS_MANAGER_DASHBOARD, '/shipment/new'),
@@ -45,5 +43,29 @@ export const PATH_ADMIN_DASHBOARD = {
     root: path(ROOTS_ADMIN_DASHBOARD, "/brand"),
     create: path(ROOTS_ADMIN_DASHBOARD, "/brand/new"),
     edit: (id: string) => path(ROOTS_ADMIN_DASHBOARD, `/brand/${id}`),
+  },
+};
+
+export const PATH_SALE_DASHBOARD = {
+  root: ROOTS_SALE_DASHBOARD,
+
+  general: {
+    app: path(ROOTS_SALE_DASHBOARD, "/general"),
+  },
+  shipment: {
+    root: path(ROOTS_SALE_DASHBOARD, '/shipment'),
+    edit: (id: string) => path(ROOTS_SALE_DASHBOARD, `/shipment/${id}`),
+  },
+};
+
+export const PATH_DISPATCHER_DASHBOARD = {
+  root: ROOTS_DISPATCHER_DASHBOARD,
+
+  general: {
+    app: path(ROOTS_DISPATCHER_DASHBOARD, "/general"),
+  },
+  shipment: {
+    root: path(ROOTS_DISPATCHER_DASHBOARD, '/shipment'),
+    edit: (id: string) => path(ROOTS_DISPATCHER_DASHBOARD, `/shipment/${id}`),
   },
 };

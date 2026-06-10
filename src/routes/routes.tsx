@@ -13,7 +13,9 @@ import GuestGuard from "../guards/guest-guard";
 import {
   PATH_ADMIN_DASHBOARD,
   PATH_AUTH,
+  PATH_DISPATCHER_DASHBOARD,
   PATH_MANAGER_DASHBOARD,
+  PATH_SALE_DASHBOARD,
 } from "./path";
 
 
@@ -111,6 +113,42 @@ export const AppRoutes = () =>
           element: <ShipmentPage />,
         },
 
+      ],
+    },
+    {
+      path: PATH_SALE_DASHBOARD.root,
+      element: (
+        <RoleBasedGuard role="Sale">
+          <DashBoardLayout />
+        </RoleBasedGuard>
+      ),
+      children: [
+        {
+          element: <Navigate to={PATH_SALE_DASHBOARD.shipment.root} replace />,
+          index: true,
+        },
+        {
+          path: "shipment",
+          element: <ShipmentPage />,
+        },
+      ],
+    },
+    {
+      path: PATH_DISPATCHER_DASHBOARD.root,
+      element: (
+        <RoleBasedGuard role="Dispatcher">
+          <DashBoardLayout />
+        </RoleBasedGuard>
+      ),
+      children: [
+        {
+          element: <Navigate to={PATH_DISPATCHER_DASHBOARD.shipment.root} replace />,
+          index: true,
+        },
+        {
+          path: "shipment",
+          element: <ShipmentPage />,
+        },
       ],
     },
     // Add the 404 route
