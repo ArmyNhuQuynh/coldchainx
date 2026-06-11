@@ -38,6 +38,9 @@ const LoginPage = Loadable(lazy(() => import("@/pages/auth/login")));
 const ShipmentPage = Loadable(
   lazy(() => import("@/pages/manager/shipment/list-shipments/list-shipment-page"))
 );
+const ShipmentDetailPage = Loadable(
+  lazy(() => import("@/pages/manager/shipment/shipment-detail"))
+);
 
 
 // const GeneralAppPage = Loadable(lazy(() => import("@/pages/general-app")));
@@ -112,6 +115,10 @@ export const AppRoutes = () =>
           path: "shipment",
           element: <ShipmentPage />,
         },
+        {
+          path: "shipment/:id",
+          element: <ShipmentDetailPage />,
+        },
 
       ],
     },
@@ -131,6 +138,10 @@ export const AppRoutes = () =>
           path: "shipment",
           element: <ShipmentPage />,
         },
+        {
+          path: "shipment/:id",
+          element: <ShipmentDetailPage />,
+        },
       ],
     },
     {
@@ -148,6 +159,10 @@ export const AppRoutes = () =>
         {
           path: "shipment",
           element: <ShipmentPage />,
+        },
+        {
+          path: "shipment/:id",
+          element: <ShipmentDetailPage />,
         },
       ],
     },

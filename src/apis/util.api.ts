@@ -17,4 +17,6 @@ export const normalizeParams = (filters: any) => {
 export const API_SUFFIX = {
   // Auth
   AUTH_API: "/auth",
+  // Orders
+  ORDERS_API: "/orders",
 };

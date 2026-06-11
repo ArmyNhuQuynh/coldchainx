@@ -5,11 +5,11 @@ export type BaseResponse<T> = {
 };
 
 export type PaginationResponse<T> = {
-  size: number;
-  page: number;
-  total: number;
+  pageSize: number;
+  currentPage: number;
+  totalRecords: number;
   totalPages: number;
-  items: T[];
+  data: T[];
 }
 
 export type ErrorResponse<T> = BaseResponse<T>
