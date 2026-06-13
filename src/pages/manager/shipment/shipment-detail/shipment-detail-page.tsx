@@ -7,6 +7,8 @@ import OrderDestination from "./components/shipment-destination";
 import OrderQuotation from "./components/shipment-quotation";
 import OrderWeightSection from "./components/shipment-weight-section";
 import OrderDocuments from "./components/shipment-document";
+import OrderReviewActions from "./components/shipment-review-action";
+import { ORDER_STATUS } from "@/types/enums/order-status.enum";
 
 
 const OrderDetailPage = () => {
@@ -35,13 +37,18 @@ const OrderDetailPage = () => {
 
     return (
         <div className="space-y-6">
-            {/* Header */}
-            <OrderDetailHeader order={order} />
+            {/* Header + Review Actions */}
+            <div className="flex items-start justify-between flex-wrap gap-4">
+                <OrderDetailHeader order={order} />
+                {order.status === ORDER_STATUS.PENDING_REVIEW && (
+                    <OrderReviewActions orderId={order.orderId} />
+                )}
+            </div>
 
             {/* 4 info cards */}
             <OrderInfoCards order={order} />
 
-            {/* Detail info + Destination */}
+            {/* Detail info + Destination + Quotation */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2">
                     <OrderDetailInfo order={order} />

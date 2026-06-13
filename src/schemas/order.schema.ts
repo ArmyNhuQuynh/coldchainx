@@ -87,9 +87,19 @@ export const OrderListResponseSchema = z.object({
   }),
 });
 
+//====== ORDER REVIEW =====
+export const ReviewOrderSchema = z.object({
+  action: z.union([
+    z.literal("APPROVE", { message: "Action không hợp lệ" }),
+    z.literal("REJECT",  { message: "Action không hợp lệ" }),
+  ]),
+  rejectReason: z.string({ message: "Lý do từ chối không hợp lệ" }).nullable().optional(),
+});
+
 // ===== EXPORT TYPES =====
 export type TOrder             = z.infer<typeof OrderSchema>;
 export type TOrderListResponse = z.infer<typeof OrderListResponseSchema>;
 export type TOrderDestination  = z.infer<typeof OrderDestinationSchema>;
 export type TOrderDocument     = z.infer<typeof OrderDocumentSchema>;
+export type TReviewOrder       = z.infer<typeof ReviewOrderSchema>;
 export type TOrderQuotation    = z.infer<typeof OrderQuotationSchema>;
