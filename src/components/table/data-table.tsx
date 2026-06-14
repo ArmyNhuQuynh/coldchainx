@@ -171,6 +171,10 @@ export function DataTable<TData, TValue> ( {
 }: DataTableProps<TData, TValue> )
 {
   const [ rowSelectionState, setRowSelectionState ] = useState( {} );
+  const hasToolbar =
+    searchValues.length > 0 ||
+    ( showRefresh && !!onRefresh ) ||
+    ( showSettings && !!onSettings );
 
   const [ inputValues, setInputValues ] = useState<Record<string, string>>( () =>
     Object.fromEntries( searchValues.map( ( f ) => [ f.id, String( f.value ?? "" ) ] ) )
@@ -266,9 +270,10 @@ export function DataTable<TData, TValue> ( {
   } );
 
   return (
-    <div className="space-y-4 ">
+    <div className="space-y-4">
       {/* Enhanced Header Section */ }
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between ">
+      { hasToolbar && (
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-1 items-end gap-4">
           {/* More Search Input */ }
           { onSearchChange &&
@@ -438,17 +443,18 @@ export function DataTable<TData, TValue> ( {
           ) }
         </div>
       </div>
+      ) }
 
 
       {/* Table Container with improved styling */ }
-      <div className="rounded-2xl border bg-card">
+      <div className="overflow-hidden rounded-2xl border bg-card shadow-sm">
         <ScrollArea
           // orientation="horizontal"
           className={ cn(
             isShort
               ? "h-[calc(30vh)] md:h-[calc(30dvh)]"
               : "h-[calc(80vh-280px)] md:h-[calc(90dvh-250px)]",
-            "rounded-tr-2xl rounded-tl-2xl"
+            "rounded-t-2xl"
           ) }
         >
           {/* Conditionally render skeleton or actual table based on loading state */ }
@@ -456,16 +462,16 @@ export function DataTable<TData, TValue> ( {
             <TableSkeleton columns={ columns } pageSize={ pageSize } />
           ) : (
             <Table className="relative">
-              <TableHeader className="rounded-lg sticky z-10 top-0 bg-table-header">
+              <TableHeader className="sticky top-0 z-10 bg-muted/40">
                 { table.getHeaderGroups().map( ( headerGroup ) => (
                   <TableRow
                     key={ headerGroup.id }
-                    className="rounded-lg transition-colors hover:bg-table-header"
+                    className="transition-colors hover:bg-muted/40"
                   >
                     { headerGroup.headers.map( ( header ) => (
                       <TableHead
                         key={ header.id }
-                        className="h-12 px-4 text-left align-middle font-medium text-foreground"
+                        className="h-12 px-5 text-left align-middle font-medium text-muted-foreground"
                       >
                         { header.isPlaceholder
                           ? null
@@ -486,14 +492,14 @@ export function DataTable<TData, TValue> ( {
                       data-state={ row.getIsSelected() && "selected" }
                       onClick={ () => onRowClick && onRowClick( row.original ) }
                       className={ cn(
-                        "bg-sidebar transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
+                        "bg-card transition-colors hover:bg-muted/40 data-[state=selected]:bg-muted",
                         onRowClick ? "cursor-pointer" : ""
                       ) }
                     >
                       { row.getVisibleCells().map( ( cell ) => (
                         <TableCell
                           key={ cell.id }
-                          className="px-4 py-3 align-middle"
+                          className="px-5 py-4 align-middle"
                         >
                           { flexRender(
                             cell.column.columnDef.cell,

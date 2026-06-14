@@ -8,14 +8,38 @@ import {
 } from "@/components/ui/sidebar";
 import type { RootState } from "@/redux/store";
 import { useSelector } from "react-redux";
-import { HomeIcon } from "lucide-react";
+import { HomeIcon, TruckIcon } from "lucide-react";
 import {
+  PATH_ADMIN_DASHBOARD,
   PATH_DISPATCHER_DASHBOARD,
   PATH_MANAGER_DASHBOARD,
   PATH_SALE_DASHBOARD,
 } from "@/routes/path";
 import { ERole } from "@/types/enums/role.enum";
 import { NavMain } from "./nav-main";
+
+const adminRoutes = {
+  dashboard: {
+    mainTitle: "Dashboard",
+    items: [
+      {
+        title: "Quản lý",
+        url: PATH_ADMIN_DASHBOARD.root,
+        icon: HomeIcon,
+      },
+    ],
+  },
+  operations: {
+    mainTitle: "Vận hành",
+    items: [
+      {
+        title: "Xe tải",
+        url: PATH_ADMIN_DASHBOARD.vehicle.root,
+        icon: TruckIcon,
+      },
+    ],
+  },
+};
 
 const managerRoutes = {
   dashboard: {
@@ -34,11 +58,6 @@ const managerRoutes = {
       {
         title: "Lô hàng",
         url: PATH_MANAGER_DASHBOARD.shipment.root,
-        icon: HomeIcon,
-      },
-      {
-        title: "Xe tải",
-        url: "",
         icon: HomeIcon,
       },
       {
@@ -171,7 +190,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       {(() => {
         switch (role) {
           case ERole.Admin:
-            return null;
+            return (
+              <SidebarContent>
+                <NavMain content={adminRoutes.dashboard} />
+                <NavMain content={adminRoutes.operations} />
+              </SidebarContent>
+            );
 
           case ERole.Manager:
             return (

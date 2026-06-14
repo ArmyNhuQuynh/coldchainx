@@ -41,6 +41,15 @@ const ShipmentPage = Loadable(
 const ShipmentDetailPage = Loadable(
   lazy(() => import("@/pages/manager/shipment/shipment-detail"))
 );
+const VehiclePage = Loadable(
+  lazy(() => import("@/pages/admin/vehicle/list-vehicle/list-vehicle-page"))
+);
+const VehicleDetailPage = Loadable(
+  lazy(() => import("@/pages/admin/vehicle/detail-vehicle"))
+);
+const VehicleEditPage = Loadable(
+  lazy(() => import("@/pages/admin/vehicle/edit-vehicle"))
+);
 
 
 // const GeneralAppPage = Loadable(lazy(() => import("@/pages/general-app")));
@@ -90,12 +99,24 @@ export const AppRoutes = () =>
       ),
       children: [
         {
-          element: <Navigate to={PATH_ADMIN_DASHBOARD.general.app} replace />,
+          element: <Navigate to={PATH_ADMIN_DASHBOARD.vehicle.root} replace />,
           index: true,
         },
         {
           path: "app",
           // element: <GeneralAppPage />,
+        },
+        {
+          path: "vehicle",
+          element: <VehiclePage />,
+        },
+        {
+          path: "vehicle/:id",
+          element: <VehicleDetailPage />,
+        },
+        {
+          path: "vehicle/:id/edit",
+          element: <VehicleEditPage />,
         },
       ],
     },

@@ -19,4 +19,6 @@ export const API_SUFFIX = {
   AUTH_API: "/auth",
   // Orders
   ORDERS_API: "/orders",
+  // Vehicles
+  VEHICLES_API: "/vehicles",
 };
