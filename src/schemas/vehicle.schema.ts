@@ -79,7 +79,82 @@ export const VehicleUpdateRequestSchema = z.object({
   status:             VehicleStatusEnum.nullable().optional(),
 }).strict();
 
+// ===== FORM =====
+const nullableFormText = (message: string) =>
+  z
+    .string({ message })
+    .trim()
+    .transform((value) => (value.length ? value : null))
+    .nullable();
+
+const optionalFormNumber = (message: string) =>
+  z.number({ message }).finite({ message }).nullable();
+
+const requiredFormNumber = (message: string) =>
+  z
+    .number({ message })
+    .finite({ message })
+    .nullable()
+    .refine((value) => value !== null, { message });
+
+const positiveFormNumber = (message: string) =>
+  requiredFormNumber(message).refine(
+    (value) => value === null || value > 0,
+    { message }
+  );
+
+const currentYear = new Date().getFullYear();
+
+export const VehicleFormSchema = z
+  .object({
+    truckPlate: nullableFormText("Biển số xe không hợp lệ"),
+    brand: nullableFormText("Thương hiệu xe không hợp lệ"),
+    manufactureYear: optionalFormNumber("Năm sản xuất không hợp lệ").refine(
+      (value) =>
+        value === null ||
+        (Number.isInteger(value) && value >= 1900 && value <= currentYear + 1),
+      { message: "Năm sản xuất không hợp lệ" }
+    ),
+    chassisNumber: nullableFormText("Số khung không hợp lệ"),
+    engineNumber: nullableFormText("Số máy không hợp lệ"),
+    standardFuelLiters: optionalFormNumber(
+      "Định mức nhiên liệu không hợp lệ"
+    ).refine((value) => value === null || value >= 0, {
+      message: "Định mức nhiên liệu không hợp lệ",
+    }),
+    vehicleType: VehicleTypeEnum.nullable(),
+    maxWeight: positiveFormNumber("Tải trọng tối đa phải lớn hơn 0"),
+    maxCbm: positiveFormNumber("Thể tích tối đa phải lớn hơn 0"),
+    minTemp: requiredFormNumber("Nhiệt độ tối thiểu không hợp lệ"),
+    maxTemp: requiredFormNumber("Nhiệt độ tối đa không hợp lệ"),
+    status: VehicleStatusEnum.nullable(),
+  })
+  .refine(
+    (data) =>
+      data.minTemp === null ||
+      data.maxTemp === null ||
+      data.minTemp <= data.maxTemp,
+    {
+      message: "Nhiệt độ tối thiểu không được lớn hơn nhiệt độ tối đa",
+      path: ["minTemp"],
+    }
+  );
+
 // ===== EXPORT TYPES =====
 export type TVehicle              = z.infer<typeof VehicleSchema>;
 export type TVehicleCreateRequest = z.infer<typeof VehicleCreateRequestSchema>;
 export type TVehicleUpdateRequest = z.infer<typeof VehicleUpdateRequestSchema>;
+export type TVehicleFormValues = {
+  truckPlate: string | null;
+  brand: string | null;
+  manufactureYear: number | null;
+  chassisNumber: string | null;
+  engineNumber: string | null;
+  standardFuelLiters: number | null;
+  vehicleType: TVehicle["vehicleType"];
+  maxWeight: number | null;
+  maxCbm: number | null;
+  minTemp: number | null;
+  maxTemp: number | null;
+  status: TVehicle["status"];
+};

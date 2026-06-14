@@ -14,7 +14,7 @@ import type { TVehicle } from "@/schemas/vehicle.schema";
 import { getVehicleStatusLabel } from "@/types/enums/vehicle-status.enum";
 import { getVehicleTypeLabel } from "@/types/enums/vehicle-type.enum";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Eye, MoreHorizontal } from "lucide-react";
+import { Eye, Pencil } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const getVehicleStatusBadge = (status: string | number | null | undefined) => {
@@ -48,9 +48,20 @@ const ActionCell = ({ vehicle }: { vehicle: TVehicle }) => {
                 </Tooltip>
             </TooltipProvider>
 
-            <Button variant="ghost" size="icon">
-                <MoreHorizontal className="h-5 w-5" />
-            </Button>
+            <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => navigate(`${vehicle.vehicleId}/edit`)}
+                        >
+                            <Pencil className="h-5 w-5" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Chỉnh sửa xe</TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
         </div>
     );
 };

@@ -44,6 +44,9 @@ const ShipmentDetailPage = Loadable(
 const VehiclePage = Loadable(
   lazy(() => import("@/pages/admin/vehicle/list-vehicle/list-vehicle-page"))
 );
+const VehicleCreatePage = Loadable(
+  lazy(() => import("@/pages/admin/vehicle/create-vehicle"))
+);
 const VehicleDetailPage = Loadable(
   lazy(() => import("@/pages/admin/vehicle/detail-vehicle"))
 );
@@ -109,6 +112,10 @@ export const AppRoutes = () =>
         {
           path: "vehicle",
           element: <VehiclePage />,
+        },
+        {
+          path: "vehicle/new",
+          element: <VehicleCreatePage />,
         },
         {
           path: "vehicle/:id",

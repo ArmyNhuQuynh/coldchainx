@@ -3,6 +3,7 @@ import { CirclePlusIcon, Truck, TruckIcon, Wrench, CheckCircle } from "lucide-re
 import CustomButton from "@/components/button/custom-link-button";
 import { Card } from "@/components/ui/card";
 import { useVehicle } from "@/hooks/use-vehicle";
+import { PATH_ADMIN_DASHBOARD } from "@/routes/path";
 import {
   normalizeVehicleStatus,
   VEHICLE_STATUS,
@@ -52,7 +53,7 @@ const ListVehiclePage = () => {
           </p>
         </div>
         <CustomButton
-          linkUrl="/vehicles/create"
+          linkUrl={PATH_ADMIN_DASHBOARD.vehicle.create}
           functionName="Thêm xe"
           icon={CirclePlusIcon}
         />
