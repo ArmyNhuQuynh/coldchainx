@@ -92,7 +92,7 @@ const HeaderMain = () => {
 
 
     return (
-        <nav className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 sticky top-0 bg-sidebar/98 z-10">
+        <nav className="flex h-16 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 sticky top-0 z-10">
             <div className="flex items-center gap-2 px-4 justify-between w-full">
                 <div className="flex items-center gap-2">
                     {/* {shouldShowBack() && (
@@ -127,7 +127,7 @@ const HeaderMain = () => {
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="rounded-full bg-white"
+                                        className="rounded-full bg-card"
                                         onClick={toggleSidebar}
                                     >
                                         <span className="sr-only">Toggle sidebar</span>
@@ -144,7 +144,7 @@ const HeaderMain = () => {
                     <Separator orientation="vertical" className="h-5" />
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="rounded-full bg-white">
+                            <Button variant="ghost" size="icon" className="rounded-full bg-card">
                                 {/* <img className="size-7" src={ brandData?.data.data.pictureUrl || storeLogoImage || "https://s3-hcm5-r1.longvan.net/19429498-dimpos/0a8eae54-e987-4205-9fb8-c0e3b5266f9f.jpg" } /> */}
                                 <span className="sr-only">Toggle theme</span>
                             </Button>

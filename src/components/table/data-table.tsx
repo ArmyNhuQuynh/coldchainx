@@ -329,7 +329,7 @@ export function DataTable<TData, TValue> ( {
                 return (
                   <div
                     key={ search.id }
-                    className="relative flex-1 max-w-sm bg-sidebar rounded-lg"
+                    className="relative flex-1 max-w-sm bg-card rounded-lg"
                   >
                     <Input
                       placeholder={ search.searchPlaceholder || "Tìm kiếm..." }
@@ -382,7 +382,7 @@ export function DataTable<TData, TValue> ( {
                   <div className="text-sm font-medium text-muted-foreground">
                     { search.searchPlaceholder || "Tìm kiếm" }
                   </div>
-                  <div className="bg-sidebar rounded-lg">
+                  <div className="bg-card rounded-lg">
                     <Select
                       value={ search.value as string }
                       onValueChange={ ( value ) =>
