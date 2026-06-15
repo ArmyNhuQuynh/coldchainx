@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/sidebar";
 import type { RootState } from "@/redux/store";
 import { useSelector } from "react-redux";
-import { HomeIcon, TruckIcon } from "lucide-react";
+import { HomeIcon, IdCard, TruckIcon } from "lucide-react";
 import {
   PATH_ADMIN_DASHBOARD,
   PATH_DISPATCHER_DASHBOARD,
@@ -36,6 +36,11 @@ const adminRoutes = {
         title: "Xe tải",
         url: PATH_ADMIN_DASHBOARD.vehicle.root,
         icon: TruckIcon,
+      },
+      {
+        title: "Tài xế",
+        url: PATH_ADMIN_DASHBOARD.driver.root,
+        icon: IdCard,
       },
     ],
   },

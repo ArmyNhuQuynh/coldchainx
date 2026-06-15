@@ -51,6 +51,11 @@ export const PATH_ADMIN_DASHBOARD = {
     detail: (id: string) => path(ROOTS_ADMIN_DASHBOARD, `/vehicle/${id}`),
     edit: (id: string) => path(ROOTS_ADMIN_DASHBOARD, `/vehicle/${id}/edit`),
   },
+
+  driver: {
+    root: path(ROOTS_ADMIN_DASHBOARD, "/driver"),
+    detail: (id: string) => path(ROOTS_ADMIN_DASHBOARD, `/driver/${id}`),
+  },
 };
 
 export const PATH_SALE_DASHBOARD = {

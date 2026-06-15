@@ -21,4 +21,6 @@ export const API_SUFFIX = {
   ORDERS_API: "/orders",
   // Vehicles
   VEHICLES_API: "/vehicles",
+  // Drivers
+  DRIVERS_API: "/drivers",
 };

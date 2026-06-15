@@ -53,6 +53,12 @@ const VehicleDetailPage = Loadable(
 const VehicleEditPage = Loadable(
   lazy(() => import("@/pages/admin/vehicle/edit-vehicle"))
 );
+const DriverPage = Loadable(
+  lazy(() => import("@/pages/admin/driver/list-driver"))
+);
+const DriverDetailPage = Loadable(
+  lazy(() => import("@/pages/admin/driver/detail-driver"))
+);
 
 
 // const GeneralAppPage = Loadable(lazy(() => import("@/pages/general-app")));
@@ -124,6 +130,14 @@ export const AppRoutes = () =>
         {
           path: "vehicle/:id/edit",
           element: <VehicleEditPage />,
+        },
+        {
+          path: "driver",
+          element: <DriverPage />,
+        },
+        {
+          path: "driver/:id",
+          element: <DriverDetailPage />,
         },
       ],
     },
