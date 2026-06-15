@@ -169,3 +169,43 @@ export const VehicleSelectField = ({
     />
   );
 };
+
+export const VehicleFileField = ({
+  control,
+  name,
+  label,
+  placeholder,
+  description,
+}: FieldProps) => {
+  return (
+    <FormField
+      control={control}
+      name={name}
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>{label}</FormLabel>
+          <FormControl>
+            <Input
+              type="file"
+              accept="image/*"
+              className="h-11 rounded-xl bg-background/60 file:mr-4 file:border-0 file:bg-transparent file:text-sm file:font-medium"
+              aria-label={placeholder ?? label}
+              onChange={(event) => {
+                field.onChange(event.target.files?.[0] ?? null);
+              }}
+              onBlur={field.onBlur}
+              name={field.name}
+              ref={field.ref}
+            />
+          </FormControl>
+          {field.value instanceof File ? (
+            <FormDescription>{field.value.name}</FormDescription>
+          ) : (
+            description && <FormDescription>{description}</FormDescription>
+          )}
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  );
+};

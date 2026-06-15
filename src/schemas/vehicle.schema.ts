@@ -61,6 +61,11 @@ export const VehicleCreateRequestSchema = z.object({
   minTemp:            z.number({ message: "Nhiệt độ tối thiểu không hợp lệ" }),
   maxTemp:            z.number({ message: "Nhiệt độ tối đa không hợp lệ" }),
   status:             VehicleStatusEnum.nullable().optional(),
+  vehicleImage:       z.custom<File | null>(
+    (value) =>
+      value == null || (typeof File !== "undefined" && value instanceof File),
+    { message: "Ảnh xe không hợp lệ" }
+  ).optional(),
 }).strict();
 
 // ===== UPDATE REQUEST =====
@@ -128,6 +133,12 @@ export const VehicleFormSchema = z
     minTemp: requiredFormNumber("Nhiệt độ tối thiểu không hợp lệ"),
     maxTemp: requiredFormNumber("Nhiệt độ tối đa không hợp lệ"),
     status: VehicleStatusEnum.nullable(),
+    vehicleImage: z.custom<File | null>(
+      (value) =>
+        value === null ||
+        (typeof File !== "undefined" && value instanceof File),
+      { message: "Ảnh xe không hợp lệ" }
+    ),
   })
   .refine(
     (data) =>
@@ -157,4 +168,5 @@ export type TVehicleFormValues = {
   minTemp: number | null;
   maxTemp: number | null;
   status: TVehicle["status"];
+  vehicleImage: File | null;
 };

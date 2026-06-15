@@ -1,7 +1,6 @@
 import { apiRequest } from "@/lib/http";
 import type {
   TVehicle,
-  TVehicleCreateRequest,
   TVehicleUpdateRequest,
 } from "@/schemas/vehicle.schema";
 import type { BaseResponse } from "@/types/response.type";
@@ -19,7 +18,7 @@ const getVehicleById = async (id: string) =>
     `${API_SUFFIX.VEHICLES_API}/${id}`
   );
 
-const createVehicle = async (data: TVehicleCreateRequest) =>
+const createVehicle = async (data: FormData) =>
   await apiRequest.baseApi.post<BaseResponse<TVehicle>>(
     API_SUFFIX.VEHICLES_API,
     data

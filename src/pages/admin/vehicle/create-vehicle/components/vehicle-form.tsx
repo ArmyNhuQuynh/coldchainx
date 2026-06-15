@@ -6,10 +6,11 @@ import {
   VEHICLE_STATUS,
 } from "@/types/enums/vehicle-status.enum";
 import { getVehicleTypeLabel, VEHICLE_TYPE } from "@/types/enums/vehicle-type.enum";
-import { Gauge, Save, Snowflake, Truck } from "lucide-react";
+import { Gauge, ImagePlus, Save, Snowflake, Truck } from "lucide-react";
 import type { BaseSyntheticEvent } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import {
+  VehicleFileField,
   VehicleNumberField,
   VehicleSelectField,
   VehicleTextField,
@@ -155,6 +156,24 @@ const VehicleForm = ({
             unit="°C"
           />
         </VehicleFormSection>
+
+        {mode === "create" && (
+          <VehicleFormSection
+            icon={ImagePlus}
+            title="Ảnh xe"
+            description="Ảnh nhận diện xe khi tạo hồ sơ mới."
+          >
+            <div className="md:col-span-2">
+              <VehicleFileField
+                control={form.control}
+                name="vehicleImage"
+                label="Ảnh xe"
+                placeholder="Chọn ảnh xe"
+                description="Chưa chọn ảnh"
+              />
+            </div>
+          </VehicleFormSection>
+        )}
 
         <div className="flex flex-col-reverse gap-3 rounded-2xl border bg-card p-4 shadow-sm sm:flex-row sm:items-center sm:justify-end">
           <Button

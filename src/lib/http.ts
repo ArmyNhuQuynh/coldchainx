@@ -40,12 +40,8 @@ const request = (apiUrl: string): AxiosInstance => {
 
     if (method === "put" || method === "post" || method === "patch") {
       if (data instanceof FormData) {
-        // Nếu body là FormData, đặt Content-Type là multipart/form-data
-        Object.assign(options.headers!, {
-          "Content-Type": "multipart/form-data",
-        });
+        delete options.headers?.["Content-Type"];
       } else {
-        // Nếu không, giữ Content-Type là application/json
         Object.assign(options.headers!, {
           "Content-Type": "application/json;charset=UTF-8",
         });

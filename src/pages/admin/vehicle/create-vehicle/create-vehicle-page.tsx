@@ -1,9 +1,11 @@
-import { useVehicle, useVehicleForm } from "@/hooks/use-vehicle";
+import { useVehicleForm } from "@/hooks/use-vehicle-form";
+import { useVehicle } from "@/hooks/use-vehicle";
 import { PATH_ADMIN_DASHBOARD } from "@/routes/path";
-import type {
-  TVehicleCreateRequest,
-  TVehicleUpdateRequest,
-} from "@/schemas/vehicle.schema";
+import {
+  toVehicleCreateFormData,
+  toVehicleCreateRequest,
+} from "@/schemas/vehicle.mapper";
+import type { TVehicleFormValues } from "@/schemas/vehicle.schema";
 import { ArrowLeft, CirclePlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -13,10 +15,11 @@ const CreateVehiclePage = () => {
   const navigate = useNavigate();
   const { createVehicle } = useVehicle();
 
-  const handleSubmit = async (
-    payload: TVehicleCreateRequest | TVehicleUpdateRequest
-  ) => {
-    const response = await createVehicle.mutateAsync(payload as TVehicleCreateRequest);
+  const handleSubmit = async (values: TVehicleFormValues) => {
+    const request = toVehicleCreateRequest(values);
+    const response = await createVehicle.mutateAsync(
+      toVehicleCreateFormData(request)
+    );
     const vehicleId = response.data.data?.vehicleId;
 
     toast.success("Tạo xe thành công");

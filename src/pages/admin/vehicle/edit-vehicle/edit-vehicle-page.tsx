@@ -1,9 +1,8 @@
-import { useVehicle, useVehicleForm } from "@/hooks/use-vehicle";
+import { useVehicleForm } from "@/hooks/use-vehicle-form";
+import { useVehicle } from "@/hooks/use-vehicle";
 import { PATH_ADMIN_DASHBOARD } from "@/routes/path";
-import type {
-  TVehicleCreateRequest,
-  TVehicleUpdateRequest,
-} from "@/schemas/vehicle.schema";
+import { toVehicleUpdateRequest } from "@/schemas/vehicle.mapper";
+import type { TVehicleFormValues } from "@/schemas/vehicle.schema";
 import { ArrowLeft, Pencil } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -17,14 +16,15 @@ const VehicleEditPage = () => {
 
   const vehicle = data?.data.data;
 
-  const handleSubmit = async (
-    payload: TVehicleCreateRequest | TVehicleUpdateRequest
-  ) => {
+  const handleSubmit = async (values: TVehicleFormValues) => {
     if (!id) {
       return;
     }
 
-    await updateVehicle.mutateAsync({ id, data: payload as TVehicleUpdateRequest });
+    await updateVehicle.mutateAsync({
+      id,
+      data: toVehicleUpdateRequest(values),
+    });
     toast.success("Cập nhật xe thành công");
     navigate(PATH_ADMIN_DASHBOARD.vehicle.detail(id));
   };
