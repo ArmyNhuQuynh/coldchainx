@@ -42,9 +42,13 @@ const request = (apiUrl: string): AxiosInstance => {
       if (data instanceof FormData) {
         delete options.headers?.["Content-Type"];
       } else {
-        Object.assign(options.headers!, {
-          "Content-Type": "application/json;charset=UTF-8",
-        });
+        const contentType = options.headers?.get?.("Content-Type");
+
+        if (!contentType) {
+          Object.assign(options.headers!, {
+            "Content-Type": "application/json;charset=UTF-8",
+          });
+        }
       }
     }
 
