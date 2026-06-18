@@ -10,12 +10,12 @@ const OrderDetailHeader = ({ order }: Props) => {
     const { label, className } = getOrderStatusLabel(order.status);
 
     return (
-        <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-2xl font-semibold">Chi tiết lô hàng</h1>
-            <span className="text-2xl font-bold text-primary">{order.trackingCode}</span>
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <h1 className="text-lg font-semibold sm:text-xl">Chi tiết lô hàng</h1>
+            <span className="max-w-full break-all text-base font-bold text-primary sm:text-lg">{order.trackingCode}</span>
             <Badge className={`${className} hover:opacity-90`}>{label}</Badge>
-            <p className="text-muted-foreground w-full mt-1">
-                {order.customerName} • {order.itemName}
+            <p className="mt-0.5 w-full text-sm text-muted-foreground">
+                {order.customerName ?? "Chưa có khách hàng"} • {order.itemName}
             </p>
         </div>
     );

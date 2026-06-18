@@ -1,14 +1,13 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { TOrder } from "@/schemas/order.schema";
+import { resolveFileUrl } from "@/lib/file-url";
 import { FileImage } from "lucide-react";
 import { format } from "date-fns";
 
 type Props = {
     order: TOrder;
 };
-
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const OrderDocuments = ({ order }: Props) => {
     if (order.documents.length === 0) {
@@ -36,7 +35,7 @@ const OrderDocuments = ({ order }: Props) => {
                     {order.documents.map((doc) => (
                         <div key={doc.docId} className="flex items-start gap-4">
                             <img
-                                src={`${BASE_URL}${doc.imageUrl}`}
+                                src={resolveFileUrl(doc.imageUrl)}
                                 alt={doc.docType}
                                 className="w-24 h-24 object-cover rounded-lg border"
                                 onError={(e) => {
@@ -59,10 +58,12 @@ const OrderDocuments = ({ order }: Props) => {
                                         ? "Chờ duyệt"
                                         : doc.status === "APPROVED"
                                             ? "Đã duyệt"
-                                            : "Từ chối"}
+                                            : doc.status ?? "Chưa cập nhật"}
                                 </Badge>
                                 <p className="text-xs text-muted-foreground">
-                                    Tải lên: {format(new Date(doc.createdAt), "dd/MM/yyyy")}
+                                    Tải lên: {doc.createdAt
+                                        ? format(new Date(doc.createdAt), "dd/MM/yyyy")
+                                        : "—"}
                                 </p>
                             </div>
                         </div>

@@ -16,10 +16,10 @@ const WeightCard = ({
     isActual?: boolean;
 }) => (
     <Card>
-        <CardContent className="pt-4">
-            <p className="text-xs uppercase text-muted-foreground mb-1">{label}</p>
-            <p className={`text-2xl font-bold ${isActual && value ? "text-green-600" : ""}`}>
-                {value ?? <span className="text-muted-foreground text-base font-normal italic">Chưa cập nhật</span>}
+        <CardContent className="p-3.5">
+            <p className="mb-1 text-[11px] uppercase text-muted-foreground">{label}</p>
+            <p className={`text-lg font-bold ${isActual && value ? "text-green-600" : ""}`}>
+                {value ?? <span className="text-sm font-normal italic text-muted-foreground">Chưa cập nhật</span>}
             </p>
         </CardContent>
     </Card>
@@ -28,12 +28,12 @@ const WeightCard = ({
 const OrderWeightSection = ({ order }: Props) => {
     return (
         <Card>
-            <CardHeader className="font-semibold text-lg pb-2 flex flex-row items-center gap-2">
+            <CardHeader className="flex flex-row items-center gap-2 p-4 pb-2 text-base font-semibold">
                 <Weight className="h-5 w-5" />
                 Khối lượng & Kích thước
             </CardHeader>
-            <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <CardContent className="p-4 pt-2">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
                     <WeightCard
                         label="Expected Weight"
                         value={order.expectedWeightKg ? `${order.expectedWeightKg} kg` : null}

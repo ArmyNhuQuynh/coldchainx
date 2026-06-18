@@ -9,34 +9,30 @@ type Props = {
 const OrderDestination = ({ order }: Props) => {
   const { destination } = order;
 
+  if (!destination) {
+    return (
+      <Card>
+        <CardHeader className="flex flex-row items-center gap-2 p-4 pb-2 text-base font-semibold">
+          <MapPin className="h-5 w-5" />
+          Điểm giao hàng
+        </CardHeader>
+        <CardContent className="p-4 pt-2">
+          <p className="text-muted-foreground italic text-sm">Chưa cập nhật điểm giao hàng</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card>
-      <CardHeader className="font-semibold text-lg pb-2 flex flex-row items-center gap-2">
+      <CardHeader className="flex flex-row items-center gap-2 p-4 pb-2 text-base font-semibold">
         <MapPin className="h-5 w-5" />
         Điểm giao hàng
       </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="flex justify-between text-sm">
+      <CardContent className="space-y-2 p-4 pt-2">
+        <div className="flex items-start justify-between gap-3 text-sm">
           <span className="text-muted-foreground">Address</span>
-          <span className="font-semibold">{destination.address}</span>
-        </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground"># Location ID</span>
-          <span className="font-medium">{destination.locationId}</span>
-        </div>
-        <div className="grid grid-cols-2 gap-4 mt-2">
-          <Card>
-            <CardContent className="pt-4">
-              <p className="text-xs uppercase text-muted-foreground mb-1">Latitude</p>
-              <p className="text-xl font-bold text-primary">{destination.latitude}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4">
-              <p className="text-xs uppercase text-muted-foreground mb-1">Longitude</p>
-              <p className="text-xl font-bold text-primary">{destination.longitude}</p>
-            </CardContent>
-          </Card>
+          <span className="text-right font-semibold">{destination.address}</span>
         </div>
       </CardContent>
     </Card>

@@ -14,9 +14,10 @@ import { toast } from "sonner";
 
 type Props = {
   orderId: string;
+  onApproved?: (quoteId: string) => void;
 };
 
-const OrderReviewActions = ({ orderId }: Props) => {
+const OrderReviewActions = ({ orderId, onApproved }: Props) => {
   const { reviewOrder } = useOrder();
   const [openReject, setOpenReject] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
@@ -25,8 +26,11 @@ const OrderReviewActions = ({ orderId }: Props) => {
     reviewOrder.mutate(
       { id: orderId, data: { action: "APPROVE", rejectReason: null } },
       {
-        onSuccess: () => {
-          toast.success("Đã duyệt đơn hàng thành công!");
+        onSuccess: (response) => {
+          if (response.data.quoteId) {
+            onApproved?.(response.data.quoteId);
+          }
+          toast.success(response.message || "Đã duyệt đơn hàng thành công!");
         },
         onError: () => {
           toast.error("Duyệt đơn hàng thất bại, thử lại sau!");
@@ -39,8 +43,8 @@ const OrderReviewActions = ({ orderId }: Props) => {
     reviewOrder.mutate(
       { id: orderId, data: { action: "REJECT", rejectReason } },
       {
-        onSuccess: () => {
-          toast.success("Đã từ chối đơn hàng!");
+        onSuccess: (response) => {
+          toast.success(response.message || "Đã từ chối đơn hàng!");
           setOpenReject(false);
           setRejectReason("");
         },

@@ -10,47 +10,49 @@ type Props = {
 
 const OrderInfoCards = ({ order }: Props) => {
     const { label: categoryLabel } = getOrderCategoryLabel(order.category);
-    const formattedDate = format(new Date(order.createdAt), "dd/MM HH:mm");
+    const formattedDate = order.createdAt
+        ? format(new Date(order.createdAt), "dd/MM HH:mm")
+        : "—";
 
     return (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <Card>
-                <CardContent className="pt-4">
-                    <div className="flex items-center gap-2 text-muted-foreground text-xs uppercase mb-2">
+                <CardContent className="p-3.5">
+                    <div className="mb-1.5 flex items-center gap-2 text-[11px] uppercase text-muted-foreground">
                         <Package className="h-4 w-4" />
                         Loại hàng
                     </div>
-                    <p className="font-semibold">{categoryLabel}</p>
+                    <p className="text-sm font-semibold">{categoryLabel}</p>
                 </CardContent>
             </Card>
 
             <Card>
-                <CardContent className="pt-4">
-                    <div className="flex items-center gap-2 text-muted-foreground text-xs uppercase mb-2">
+                <CardContent className="p-3.5">
+                    <div className="mb-1.5 flex items-center gap-2 text-[11px] uppercase text-muted-foreground">
                         <MapPin className="h-4 w-4" />
                         Tuyến đường
                     </div>
-                    <p className="font-semibold">{order.destination.address}</p>
+                    <p className="line-clamp-2 text-sm font-semibold">{order.destination?.address ?? "—"}</p>
                 </CardContent>
             </Card>
 
             <Card>
-                <CardContent className="pt-4">
-                    <div className="flex items-center gap-2 text-muted-foreground text-xs uppercase mb-2">
+                <CardContent className="p-3.5">
+                    <div className="mb-1.5 flex items-center gap-2 text-[11px] uppercase text-muted-foreground">
                         <Thermometer className="h-4 w-4" />
                         Dải nhiệt
                     </div>
-                    <p className="font-semibold">{order.tempCondition}°C</p>
+                    <p className="text-sm font-semibold">{order.tempCondition}°C</p>
                 </CardContent>
             </Card>
 
             <Card>
-                <CardContent className="pt-4">
-                    <div className="flex items-center gap-2 text-muted-foreground text-xs uppercase mb-2">
+                <CardContent className="p-3.5">
+                    <div className="mb-1.5 flex items-center gap-2 text-[11px] uppercase text-muted-foreground">
                         <Calendar className="h-4 w-4" />
                         Ngày lấy hàng
                     </div>
-                    <p className="font-semibold">{formattedDate}</p>
+                    <p className="text-sm font-semibold">{formattedDate}</p>
                 </CardContent>
             </Card>
         </div>

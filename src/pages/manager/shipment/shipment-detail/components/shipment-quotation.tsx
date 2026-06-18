@@ -1,35 +1,161 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { useQuotation } from "@/hooks/use-quotation";
+import { handleApiError } from "@/lib/error";
 import type { TOrder } from "@/schemas/order.schema";
-import { DollarSign } from "lucide-react";
+import type { TQuotation, TUpdateQuotation } from "@/schemas/quotation.schema";
+import { QUOTATION_STATUS } from "@/types/enums/quotation-status.enum";
+import { FileText, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import ShipmentQuotationDialog from "./shipment-quotation-dialog";
 
 type Props = {
   order: TOrder;
+  preferredQuoteId?: string;
 };
 
-const OrderQuotation = ({ order }: Props) => {
+const selectActiveQuotation = (
+  quotations: TQuotation[],
+  preferredQuoteId?: string
+) => {
   return (
-    <Card>
-      <CardHeader className="font-semibold text-lg pb-2 flex flex-row items-center gap-2">
-        <DollarSign className="h-5 w-5" />
-        Báo giá
-      </CardHeader>
-      <CardContent>
-        {order.quotations.length === 0 ? (
-          <p className="text-muted-foreground italic text-sm">Chưa có báo giá</p>
-        ) : (
-          <div className="space-y-3">
-            {order.quotations.map((q, idx) => (
-              <div key={q.quotationId ?? idx} className="flex justify-between text-sm border-b pb-2 last:border-0">
-                <span className="text-muted-foreground">VAS Amount</span>
-                <span className="font-semibold">
-                  {q.vasAmount?.toLocaleString("vi-VN") ?? "—"}đ
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+    quotations.find((quotation) => quotation.quoteId === preferredQuoteId) ??
+    quotations.find((quotation) => quotation.status === QUOTATION_STATUS.ACCEPTED) ??
+    quotations.find((quotation) => quotation.status === QUOTATION_STATUS.SENT) ??
+    quotations.find((quotation) => quotation.status === QUOTATION_STATUS.DRAFT) ??
+    quotations[0]
+  );
+};
+
+const OrderQuotation = ({ order, preferredQuoteId }: Props) => {
+  const { getQuotationsByOrder, updateQuotation, sendQuotation } = useQuotation();
+  const [open, setOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [sendConfirmationOpen, setSendConfirmationOpen] = useState(false);
+
+  const { data, isLoading, isFetching, isError } = getQuotationsByOrder(
+    order.orderId,
+    { pageNumber: 1, pageSize: 100 },
+    open
+  );
+
+  const quotations = data?.data.data ?? [];
+  const activeQuotation = useMemo(
+    () => selectActiveQuotation(quotations, preferredQuoteId),
+    [preferredQuoteId, quotations]
+  );
+  const hasQuotation = !!preferredQuoteId || order.quotations.length > 0;
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    setOpen(nextOpen);
+    if (!nextOpen) {
+      setIsEditing(false);
+      setSendConfirmationOpen(false);
+    }
+  };
+
+  const handleUpdate = async (values: TUpdateQuotation) => {
+    if (!activeQuotation) return;
+
+    try {
+      await updateQuotation.mutateAsync({
+        quoteId: activeQuotation.quoteId,
+        data: values,
+      });
+      setIsEditing(false);
+      toast.success("Cập nhật báo giá thành công");
+    } catch (error) {
+      handleApiError(error);
+    }
+  };
+
+  const handleSend = async () => {
+    if (!activeQuotation) return;
+
+    try {
+      const response = await sendQuotation.mutateAsync(activeQuotation.quoteId);
+      setSendConfirmationOpen(false);
+      toast.success(response.message || "Gửi báo giá thành công");
+    } catch (error) {
+      handleApiError(error);
+    }
+  };
+
+  return (
+    <>
+      <Button
+        variant="outline"
+        className="h-9 w-full justify-start gap-2 text-sm"
+        disabled={!hasQuotation}
+        onClick={() => setOpen(true)}
+      >
+        <FileText className="h-4 w-4" />
+        {hasQuotation ? "Xem bảng báo giá chi tiết" : "Chưa có báo giá"}
+      </Button>
+
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogContent className="max-h-[84vh] w-[calc(100vw-1.5rem)] overflow-y-auto p-4 sm:max-w-2xl sm:p-5">
+          {isLoading && !activeQuotation ? (
+            <div className="flex min-h-40 items-center justify-center text-sm text-muted-foreground">
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              Đang tải báo giá...
+            </div>
+          ) : isError ? (
+            <div className="py-10 text-center text-sm text-destructive">
+              Không thể tải thông tin báo giá
+            </div>
+          ) : !activeQuotation ? (
+            <div className="py-10 text-center text-sm text-muted-foreground">
+              Không tìm thấy báo giá của đơn hàng
+            </div>
+          ) : (
+            <ShipmentQuotationDialog
+              quotation={activeQuotation}
+              isEditing={isEditing}
+              isRefreshing={isFetching}
+              isUpdating={updateQuotation.isPending}
+              isSending={sendQuotation.isPending}
+              onEdit={() => setIsEditing(true)}
+              onCancelEdit={() => setIsEditing(false)}
+              onUpdate={handleUpdate}
+              onSend={() => setSendConfirmationOpen(true)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={sendConfirmationOpen} onOpenChange={setSendConfirmationOpen}>
+        <DialogContent className="w-[calc(100vw-1.5rem)] p-4 sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Gửi báo giá cho khách hàng?</DialogTitle>
+            <DialogDescription>
+              Sau khi gửi, báo giá sẽ chuyển sang trạng thái SENT và không thể chỉnh sửa.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setSendConfirmationOpen(false)}
+              disabled={sendQuotation.isPending}
+            >
+              Hủy
+            </Button>
+            <Button onClick={handleSend} disabled={sendQuotation.isPending}>
+              {sendQuotation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Xác nhận gửi
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 

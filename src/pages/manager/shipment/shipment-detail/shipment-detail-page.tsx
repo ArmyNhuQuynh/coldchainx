@@ -9,15 +9,21 @@ import OrderWeightSection from "./components/shipment-weight-section";
 import OrderDocuments from "./components/shipment-document";
 import OrderReviewActions from "./components/shipment-review-action";
 import { ORDER_STATUS } from "@/types/enums/order-status.enum";
+import type { RootState } from "@/redux/store";
+import { useSelector } from "react-redux";
+import { useState } from "react";
 
 
 const OrderDetailPage = () => {
     const { id } = useParams<{ id: string }>();
     const { getOrderById } = useOrder();
+    const role = useSelector((state: RootState) => state.user.role);
+    const canReviewOrder = role === "Admin" || role === "Sale" || role === "Dispatcher";
+    const [preferredQuoteId, setPreferredQuoteId] = useState<string>();
 
     const { data, isLoading } = getOrderById(id!);
 
-    const order = data?.data.data;
+    const order = data?.data;
 
     if (isLoading) {
         return (
@@ -36,12 +42,15 @@ const OrderDetailPage = () => {
     }
 
     return (
-        <div className="space-y-6">
+        <div className="mx-auto w-full max-w-7xl space-y-4">
             {/* Header + Review Actions */}
-            <div className="flex items-start justify-between flex-wrap gap-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
                 <OrderDetailHeader order={order} />
-                {order.status === ORDER_STATUS.PENDING_REVIEW && (
-                    <OrderReviewActions orderId={order.orderId} />
+                {canReviewOrder && order.status === ORDER_STATUS.PENDING_REVIEW && (
+                    <OrderReviewActions
+                        orderId={order.orderId}
+                        onApproved={setPreferredQuoteId}
+                    />
                 )}
             </div>
 
@@ -49,13 +58,16 @@ const OrderDetailPage = () => {
             <OrderInfoCards order={order} />
 
             {/* Detail info + Destination + Quotation */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2">
+            <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+                <div className="xl:col-span-2">
                     <OrderDetailInfo order={order} />
                 </div>
-                <div className="space-y-6">
+                <div className="space-y-4">
                     <OrderDestination order={order} />
-                    <OrderQuotation order={order} />
+                    <OrderQuotation
+                        order={order}
+                        preferredQuoteId={preferredQuoteId}
+                    />
                 </div>
             </div>
 

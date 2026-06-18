@@ -95,7 +95,7 @@ export const columns: ColumnDef<TOrder>[] = [
             createFormattedHeader("Tuyến đường", column, { align: "left" }),
 
         cell: ({ row }) => {
-            const address = row.original.destination.address;
+            const address = row.original.destination?.address ?? "—";
 
             return createFormattedCell(address, {
                 align: "left",
@@ -132,8 +132,10 @@ export const columns: ColumnDef<TOrder>[] = [
             createFormattedHeader("Lấy hàng", column, { align: "center" }),
 
         cell: ({ row }) => {
-            const createdAt = row.getValue("createdAt") as string;
-            const formatted = format(new Date(createdAt), "dd/MM HH:mm");
+            const createdAt = row.getValue("createdAt") as string | null;
+            const formatted = createdAt
+                ? format(new Date(createdAt), "dd/MM HH:mm")
+                : "—";
 
             return createFormattedCell(formatted, { align: "center" });
         },
