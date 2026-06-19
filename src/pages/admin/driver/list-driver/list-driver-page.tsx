@@ -4,7 +4,7 @@ import {
   DRIVER_STATUS,
   normalizeDriverStatus,
 } from "@/types/enums/driver-status.enum";
-import { BadgeCheck, IdCard, Power, UserCheck, Users, WifiOff } from "lucide-react";
+import { BadgeCheck, FileWarning, IdCard, Power, UserCheck, Users } from "lucide-react";
 import DriverTable from "./components/driver-table";
 
 const ListDriverPage = () => {
@@ -22,7 +22,7 @@ const ListDriverPage = () => {
     {
       title: "Sẵn sàng",
       value: drivers.filter(
-        (driver) => normalizeDriverStatus(driver.status) === DRIVER_STATUS.AVAILABLE
+        (driver) => normalizeDriverStatus(driver.status) === DRIVER_STATUS.ACTIVE
       ).length,
       color: "text-green-500",
       icon: UserCheck,
@@ -36,12 +36,13 @@ const ListDriverPage = () => {
       icon: BadgeCheck,
     },
     {
-      title: "Ngoại tuyến",
+      title: "Thiếu GPLX hợp lệ",
       value: drivers.filter(
-        (driver) => normalizeDriverStatus(driver.status) === DRIVER_STATUS.OFFLINE
+        (driver) =>
+          normalizeDriverStatus(driver.status) === DRIVER_STATUS.SUSPENDED_DOCS
       ).length,
       color: "text-orange-500",
-      icon: WifiOff,
+      icon: FileWarning,
     },
     {
       title: "Ngừng hoạt động",

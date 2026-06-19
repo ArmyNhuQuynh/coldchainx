@@ -36,7 +36,7 @@ const ListVehiclePage = () => {
     },
     {
       title: "Bảo trì",
-      value: vehicles.filter((v) => normalizeVehicleStatus(v.status) === VEHICLE_STATUS.UNDER_MAINTENANCE).length,
+      value: vehicles.filter((v) => normalizeVehicleStatus(v.status) === VEHICLE_STATUS.MAINTENANCE).length,
       color: "text-orange-500",
       icon: Wrench,
     },

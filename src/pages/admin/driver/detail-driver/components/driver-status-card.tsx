@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import type { TDriver } from "@/schemas/driver.schema";
 import { getDriverStatusLabel } from "@/types/enums/driver-status.enum";
-import { Activity, CalendarClock, Hash, IdCard, type LucideIcon } from "lucide-react";
+import { Activity, Hash, IdCard, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
 type Props = {
@@ -17,23 +17,6 @@ type StatusRowData = {
 
 const hasValue = (value: unknown) =>
   value !== null && value !== undefined && String(value).trim() !== "";
-
-const formatDateTime = (value: string) => {
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return date.toLocaleString("vi-VN", {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-};
 
 const compactRows = (rows: Array<StatusRowData | null>) =>
   rows.filter((row): row is StatusRowData => row !== null);
@@ -61,13 +44,6 @@ const DriverStatusCard = ({ driver }: Props) => {
           value: <Badge className={status.className}>{status.label}</Badge>,
         }
       : null,
-    hasValue(driver.createdAt)
-      ? {
-          icon: CalendarClock,
-          label: "Ngày tạo",
-          value: formatDateTime(driver.createdAt!),
-        }
-      : null,
     hasValue(driver.driverId)
       ? {
           icon: Hash,
@@ -78,7 +54,7 @@ const DriverStatusCard = ({ driver }: Props) => {
     {
       icon: IdCard,
       label: "Số giấy phép",
-      value: driver.driverLicenses?.length ?? 0,
+      value: driver.licenses.length,
     },
   ]);
 

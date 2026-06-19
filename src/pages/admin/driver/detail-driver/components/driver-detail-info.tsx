@@ -1,12 +1,14 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import type { TDriver, TDriverLicense } from "@/schemas/driver.schema";
 import {
-  AtSign,
   Calendar,
+  CalendarDays,
+  Contact,
   Fingerprint,
   Hash,
   IdCard,
   Mail,
+  Phone,
   User,
   type LucideIcon,
 } from "lucide-react";
@@ -47,7 +49,7 @@ const compactRows = (rows: Array<InfoRowData | null>) =>
   rows.filter((row): row is InfoRowData => row !== null);
 
 const getPrimaryLicense = (driver: TDriver): TDriverLicense | null =>
-  driver.driverLicenses?.[0] ?? null;
+  driver.licenses[0] ?? null;
 
 const InfoRow = ({ icon: Icon, label, value }: InfoRowData) => (
   <div className="flex items-center justify-between gap-4 py-3 border-b last:border-0">
@@ -93,14 +95,20 @@ const DriverDetailInfo = ({ driver }: Props) => {
           value: <span className="text-primary font-semibold">{driver.fullName}</span>,
         }
       : null,
-    hasValue(driver.username)
-      ? { icon: AtSign, label: "Tài khoản", value: driver.username }
-      : null,
     hasValue(driver.email)
       ? { icon: Mail, label: "Email", value: driver.email }
       : null,
     hasValue(driver.dateOfBirth)
       ? { icon: Calendar, label: "Ngày sinh", value: formatDate(driver.dateOfBirth) }
+      : null,
+    hasValue(driver.identityNumber)
+      ? { icon: Contact, label: "Số CCCD", value: driver.identityNumber }
+      : null,
+    hasValue(driver.phoneNumber)
+      ? { icon: Phone, label: "Số điện thoại", value: driver.phoneNumber }
+      : null,
+    hasValue(driver.joinDate)
+      ? { icon: CalendarDays, label: "Ngày vào làm", value: formatDate(driver.joinDate) }
       : null,
     hasValue(driver.userId)
       ? { icon: Fingerprint, label: "Mã người dùng", value: driver.userId }

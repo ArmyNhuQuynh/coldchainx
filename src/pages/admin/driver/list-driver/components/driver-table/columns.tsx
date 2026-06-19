@@ -38,7 +38,7 @@ const formatDate = (value: string | null | undefined) => {
 };
 
 const getPrimaryLicense = (driver: TDriver): TDriverLicense | null =>
-  driver.driverLicenses?.[0] ?? null;
+  driver.licenses[0] ?? null;
 
 const getDriverStatusBadge = (status: string | number | null | undefined) => {
   const statusLabel = getDriverStatusLabel(status);
@@ -81,7 +81,7 @@ export const columns: ColumnDef<TDriver>[] = [
       createFormattedHeader("Tài xế", column, { align: "left" }),
     cell: ({ row }) => {
       const driver = row.original;
-      const displayName = driver.fullName || driver.username || "—";
+      const displayName = driver.fullName || "—";
 
       return createFormattedCell(
         <div className="flex flex-col">
@@ -96,18 +96,22 @@ export const columns: ColumnDef<TDriver>[] = [
     size: 220,
   },
   {
-    accessorKey: "username",
+    accessorKey: "phoneNumber",
     header: ({ column }) =>
-      createFormattedHeader("Tài khoản", column, { align: "left" }),
+      createFormattedHeader("Liên hệ", column, { align: "left" }),
     cell: ({ row }) => {
-      const username = row.getValue("username") as string | null;
-
+      const driver = row.original;
       return createFormattedCell(
-        <span>{username || "—"}</span>,
-        { align: "left", tooltip: username ?? undefined }
+        <div className="flex flex-col">
+          <span>{driver.phoneNumber}</span>
+          <span className="text-xs text-muted-foreground">
+            {driver.identityNumber}
+          </span>
+        </div>,
+        { align: "left", tooltip: driver.phoneNumber }
       );
     },
-    size: 160,
+    size: 180,
   },
   {
     accessorKey: "dateOfBirth",

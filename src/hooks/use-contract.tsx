@@ -13,6 +13,14 @@ export const useContract = () => {
     });
   };
 
+  const getContractByOrderId = (orderId?: string, enabled = true) => {
+    return useQuery({
+      queryKey: ["contract-by-order", orderId],
+      queryFn: () => contractApi.getContractByOrderId(orderId!),
+      enabled: enabled && !!orderId,
+    });
+  };
+
   const getContractHtml = (contractId?: string, enabled = true) => {
     return useQuery({
       queryKey: ["contract-html", contractId],
@@ -37,6 +45,9 @@ export const useContract = () => {
     queryClient.invalidateQueries({ queryKey: ["contract-html", contractId] });
 
     if (orderId) {
+      queryClient.invalidateQueries({
+        queryKey: ["contract-by-order", orderId],
+      });
       queryClient.invalidateQueries({ queryKey: ["contract-preview", orderId] });
       queryClient.invalidateQueries({ queryKey: ["order", orderId] });
     }
@@ -65,6 +76,7 @@ export const useContract = () => {
 
   return {
     getContractById,
+    getContractByOrderId,
     getContractHtml,
     previewContract,
     updateContractDraft,

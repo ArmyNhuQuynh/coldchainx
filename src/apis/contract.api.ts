@@ -14,6 +14,13 @@ const getContractById = async (contractId: string) => {
   return response.data;
 };
 
+const getContractByOrderId = async (orderId: string) => {
+  const response = await apiRequest.baseApi.get<BaseResponse<TContractInfo>>(
+    `${API_SUFFIX.CONTRACTS_API}/by-order/${orderId}`
+  );
+  return response.data;
+};
+
 const getContractHtml = async (contractId: string) => {
   const response = await apiRequest.baseApi.get<string>(
     `${API_SUFFIX.CONTRACTS_API}/${contractId}/html`,
@@ -55,6 +62,7 @@ const sendContract = async (contractId: string) => {
 
 export const contractApi = {
   getContractById,
+  getContractByOrderId,
   getContractHtml,
   previewContract,
   updateContractDraft,

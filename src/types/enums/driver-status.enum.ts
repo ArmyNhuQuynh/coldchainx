@@ -1,33 +1,37 @@
 export const DRIVER_STATUS = {
-  AVAILABLE: "AVAILABLE",
+  ACTIVE: "ACTIVE",
   ON_TRIP: "ON_TRIP",
-  OFFLINE: "OFFLINE",
+  SUSPENDED_DOCS: "SUSPENDED_DOCS",
   INACTIVE: "INACTIVE",
 } as const;
 
-export type TDriverStatus = (typeof DRIVER_STATUS)[keyof typeof DRIVER_STATUS];
+export type TDriverStatus =
+  (typeof DRIVER_STATUS)[keyof typeof DRIVER_STATUS];
 
 export function normalizeDriverStatus(
   status: string | number | null | undefined
 ): TDriverStatus | null {
-  if (status == null || status === "") {
-    return null;
-  }
+  if (status == null || status === "") return null;
 
-  const normalizedStatus = String(status).trim().toUpperCase().replace(/[\s-]/g, "_");
+  const normalized = String(status)
+    .trim()
+    .toUpperCase()
+    .replace(/[\s-]/g, "_");
 
-  switch (normalizedStatus) {
+  switch (normalized) {
+    case "ACTIVE":
     case "AVAILABLE":
     case "0":
-      return DRIVER_STATUS.AVAILABLE;
+      return DRIVER_STATUS.ACTIVE;
     case "ON_TRIP":
     case "ONTRIP":
     case "1":
       return DRIVER_STATUS.ON_TRIP;
+    case "SUSPENDED_DOCS":
+      return DRIVER_STATUS.SUSPENDED_DOCS;
+    case "INACTIVE":
     case "OFFLINE":
     case "2":
-      return DRIVER_STATUS.OFFLINE;
-    case "INACTIVE":
     case "3":
       return DRIVER_STATUS.INACTIVE;
     default:
@@ -35,12 +39,11 @@ export function normalizeDriverStatus(
   }
 }
 
-export function getDriverStatusLabel(status: string | number | null | undefined): {
-  label: string;
-  className: string;
-} {
+export function getDriverStatusLabel(
+  status: string | number | null | undefined
+): { label: string; className: string } {
   switch (normalizeDriverStatus(status)) {
-    case DRIVER_STATUS.AVAILABLE:
+    case DRIVER_STATUS.ACTIVE:
       return {
         label: "Sẵn sàng",
         className: "border-green-200 bg-green-50 text-green-700",
@@ -50,10 +53,10 @@ export function getDriverStatusLabel(status: string | number | null | undefined)
         label: "Đang vận chuyển",
         className: "border-blue-200 bg-blue-50 text-blue-700",
       };
-    case DRIVER_STATUS.OFFLINE:
+    case DRIVER_STATUS.SUSPENDED_DOCS:
       return {
-        label: "Ngoại tuyến",
-        className: "border-amber-200 bg-amber-50 text-amber-700",
+        label: "GPLX thiếu hoặc hết hạn",
+        className: "border-orange-200 bg-orange-50 text-orange-700",
       };
     case DRIVER_STATUS.INACTIVE:
       return {

@@ -2,7 +2,6 @@ import { useVehicleForm } from "@/hooks/use-vehicle-form";
 import { useVehicle } from "@/hooks/use-vehicle";
 import { PATH_ADMIN_DASHBOARD } from "@/routes/path";
 import {
-  toVehicleCreateFormData,
   toVehicleCreateRequest,
 } from "@/schemas/vehicle.mapper";
 import type { TVehicleFormValues } from "@/schemas/vehicle.schema";
@@ -16,11 +15,10 @@ const CreateVehiclePage = () => {
   const { createVehicle } = useVehicle();
 
   const handleSubmit = async (values: TVehicleFormValues) => {
-    const request = toVehicleCreateRequest(values);
     const response = await createVehicle.mutateAsync(
-      toVehicleCreateFormData(request)
+      toVehicleCreateRequest(values)
     );
-    const vehicleId = response.data.data?.vehicleId;
+    const vehicleId = response.data.vehicleId;
 
     toast.success("Tạo xe thành công");
     navigate(

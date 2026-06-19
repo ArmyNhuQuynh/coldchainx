@@ -1,6 +1,7 @@
 import { apiRequest } from "@/lib/http";
 import type {
   TVehicle,
+  TVehicleCreateRequest,
   TVehicleUpdateRequest,
 } from "@/schemas/vehicle.schema";
 import type { BaseResponse } from "@/types/response.type";
@@ -13,27 +14,35 @@ const getVehicles = async () => {
   return response.data;
 };
 
-const getVehicleById = async (id: string) =>
-  await apiRequest.baseApi.get<BaseResponse<TVehicle>>(
+const getVehicleById = async (id: string) => {
+  const response = await apiRequest.baseApi.get<BaseResponse<TVehicle>>(
     `${API_SUFFIX.VEHICLES_API}/${id}`
   );
+  return response.data;
+};
 
-const createVehicle = async (data: FormData) =>
-  await apiRequest.baseApi.post<BaseResponse<TVehicle>>(
+const createVehicle = async (data: TVehicleCreateRequest) => {
+  const response = await apiRequest.baseApi.post<BaseResponse<TVehicle>>(
     API_SUFFIX.VEHICLES_API,
     data
   );
+  return response.data;
+};
 
-const updateVehicle = async (id: string, data: TVehicleUpdateRequest) =>
-  await apiRequest.baseApi.put<BaseResponse<TVehicle>>(
+const updateVehicle = async (id: string, data: TVehicleUpdateRequest) => {
+  const response = await apiRequest.baseApi.put<BaseResponse<TVehicle>>(
     `${API_SUFFIX.VEHICLES_API}/${id}`,
     data
   );
+  return response.data;
+};
 
-const deleteVehicle = async (id: string) =>
-  await apiRequest.baseApi.delete<BaseResponse<boolean>>(
+const deleteVehicle = async (id: string) => {
+  const response = await apiRequest.baseApi.delete<BaseResponse<boolean>>(
     `${API_SUFFIX.VEHICLES_API}/${id}`
   );
+  return response.data;
+};
 
 export const vehicleApi = {
   getVehicles,

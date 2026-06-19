@@ -9,12 +9,13 @@ import { useState } from "react";
 import { columns } from "./driver-table/columns";
 
 const getSearchableText = (driver: TDriver) => {
-  const licenses = driver.driverLicenses ?? [];
+  const licenses = driver.licenses;
 
   return [
     driver.fullName,
-    driver.username,
     driver.email,
+    driver.identityNumber,
+    driver.phoneNumber,
     driver.status,
     ...licenses.flatMap((license) => [
       license.licenseNumber,

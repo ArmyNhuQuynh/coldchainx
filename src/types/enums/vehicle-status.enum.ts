@@ -1,22 +1,25 @@
 export const VEHICLE_STATUS = {
-  ACTIVE: "Active",
-  INACTIVE: "Inactive",
-  UNDER_MAINTENANCE: "UnderMaintenance",
-  ON_TRIP: "OnTrip",
+  ACTIVE: "ACTIVE",
+  ON_TRIP: "ON_TRIP",
+  MAINTENANCE: "MAINTENANCE",
+  SUSPENDED_DOCS: "SUSPENDED_DOCS",
+  INACTIVE: "INACTIVE",
 } as const;
 
-export type TVehicleStatus = (typeof VEHICLE_STATUS)[keyof typeof VEHICLE_STATUS];
+export type TVehicleStatus =
+  (typeof VEHICLE_STATUS)[keyof typeof VEHICLE_STATUS];
 
 export function normalizeVehicleStatus(
   status: string | number | null | undefined
 ): TVehicleStatus | null {
-  if (status == null || status === "") {
-    return null;
-  }
+  if (status == null || status === "") return null;
 
-  const normalizedStatus = String(status).trim().toUpperCase().replace(/[\s-]/g, "_");
+  const normalized = String(status)
+    .trim()
+    .toUpperCase()
+    .replace(/[\s-]/g, "_");
 
-  switch (normalizedStatus) {
+  switch (normalized) {
     case "ACTIVE":
     case "AVAILABLE":
     case "READY":
@@ -33,7 +36,9 @@ export function normalizeVehicleStatus(
     case "UNDER_MAINTENANCE":
     case "MAINTENANCE":
     case "2":
-      return VEHICLE_STATUS.UNDER_MAINTENANCE;
+      return VEHICLE_STATUS.MAINTENANCE;
+    case "SUSPENDED_DOCS":
+      return VEHICLE_STATUS.SUSPENDED_DOCS;
     case "INACTIVE":
     case "DISABLED":
     case "3":
@@ -43,10 +48,9 @@ export function normalizeVehicleStatus(
   }
 }
 
-export function getVehicleStatusLabel(status: string | number | null | undefined): {
-  label: string;
-  className: string;
-} {
+export function getVehicleStatusLabel(
+  status: string | number | null | undefined
+): { label: string; className: string } {
   switch (normalizeVehicleStatus(status)) {
     case VEHICLE_STATUS.ACTIVE:
       return {
@@ -58,10 +62,15 @@ export function getVehicleStatusLabel(status: string | number | null | undefined
         label: "Đang vận chuyển",
         className: "border-blue-200 bg-blue-50 text-blue-700",
       };
-    case VEHICLE_STATUS.UNDER_MAINTENANCE:
+    case VEHICLE_STATUS.MAINTENANCE:
       return {
         label: "Bảo trì",
         className: "border-amber-200 bg-amber-50 text-amber-700",
+      };
+    case VEHICLE_STATUS.SUSPENDED_DOCS:
+      return {
+        label: "Thiếu hoặc hết hạn giấy tờ",
+        className: "border-orange-200 bg-orange-50 text-orange-700",
       };
     case VEHICLE_STATUS.INACTIVE:
       return {

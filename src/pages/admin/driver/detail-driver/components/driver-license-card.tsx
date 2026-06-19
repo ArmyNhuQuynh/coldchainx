@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import type { TDriverLicense } from "@/schemas/driver.schema";
 import { getDriverStatusLabel } from "@/types/enums/driver-status.enum";
-import { Calendar, ExternalLink, FileText, IdCard } from "lucide-react";
+import { Calendar, IdCard } from "lucide-react";
 
 type Props = {
   licenses: TDriverLicense[] | null;
@@ -81,18 +81,6 @@ const DriverLicenseCard = ({ licenses }: Props) => {
                   </div>
                 </div>
 
-                {hasValue(license.documentUrl) && (
-                  <a
-                    className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
-                    href={license.documentUrl!}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    <FileText className="h-4 w-4" />
-                    Xem tài liệu
-                    <ExternalLink className="h-3.5 w-3.5" />
-                  </a>
-                )}
               </div>
             );
           })}

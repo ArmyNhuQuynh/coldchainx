@@ -2,15 +2,15 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import type { TVehicle } from "@/schemas/vehicle.schema";
 import { getVehicleTypeLabel } from "@/types/enums/vehicle-type.enum";
 import {
-  Calendar,
   Car,
-  Fingerprint,
   Fuel,
   Gauge,
   Hash,
+  MapPin,
   Snowflake,
   Tag,
   Truck,
+  UserRound,
   Weight,
   type LucideIcon,
 } from "lucide-react";
@@ -81,15 +81,25 @@ const VehicleDetailInfo = ({ vehicle }: Props) => {
     hasValue(vehicle.brand)
       ? { icon: Car, label: "Hãng xe", value: vehicle.brand }
       : null,
-    hasValue(vehicle.manufactureYear)
-      ? { icon: Calendar, label: "Năm sản xuất", value: vehicle.manufactureYear }
+    hasValue(vehicle.driverId)
+      ? { icon: UserRound, label: "Tài xế mặc định", value: vehicle.driverId }
       : null,
-    hasValue(vehicle.chassisNumber)
-      ? { icon: Fingerprint, label: "Số khung", value: vehicle.chassisNumber }
+  ]);
+
+  const operationRows = compactRows([
+    hasValue(vehicle.currentLocation)
+      ? { icon: MapPin, label: "Vị trí hiện tại", value: vehicle.currentLocation }
       : null,
-    hasValue(vehicle.engineNumber)
-      ? { icon: Gauge, label: "Số máy", value: vehicle.engineNumber }
-      : null,
+    {
+      icon: Gauge,
+      label: "Số km hiện tại",
+      value: formatNumber(vehicle.currentOdometer, "km"),
+    },
+    {
+      icon: Gauge,
+      label: "Mốc bảo dưỡng tiếp theo",
+      value: formatNumber(vehicle.nextMaintenanceOdometer, "km"),
+    },
   ]);
 
   const specificationRows = compactRows([
@@ -130,7 +140,11 @@ const VehicleDetailInfo = ({ vehicle }: Props) => {
       : null,
   ]);
 
-  if (identificationRows.length === 0 && specificationRows.length === 0) {
+  if (
+    identificationRows.length === 0 &&
+    specificationRows.length === 0 &&
+    operationRows.length === 0
+  ) {
     return null;
   }
 
@@ -140,7 +154,7 @@ const VehicleDetailInfo = ({ vehicle }: Props) => {
         Thông tin xe tải
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+        <div className="grid grid-cols-1 gap-x-8 gap-y-6 md:grid-cols-3">
           <InfoSection
             title="Thông tin nhận diện"
             icon={Truck}
@@ -150,6 +164,11 @@ const VehicleDetailInfo = ({ vehicle }: Props) => {
             title="Thông số kỹ thuật"
             icon={Gauge}
             rows={specificationRows}
+          />
+          <InfoSection
+            title="Vận hành"
+            icon={MapPin}
+            rows={operationRows}
           />
         </div>
       </CardContent>

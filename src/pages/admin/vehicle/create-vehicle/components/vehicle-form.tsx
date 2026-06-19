@@ -6,11 +6,10 @@ import {
   VEHICLE_STATUS,
 } from "@/types/enums/vehicle-status.enum";
 import { getVehicleTypeLabel, VEHICLE_TYPE } from "@/types/enums/vehicle-type.enum";
-import { Gauge, ImagePlus, Save, Snowflake, Truck } from "lucide-react";
+import { Gauge, MapPin, Save, Snowflake, Truck } from "lucide-react";
 import type { BaseSyntheticEvent } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import {
-  VehicleFileField,
   VehicleNumberField,
   VehicleSelectField,
   VehicleTextField,
@@ -65,25 +64,6 @@ const VehicleForm = ({
             label="Hãng xe"
             placeholder="VD: Hyundai"
           />
-          <VehicleNumberField
-            control={form.control}
-            name="manufactureYear"
-            label="Năm sản xuất"
-            placeholder="VD: 2024"
-            min={1900}
-          />
-          <VehicleTextField
-            control={form.control}
-            name="chassisNumber"
-            label="Số khung"
-            placeholder="Nhập số khung"
-          />
-          <VehicleTextField
-            control={form.control}
-            name="engineNumber"
-            label="Số máy"
-            placeholder="Nhập số máy"
-          />
         </VehicleFormSection>
 
         <VehicleFormSection
@@ -98,14 +78,16 @@ const VehicleForm = ({
             placeholder="Chọn loại xe"
             options={vehicleTypeOptions}
           />
-          <VehicleSelectField
-            control={form.control}
-            name="status"
-            label="Trạng thái"
-            placeholder="Chọn trạng thái"
-            options={vehicleStatusOptions}
-            emptyLabel="Chưa đặt trạng thái"
-          />
+          {mode === "edit" && (
+            <VehicleSelectField
+              control={form.control}
+              name="status"
+              label="Trạng thái"
+              placeholder="Chọn trạng thái"
+              options={vehicleStatusOptions}
+              emptyLabel="Chưa đặt trạng thái"
+            />
+          )}
           <VehicleNumberField
             control={form.control}
             name="maxWeight"
@@ -159,19 +141,34 @@ const VehicleForm = ({
 
         {mode === "create" && (
           <VehicleFormSection
-            icon={ImagePlus}
-            title="Ảnh xe"
-            description="Ảnh nhận diện xe khi tạo hồ sơ mới."
+            icon={MapPin}
+            title="Vận hành ban đầu"
+            description="Vị trí và số kilomet ban đầu theo API Fleet hiện tại."
           >
-            <div className="md:col-span-2">
-              <VehicleFileField
-                control={form.control}
-                name="vehicleImage"
-                label="Ảnh xe"
-                placeholder="Chọn ảnh xe"
-                description="Chưa chọn ảnh"
-              />
-            </div>
+            <VehicleTextField
+              control={form.control}
+              name="currentLocation"
+              label="Vị trí hiện tại"
+              placeholder="VD: Kho Bình Thạnh"
+            />
+            <VehicleNumberField
+              control={form.control}
+              name="currentOdometer"
+              label="Số km hiện tại"
+              placeholder="VD: 25000"
+              min={0}
+              step={0.1}
+              unit="km"
+            />
+            <VehicleNumberField
+              control={form.control}
+              name="nextMaintenanceOdometer"
+              label="Mốc bảo dưỡng tiếp theo"
+              placeholder="Để trống để BE tự tính"
+              min={0}
+              step={0.1}
+              unit="km"
+            />
           </VehicleFormSection>
         )}
 

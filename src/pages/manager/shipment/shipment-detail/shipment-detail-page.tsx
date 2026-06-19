@@ -4,7 +4,8 @@ import OrderDetailHeader from "./components/shipment-detail-header";
 import OrderInfoCards from "./components/shipment-infor-card";
 import OrderDetailInfo from "./components/shipment-detail-infor";
 import OrderDestination from "./components/shipment-destination";
-import OrderQuotation from "./components/shipment-quotation";
+import OrderQuotation from "./shipment-quotation";
+import ShipmentContract from "./shipment-contract";
 import OrderWeightSection from "./components/shipment-weight-section";
 import OrderDocuments from "./components/shipment-document";
 import OrderReviewActions from "./components/shipment-review-action";
@@ -68,6 +69,7 @@ const OrderDetailPage = () => {
                         order={order}
                         preferredQuoteId={preferredQuoteId}
                     />
+                    <ShipmentContract order={order} />
                 </div>
             </div>
 

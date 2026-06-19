@@ -1,13 +1,6 @@
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useQuotation } from "@/hooks/use-quotation";
 import { handleApiError } from "@/lib/error";
 import type { TOrder } from "@/schemas/order.schema";
@@ -16,6 +9,7 @@ import { QUOTATION_STATUS } from "@/types/enums/quotation-status.enum";
 import { FileText, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import ShipmentQuotationDialog from "./shipment-quotation-dialog";
+import ShipmentSendConfirmationDialog from "../components/shipment-send-confirmation-dialog";
 
 type Props = {
   order: TOrder;
@@ -132,29 +126,14 @@ const OrderQuotation = ({ order, preferredQuoteId }: Props) => {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={sendConfirmationOpen} onOpenChange={setSendConfirmationOpen}>
-        <DialogContent className="w-[calc(100vw-1.5rem)] p-4 sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Gửi báo giá cho khách hàng?</DialogTitle>
-            <DialogDescription>
-              Sau khi gửi, báo giá sẽ chuyển sang trạng thái SENT và không thể chỉnh sửa.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setSendConfirmationOpen(false)}
-              disabled={sendQuotation.isPending}
-            >
-              Hủy
-            </Button>
-            <Button onClick={handleSend} disabled={sendQuotation.isPending}>
-              {sendQuotation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Xác nhận gửi
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ShipmentSendConfirmationDialog
+        open={sendConfirmationOpen}
+        title="Gửi báo giá cho khách hàng?"
+        description="Sau khi gửi, báo giá sẽ chuyển sang trạng thái SENT và không thể chỉnh sửa."
+        isPending={sendQuotation.isPending}
+        onOpenChange={setSendConfirmationOpen}
+        onConfirm={handleSend}
+      />
     </>
   );
 };

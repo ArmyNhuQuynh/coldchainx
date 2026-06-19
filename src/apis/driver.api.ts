@@ -10,10 +10,12 @@ const getDrivers = async () => {
   return response.data;
 };
 
-const getDriverById = async (id: string) =>
-  await apiRequest.baseApi.get<BaseResponse<TDriver>>(
+const getDriverById = async (id: string) => {
+  const response = await apiRequest.baseApi.get<BaseResponse<TDriver>>(
     `${API_SUFFIX.DRIVERS_API}/${id}`
   );
+  return response.data;
+};
 
 export const driverApi = {
   getDrivers,

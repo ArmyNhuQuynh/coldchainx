@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import type { TVehicle } from "@/schemas/vehicle.schema";
 import { getVehicleStatusLabel } from "@/types/enums/vehicle-status.enum";
-import { Activity, CalendarClock, Hash, type LucideIcon } from "lucide-react";
+import { Activity, Files, Hash, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
 type Props = {
@@ -17,23 +17,6 @@ type StatusRowData = {
 
 const hasValue = (value: unknown) =>
   value !== null && value !== undefined && String(value).trim() !== "";
-
-const formatDateTime = (value: string) => {
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return date.toLocaleString("vi-VN", {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-};
 
 const compactRows = (rows: Array<StatusRowData | null>) =>
   rows.filter((row): row is StatusRowData => row !== null);
@@ -61,13 +44,6 @@ const VehicleStatusCard = ({ vehicle }: Props) => {
           value: <Badge className={status.className}>{status.label}</Badge>,
         }
       : null,
-    hasValue(vehicle.createdAt)
-      ? {
-          icon: CalendarClock,
-          label: "Ngày tạo",
-          value: formatDateTime(vehicle.createdAt!),
-        }
-      : null,
     hasValue(vehicle.vehicleId)
       ? {
           icon: Hash,
@@ -75,6 +51,11 @@ const VehicleStatusCard = ({ vehicle }: Props) => {
           value: vehicle.vehicleId,
         }
       : null,
+    {
+      icon: Files,
+      label: "Số giấy tờ",
+      value: vehicle.documents.length,
+    },
   ]);
 
   if (rows.length === 0) {

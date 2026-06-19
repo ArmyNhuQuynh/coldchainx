@@ -22,7 +22,6 @@ const VehicleDetailHeader = ({ vehicle }: Props) => {
   const summary = [
     vehicle.brand,
     vehicle.vehicleType ? getVehicleTypeLabel(vehicle.vehicleType) : null,
-    vehicle.manufactureYear,
   ].filter(hasValue);
 
   return (

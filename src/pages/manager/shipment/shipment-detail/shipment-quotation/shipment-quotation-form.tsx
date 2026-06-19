@@ -22,9 +22,10 @@ import {
   type TUpdateQuotation,
 } from "@/schemas/quotation.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Plus, Trash2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useEffect } from "react";
-import { useFieldArray, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
+import ShipmentQuotationAdditionalCharges from "./shipment-quotation-additional-charges";
 
 type Props = {
   quotation: TQuotation;
@@ -50,11 +51,6 @@ const ShipmentQuotationForm = ({ quotation, isPending, onCancel, onSubmit }: Pro
     resolver: zodResolver(QuotationFormSchema),
     defaultValues: getDefaultValues(quotation),
   });
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: "additionalCharges",
-  });
-
   useEffect(() => {
     form.reset(getDefaultValues(quotation));
   }, [form, quotation]);
@@ -134,73 +130,7 @@ const ShipmentQuotationForm = ({ quotation, isPending, onCancel, onSubmit }: Pro
             />
           </div>
 
-          <div className="space-y-2.5">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold">Phụ phí bổ sung</h3>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => append({ name: "", amount: 0, note: "" })}
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Thêm phụ phí
-              </Button>
-            </div>
-
-            {fields.length === 0 ? (
-              <p className="text-sm italic text-muted-foreground">Chưa có phụ phí bổ sung</p>
-            ) : (
-              fields.map((field, index) => (
-                <div key={field.id} className="grid gap-2.5 rounded-md border p-2.5 lg:grid-cols-[1fr_140px_1fr_auto]">
-                  <FormField
-                    control={form.control}
-                    name={`additionalCharges.${index}.name`}
-                    render={({ field: nameField }) => (
-                      <FormItem>
-                        <FormLabel>Tên phụ phí</FormLabel>
-                        <FormControl><Input {...nameField} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name={`additionalCharges.${index}.amount`}
-                    render={({ field: amountField }) => (
-                      <FormItem>
-                        <FormLabel>Số tiền</FormLabel>
-                        <FormControl>
-                          <Input type="number" min={0} {...amountField} onChange={(event) => amountField.onChange(Number(event.target.value))} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name={`additionalCharges.${index}.note`}
-                    render={({ field: noteField }) => (
-                      <FormItem>
-                        <FormLabel>Ghi chú</FormLabel>
-                        <FormControl><Input {...noteField} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="self-end text-destructive"
-                    onClick={() => remove(index)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))
-            )}
-          </div>
+          <ShipmentQuotationAdditionalCharges form={form} />
 
           <FormField
             control={form.control}

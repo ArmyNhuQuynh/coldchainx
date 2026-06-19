@@ -108,7 +108,7 @@ export const columns: ColumnDef<TVehicle>[] = [
         cell: ({ row }) => {
             const maxWeight = row.getValue("maxWeight") as number;
             return createFormattedCell(
-                <span>{maxWeight ? `${maxWeight} tấn` : "—"}</span>,
+                <span>{maxWeight ? `${maxWeight.toLocaleString("vi-VN")} kg` : "—"}</span>,
                 { align: "center" }
             );
         },

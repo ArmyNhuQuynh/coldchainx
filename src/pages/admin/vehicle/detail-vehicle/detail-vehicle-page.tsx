@@ -3,13 +3,14 @@ import { useParams } from "react-router-dom";
 import VehicleDetailHeader from "./components/vehicle-detail-header";
 import VehicleDetailInfo from "./components/vehicle-detail-info";
 import VehicleStatusCard from "./components/vehicle-status-card";
+import VehicleDocumentCard from "./components/vehicle-document-card";
 
 const VehicleDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const { getVehicleById } = useVehicle();
   const { data, isLoading } = getVehicleById(id);
 
-  const vehicle = data?.data.data;
+  const vehicle = data?.data;
 
   if (isLoading) {
     return (
@@ -39,6 +40,8 @@ const VehicleDetailPage = () => {
           <VehicleStatusCard vehicle={vehicle} />
         </div>
       </div>
+
+      <VehicleDocumentCard documents={vehicle.documents} />
     </div>
   );
 };

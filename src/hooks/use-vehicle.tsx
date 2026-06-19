@@ -1,5 +1,6 @@
 import { vehicleApi } from "@/apis/vehicle.api";
 import type {
+  TVehicleCreateRequest,
   TVehicleUpdateRequest,
 } from "@/schemas/vehicle.schema";
 import {
@@ -29,7 +30,7 @@ export const useVehicle = () => {
   };
 
   const createVehicle = useMutation({
-    mutationFn: (data: FormData) => vehicleApi.createVehicle(data),
+    mutationFn: (data: TVehicleCreateRequest) => vehicleApi.createVehicle(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["vehicles"] });
     },

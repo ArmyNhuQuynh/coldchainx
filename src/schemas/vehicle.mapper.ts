@@ -4,36 +4,23 @@ import type {
   TVehicleFormValues,
   TVehicleUpdateRequest,
 } from "@/schemas/vehicle.schema";
-import { VEHICLE_STATUS } from "@/types/enums/vehicle-status.enum";
-
-const appendFormValue = (
-  formData: FormData,
-  key: string,
-  value: File | string | number | null | undefined
-) => {
-  if (value === null || value === undefined) {
-    return;
-  }
-
-  formData.append(key, value instanceof File ? value : String(value));
-};
+import { VEHICLE_FORM_DEFAULTS } from "@/schemas/vehicle.schema";
 
 export const getVehicleFormDefaultValues = (
   vehicle?: TVehicle
 ): TVehicleFormValues => ({
-  truckPlate: vehicle?.truckPlate ?? null,
+  truckPlate: vehicle?.truckPlate ?? "",
   brand: vehicle?.brand ?? null,
-  manufactureYear: vehicle?.manufactureYear ?? null,
-  chassisNumber: vehicle?.chassisNumber ?? null,
-  engineNumber: vehicle?.engineNumber ?? null,
   standardFuelLiters: vehicle?.standardFuelLiters ?? null,
-  vehicleType: vehicle?.vehicleType ?? null,
+  vehicleType: vehicle?.vehicleType ?? VEHICLE_FORM_DEFAULTS.vehicleType,
   maxWeight: vehicle?.maxWeight ?? null,
   maxCbm: vehicle?.maxCbm ?? null,
   minTemp: vehicle?.minTemp ?? null,
   maxTemp: vehicle?.maxTemp ?? null,
-  status: vehicle?.status ?? VEHICLE_STATUS.ACTIVE,
-  vehicleImage: null,
+  currentLocation: vehicle?.currentLocation ?? null,
+  currentOdometer: vehicle?.currentOdometer ?? 0,
+  nextMaintenanceOdometer: vehicle?.nextMaintenanceOdometer ?? null,
+  status: vehicle?.status ?? VEHICLE_FORM_DEFAULTS.status,
 });
 
 export const toVehicleCreateRequest = (
@@ -41,17 +28,15 @@ export const toVehicleCreateRequest = (
 ): TVehicleCreateRequest => ({
   truckPlate: values.truckPlate,
   brand: values.brand,
-  manufactureYear: values.manufactureYear,
-  chassisNumber: values.chassisNumber,
-  engineNumber: values.engineNumber,
   standardFuelLiters: values.standardFuelLiters,
   vehicleType: values.vehicleType,
   maxWeight: values.maxWeight!,
   maxCbm: values.maxCbm!,
   minTemp: values.minTemp!,
   maxTemp: values.maxTemp!,
-  status: values.status,
-  ...(values.vehicleImage ? { vehicleImage: values.vehicleImage } : {}),
+  currentLocation: values.currentLocation,
+  currentOdometer: values.currentOdometer ?? 0,
+  nextMaintenanceOdometer: values.nextMaintenanceOdometer ?? 0,
 });
 
 export const toVehicleUpdateRequest = (
@@ -59,9 +44,6 @@ export const toVehicleUpdateRequest = (
 ): TVehicleUpdateRequest => ({
   truckPlate: values.truckPlate,
   brand: values.brand,
-  manufactureYear: values.manufactureYear,
-  chassisNumber: values.chassisNumber,
-  engineNumber: values.engineNumber,
   standardFuelLiters: values.standardFuelLiters,
   vehicleType: values.vehicleType,
   maxWeight: values.maxWeight,
@@ -70,23 +52,3 @@ export const toVehicleUpdateRequest = (
   maxTemp: values.maxTemp,
   status: values.status,
 });
-
-export const toVehicleCreateFormData = (data: TVehicleCreateRequest) => {
-  const formData = new FormData();
-
-  appendFormValue(formData, "TruckPlate", data.truckPlate);
-  appendFormValue(formData, "Brand", data.brand);
-  appendFormValue(formData, "ManufactureYear", data.manufactureYear);
-  appendFormValue(formData, "ChassisNumber", data.chassisNumber);
-  appendFormValue(formData, "EngineNumber", data.engineNumber);
-  appendFormValue(formData, "StandardFuelLiters", data.standardFuelLiters);
-  appendFormValue(formData, "VehicleType", data.vehicleType);
-  appendFormValue(formData, "MaxWeight", data.maxWeight);
-  appendFormValue(formData, "MaxCbm", data.maxCbm);
-  appendFormValue(formData, "MinTemp", data.minTemp);
-  appendFormValue(formData, "MaxTemp", data.maxTemp);
-  appendFormValue(formData, "Status", data.status);
-  appendFormValue(formData, "VehicleImage", data.vehicleImage);
-
-  return formData;
-};

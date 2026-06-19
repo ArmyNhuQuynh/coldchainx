@@ -17,7 +17,7 @@ const DriverDetailHeader = ({ driver }: Props) => {
   const status = hasValue(driver.status)
     ? getDriverStatusLabel(driver.status)
     : null;
-  const summary = [driver.username, driver.email, driver.dateOfBirth].filter(
+  const summary = [driver.email, driver.phoneNumber, driver.dateOfBirth].filter(
     hasValue
   );
 
@@ -27,7 +27,7 @@ const DriverDetailHeader = ({ driver }: Props) => {
         <div className="flex items-center gap-3 flex-wrap">
           <h1 className="text-2xl font-semibold">Chi tiết tài xế</h1>
           <span className="text-2xl font-bold text-primary">
-            {driver.fullName || driver.username || driver.driverId}
+            {driver.fullName || driver.driverId}
           </span>
           {status && <Badge className={status.className}>{status.label}</Badge>}
         </div>

@@ -14,7 +14,7 @@ const VehicleEditPage = () => {
   const { getVehicleById, updateVehicle } = useVehicle();
   const { data, isLoading } = getVehicleById(id);
 
-  const vehicle = data?.data.data;
+  const vehicle = data?.data;
 
   const handleSubmit = async (values: TVehicleFormValues) => {
     if (!id) {
