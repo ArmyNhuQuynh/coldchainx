@@ -169,18 +169,6 @@ const ShipmentContractDialog = ({
           </div>
         ) : contract.status === CONTRACT_STATUS.PENDING_SALES_VERIFICATION ? (
           <div className="flex flex-col-reverse gap-2 sm:flex-row">
-            {contract.signedFileUrl && (
-              <Button variant="outline" asChild>
-                <a
-                  href={resolveFileUrl(contract.signedFileUrl)}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <ExternalLink className="mr-2 h-4 w-4" />
-                  Mở bản đã ký
-                </a>
-              </Button>
-            )}
             <Button onClick={onVerify} disabled={isVerifying}>
               {isVerifying ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
