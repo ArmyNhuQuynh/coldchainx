@@ -60,6 +60,13 @@ const sendContract = async (contractId: string) => {
   return response.data;
 };
 
+const verifyContract = async (contractId: string) => {
+  const response = await apiRequest.baseApi.post<BaseResponse<TContractInfo>>(
+    `${API_SUFFIX.CONTRACTS_API}/${contractId}/verify`
+  );
+  return response.data;
+};
+
 export const contractApi = {
   getContractById,
   getContractByOrderId,
@@ -67,4 +74,5 @@ export const contractApi = {
   previewContract,
   updateContractDraft,
   sendContract,
+  verifyContract,
 };

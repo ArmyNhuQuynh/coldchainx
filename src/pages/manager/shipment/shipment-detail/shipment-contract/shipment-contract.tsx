@@ -20,10 +20,12 @@ const ShipmentContract = ({ order }: Props) => {
     previewContract,
     updateContractDraft,
     sendContract,
+    verifyContract,
   } = useContract();
   const [open, setOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [sendConfirmationOpen, setSendConfirmationOpen] = useState(false);
+  const [verifyConfirmationOpen, setVerifyConfirmationOpen] = useState(false);
 
   const hasAcceptedQuotation = order.quotations.some(
     (quotation) => quotation.status === QUOTATION_STATUS.ACCEPTED
@@ -49,6 +51,7 @@ const ShipmentContract = ({ order }: Props) => {
     if (!nextOpen) {
       setIsEditing(false);
       setSendConfirmationOpen(false);
+      setVerifyConfirmationOpen(false);
     }
   };
 
@@ -75,6 +78,18 @@ const ShipmentContract = ({ order }: Props) => {
       setSendConfirmationOpen(false);
       setIsEditing(false);
       toast.success(response.message || "Gửi hợp đồng thành công");
+    } catch (error) {
+      handleApiError(error);
+    }
+  };
+
+  const handleVerify = async () => {
+    if (!contract) return;
+
+    try {
+      const response = await verifyContract.mutateAsync(contract.contractId);
+      setVerifyConfirmationOpen(false);
+      toast.success(response.message || "Xác nhận hợp đồng thành công");
     } catch (error) {
       handleApiError(error);
     }
@@ -126,6 +141,8 @@ const ShipmentContract = ({ order }: Props) => {
               onCancelEdit={() => setIsEditing(false)}
               onUpdate={handleUpdate}
               onSend={() => setSendConfirmationOpen(true)}
+              isVerifying={verifyContract.isPending}
+              onVerify={() => setVerifyConfirmationOpen(true)}
             />
           )}
         </DialogContent>
@@ -138,6 +155,16 @@ const ShipmentContract = ({ order }: Props) => {
         isPending={sendContract.isPending}
         onOpenChange={setSendConfirmationOpen}
         onConfirm={handleSend}
+      />
+
+      <ShipmentSendConfirmationDialog
+        open={verifyConfirmationOpen}
+        title="Xác nhận hợp đồng?"
+        description="Bạn xác nhận khách hàng đã ký hợp đồng và hợp lệ?"
+        confirmText="Xác nhận"
+        isPending={verifyContract.isPending}
+        onOpenChange={setVerifyConfirmationOpen}
+        onConfirm={handleVerify}
       />
     </>
   );

@@ -74,6 +74,14 @@ export const useContract = () => {
     },
   });
 
+  const verifyContract = useMutation({
+    mutationFn: (contractId: string) => contractApi.verifyContract(contractId),
+    onSuccess: (response, contractId) => {
+      invalidateContractQueries(contractId, response.data.orderId);
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+    },
+  });
+
   return {
     getContractById,
     getContractByOrderId,
@@ -81,5 +89,6 @@ export const useContract = () => {
     previewContract,
     updateContractDraft,
     sendContract,
+    verifyContract,
   };
 };
