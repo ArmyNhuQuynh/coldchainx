@@ -13,6 +13,7 @@ type Props = {
   open: boolean;
   title: string;
   description: string;
+  confirmText?: string;
   isPending: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
@@ -22,6 +23,7 @@ const ShipmentSendConfirmationDialog = ({
   open,
   title,
   description,
+  confirmText = "Xác nhận gửi",
   isPending,
   onOpenChange,
   onConfirm,
@@ -43,7 +45,7 @@ const ShipmentSendConfirmationDialog = ({
           </Button>
           <Button onClick={onConfirm} disabled={isPending}>
             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Xác nhận gửi
+            {confirmText}
           </Button>
         </DialogFooter>
       </DialogContent>
