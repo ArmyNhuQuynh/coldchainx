@@ -5,7 +5,11 @@ export const useAuth = () => {
     const loginMutation =  useMutation({
         mutationFn: authApi.login,
     })
+    const refreshTokensMutation = useMutation({
+        mutationFn: authApi.refreshTokens,
+    })
     return {
         loginMutation,
+        refreshTokensMutation,
     }
 }

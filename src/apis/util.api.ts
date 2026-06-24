@@ -30,4 +30,6 @@ export const API_SUFFIX = {
   VEHICLES_API: "/vehicles",
   // Drivers
   DRIVERS_API: "/drivers",
+  DRIVER_LICENSES_API: "/driver-licenses",
+  IMPORT_TEMPLATES_API: "/import-templates",
 };

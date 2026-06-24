@@ -1,4 +1,5 @@
 import { apiRequest } from "@/lib/http";
+import { isTokenExpired } from "@/lib/auth-token";
 import type { TAuthResponse } from "@/schemas/auth.schema";
 import { RoleSchema, type TRole } from "@/schemas/role.schema";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
@@ -14,24 +15,6 @@ const initialState: UserState = {
     user: null,
     isAuthenticated: false,
     role: null,
-};
-
-const isTokenExpired = (token: string): boolean => {
-    try {
-        const decodedToken = jwtDecode(token) as any;
-
-        if (!decodedToken.exp) {
-            return true;
-        }
-
-        const currentTime = Date.now() / 1000;
-        const bufferTime = 30;
-
-        return decodedToken.exp < (currentTime + bufferTime);
-    } catch (error) {
-        console.error('Error decoding token:', error);
-        return true;
-    }
 };
 
 const setAuthorizationHeaders = (token: string) => {

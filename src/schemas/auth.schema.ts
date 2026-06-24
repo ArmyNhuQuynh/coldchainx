@@ -11,7 +11,7 @@ export const AuthResponseSchema = z.object({
     role: z.union([z.string(), z.number()]).optional().nullable(),
     accessToken: z.string(),
     refreshToken: z.string().optional().nullable(),
-    accessTokenExpiresAt: z.number().optional().nullable(),
+    accessTokenExpiresAt: z.union([z.string(), z.number()]).optional().nullable(),
 });
 
 

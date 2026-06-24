@@ -1,16 +1,40 @@
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { useDriver } from "@/hooks/use-driver";
+import { PATH_ADMIN_DASHBOARD } from "@/routes/path";
+import type { TDriver } from "@/schemas/driver.schema";
 import {
   DRIVER_STATUS,
   normalizeDriverStatus,
 } from "@/types/enums/driver-status.enum";
-import { BadgeCheck, FileWarning, IdCard, Power, UserCheck, Users } from "lucide-react";
+import {
+  BadgeCheck,
+  FileSpreadsheet,
+  FileWarning,
+  IdCard,
+  Plus,
+  Power,
+  UserCheck,
+  Users,
+} from "lucide-react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import DriverImportDialog from "../components/driver-import-dialog";
+import DriverUpsertDialog from "../components/driver-upsert-dialog";
 import DriverTable from "./components/driver-table";
 
 const ListDriverPage = () => {
   const { getDrivers } = useDriver();
   const { data } = getDrivers();
+  const navigate = useNavigate();
+  const [createOpen, setCreateOpen] = useState(false);
+  const [driverImportOpen, setDriverImportOpen] = useState(false);
+  const [licenseImportOpen, setLicenseImportOpen] = useState(false);
   const drivers = data?.data ?? [];
+
+  const handleCreated = (driver: TDriver) => {
+    navigate(PATH_ADMIN_DASHBOARD.driver.detail(driver.driverId));
+  };
 
   const driverStats = [
     {
@@ -56,15 +80,43 @@ const ListDriverPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>
           <h1 className="text-3xl font-semibold">Quản lý tài xế</h1>
           <p className="text-muted-foreground mt-1">
             Theo dõi hồ sơ tài xế, giấy phép lái xe và trạng thái vận hành
           </p>
         </div>
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-          <IdCard className="h-5 w-5" />
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            className="rounded-xl"
+            onClick={() => setLicenseImportOpen(true)}
+          >
+            <FileSpreadsheet className="mr-2 h-4 w-4" />
+            Import GPLX
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            className="rounded-xl"
+            onClick={() => setDriverImportOpen(true)}
+          >
+            <FileSpreadsheet className="mr-2 h-4 w-4" />
+            Import tài xế
+          </Button>
+          <Button
+            type="button"
+            className="rounded-xl"
+            onClick={() => setCreateOpen(true)}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Thêm tài xế
+          </Button>
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <IdCard className="h-5 w-5" />
+          </div>
         </div>
       </div>
 
@@ -86,6 +138,23 @@ const ListDriverPage = () => {
       </div>
 
       <DriverTable />
+
+      <DriverUpsertDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        mode="create"
+        onCreated={handleCreated}
+      />
+      <DriverImportDialog
+        open={driverImportOpen}
+        onOpenChange={setDriverImportOpen}
+        type="drivers"
+      />
+      <DriverImportDialog
+        open={licenseImportOpen}
+        onOpenChange={setLicenseImportOpen}
+        type="driver-licenses"
+      />
     </div>
   );
 };

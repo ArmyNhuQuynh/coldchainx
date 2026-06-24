@@ -70,3 +70,8 @@ export function getDriverStatusLabel(
       };
   }
 }
+
+export const DRIVER_STATUS_OPTIONS = Object.values(DRIVER_STATUS).map((value) => ({
+  value,
+  label: getDriverStatusLabel(value).label,
+}));

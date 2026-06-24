@@ -2,17 +2,18 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { TDriver } from "@/schemas/driver.schema";
 import { getDriverStatusLabel } from "@/types/enums/driver-status.enum";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Pencil } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 type Props = {
   driver: TDriver;
+  onEdit: () => void;
 };
 
 const hasValue = (value: unknown) =>
   value !== null && value !== undefined && String(value).trim() !== "";
 
-const DriverDetailHeader = ({ driver }: Props) => {
+const DriverDetailHeader = ({ driver, onEdit }: Props) => {
   const navigate = useNavigate();
   const status = hasValue(driver.status)
     ? getDriverStatusLabel(driver.status)
@@ -36,10 +37,16 @@ const DriverDetailHeader = ({ driver }: Props) => {
         )}
       </div>
 
-      <Button variant="outline" onClick={() => navigate(-1)}>
-        <ArrowLeft className="h-4 w-4 mr-2" />
-        Quay lại
-      </Button>
+      <div className="flex flex-wrap items-center gap-2">
+        <Button variant="outline" className="rounded-xl" onClick={onEdit}>
+          <Pencil className="h-4 w-4 mr-2" />
+          Chỉnh sửa
+        </Button>
+        <Button variant="outline" className="rounded-xl" onClick={() => navigate(-1)}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Quay lại
+        </Button>
+      </div>
     </div>
   );
 };
