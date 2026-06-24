@@ -23,6 +23,9 @@ export const API_SUFFIX = {
   QUOTATIONS_API: "/quotations",
   // Contracts
   CONTRACTS_API: "/contracts",
+  CONTRACT_APPENDICES_API: "/contracts/appendices",
+  // Discrepancy
+  DISCREPANCY_API: "/Discrepancy",
   // Vehicles
   VEHICLES_API: "/vehicles",
   // Drivers

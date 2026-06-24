@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/sidebar";
 import type { RootState } from "@/redux/store";
 import { useSelector } from "react-redux";
-import { HomeIcon, IdCard, TruckIcon } from "lucide-react";
+import { AlertTriangle, HomeIcon, IdCard, TruckIcon } from "lucide-react";
 import {
   PATH_ADMIN_DASHBOARD,
   PATH_DISPATCHER_DASHBOARD,
@@ -142,6 +142,11 @@ const saleRoutes = {
         title: "Lô hàng",
         url: PATH_SALE_DASHBOARD.shipment.root,
         icon: HomeIcon,
+      },
+      {
+        title: "Xử lý sự cố",
+        url: PATH_SALE_DASHBOARD.incident.root,
+        icon: AlertTriangle,
       },
     ],
   },
