@@ -1,0 +1,144 @@
+export type TDispatchLookupEnvelope<T> = {
+  success?: boolean;
+  count?: number;
+  data?: T;
+  Success?: boolean;
+  Count?: number;
+  Data?: T;
+};
+
+export type TDispatchVehicleLookup = {
+  vehicleId: string;
+  label?: string;
+  truckPlate: string;
+  vehicleType?: string;
+  maxWeight: number;
+  maxCbm: number;
+  minTemp?: number | null;
+  maxTemp?: number | null;
+  warehouseId?: string | null;
+  warehouseName?: string | null;
+  currentLocation?: string | null;
+};
+
+export type TDispatchDriverLookup = {
+  driverId: string;
+  fullName: string;
+  phoneNumber?: string | null;
+  status?: string | null;
+  licenseClass?: string | null;
+  licenseExpiry?: string | null;
+  hasValidLicense?: boolean;
+  label?: string;
+  warehouseId?: string | null;
+  warehouseName?: string | null;
+  currentLocation?: string | null;
+};
+
+export type TDispatchReadyLpn = {
+  lpnId: string;
+  label?: string;
+  lpnCode: string;
+  trackingCode?: string | null;
+  itemName?: string | null;
+  tempCondition?: string | null;
+  quantity?: number | null;
+  actualWeightKg: number;
+  actualCbm: number;
+  orderId: string;
+  createdAt?: string | null;
+  warehouseId?: string | null;
+  warehouseName?: string | null;
+  plannedDispatchDate?: string | null;
+  dispatchDate?: string | null;
+  deliveryDate?: string | null;
+  slaDeadline?: string | null;
+  customerName?: string | null;
+  destinationLocationId?: string | null;
+  destinationAddress?: string | null;
+  destinationLatitude?: number | null;
+  destinationLongitude?: number | null;
+  routeId?: string | null;
+  routeCode?: string | null;
+  routeOriginCity?: string | null;
+  routeDestCity?: string | null;
+};
+
+export type TManualDispatchRequest = {
+  lpnIds: string[];
+  vehicleId: string;
+  driverIds: string[];
+  plannedStartTime: string;
+  plannedEndTime: string;
+};
+
+export type TManualDispatchResult = {
+  tripId: string;
+  lifoPdfUrl?: string | null;
+  estimatedDurationHours?: number | null;
+  lateLpnCount?: number;
+  slaWarning?: string | null;
+  suggestedMaxPayloadKg?: number | null;
+};
+
+export type TDispatchFilters = {
+  search: string;
+  warehouse: string;
+  dispatchDate: string;
+  temperatureGroup: string;
+};
+
+export type TDispatchTripStatus =
+  | "PLANNED"
+  | "PICKING"
+  | "LOADING_COMPLETED"
+  | "SEALED"
+  | "DISPATCHED"
+  | "CANCELLED"
+  | string;
+
+export type TDispatchTripLpn = {
+  lpnId: string;
+  lpnCode: string;
+  orderId?: string | null;
+  orderCode?: string | null;
+  itemName?: string | null;
+  storageLocation?: string | null;
+  quantity?: number | null;
+  state?: string | null;
+  condition?: string | null;
+  status?: string | null;
+};
+
+export type TDispatchTrip = {
+  tripId: string;
+  status: TDispatchTripStatus;
+  vehicle?: string | null;
+  driver?: string | null;
+  plannedStartTime?: string | null;
+  plannedEndTime?: string | null;
+  estimatedDurationHours?: number | null;
+  totalLpns: number;
+  allocatedLpns?: number | null;
+  loadingCompletedLpns?: number | null;
+  releasedLpns?: number | null;
+  readyToLoad?: boolean;
+  sealNumber?: string | null;
+  label?: string;
+  source: "planned" | "picking" | "readyToSeal";
+  lpns?: TDispatchTripLpn[];
+};
+
+export type TCancelTripResult = {
+  tripId: string;
+  previousStatus?: string | null;
+  newStatus?: string | null;
+  resetLpnCount?: number;
+  resetOrderCount?: number;
+  cancelledSealCount?: number;
+  voidedDocumentCount?: number;
+  vehiclePlate?: string | null;
+  driverName?: string | null;
+  cancelledAt?: string | null;
+  message?: string | null;
+};

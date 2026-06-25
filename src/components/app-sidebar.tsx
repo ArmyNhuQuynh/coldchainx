@@ -8,7 +8,14 @@ import {
 } from "@/components/ui/sidebar";
 import type { RootState } from "@/redux/store";
 import { useSelector } from "react-redux";
-import { AlertTriangle, HomeIcon, IdCard, TruckIcon } from "lucide-react";
+import {
+  AlertTriangle,
+  ClipboardList,
+  HomeIcon,
+  IdCard,
+  RouteIcon,
+  TruckIcon,
+} from "lucide-react";
 import {
   PATH_ADMIN_DASHBOARD,
   PATH_DISPATCHER_DASHBOARD,
@@ -166,6 +173,16 @@ const dispatcherRoutes = {
   operations: {
     mainTitle: "Vận hành",
     items: [
+      {
+        title: "Điều phối",
+        url: PATH_DISPATCHER_DASHBOARD.dispatch.root,
+        icon: RouteIcon,
+      },
+      {
+        title: "Trip đã tạo",
+        url: PATH_DISPATCHER_DASHBOARD.trip.root,
+        icon: ClipboardList,
+      },
       {
         title: "Lô hàng",
         url: PATH_DISPATCHER_DASHBOARD.shipment.root,

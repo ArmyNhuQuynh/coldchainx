@@ -65,6 +65,12 @@ const DriverPage = Loadable(
 const DriverDetailPage = Loadable(
   lazy(() => import("@/pages/admin/driver/detail-driver"))
 );
+const DispatchPage = Loadable(
+  lazy(() => import("@/pages/dispatcher/dispatch"))
+);
+const DispatchTripsPage = Loadable(
+  lazy(() => import("@/pages/dispatcher/trips"))
+);
 
 
 // const GeneralAppPage = Loadable(lazy(() => import("@/pages/general-app")));
@@ -209,8 +215,16 @@ export const AppRoutes = () =>
       ),
       children: [
         {
-          element: <Navigate to={PATH_DISPATCHER_DASHBOARD.shipment.root} replace />,
+          element: <Navigate to={PATH_DISPATCHER_DASHBOARD.dispatch.root} replace />,
           index: true,
+        },
+        {
+          path: "dispatch",
+          element: <DispatchPage />,
+        },
+        {
+          path: "trips",
+          element: <DispatchTripsPage />,
         },
         {
           path: "shipment",

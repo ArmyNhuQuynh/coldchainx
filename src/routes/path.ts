@@ -80,6 +80,12 @@ export const PATH_DISPATCHER_DASHBOARD = {
   general: {
     app: path(ROOTS_DISPATCHER_DASHBOARD, "/general"),
   },
+  dispatch: {
+    root: path(ROOTS_DISPATCHER_DASHBOARD, "/dispatch"),
+  },
+  trip: {
+    root: path(ROOTS_DISPATCHER_DASHBOARD, "/trips"),
+  },
   shipment: {
     root: path(ROOTS_DISPATCHER_DASHBOARD, '/shipment'),
     edit: (id: string) => path(ROOTS_DISPATCHER_DASHBOARD, `/shipment/${id}`),

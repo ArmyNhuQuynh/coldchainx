@@ -1,4 +1,5 @@
 import { apiRequest } from "@/lib/http";
+import { authStorageKeys } from "@/lib/auth-session";
 import { isTokenExpired } from "@/lib/auth-token";
 import type { TAuthResponse } from "@/schemas/auth.schema";
 import { RoleSchema, type TRole } from "@/schemas/role.schema";
@@ -27,9 +28,9 @@ const clearAuthorizationHeaders = () => {
 };
 
 const clearStoredAuthData = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("user");
+    localStorage.removeItem(authStorageKeys.accessToken);
+    localStorage.removeItem(authStorageKeys.refreshToken);
+    localStorage.removeItem(authStorageKeys.user);
     clearAuthorizationHeaders();
 };
 
@@ -130,13 +131,13 @@ const userSlice = createSlice({
                 state.isAuthenticated = true;
                 state.role = role;
 
-                localStorage.setItem("accessToken", userData.accessToken);
+                localStorage.setItem(authStorageKeys.accessToken, userData.accessToken);
                 if (userData.refreshToken) {
-                    localStorage.setItem("refreshToken", userData.refreshToken);
+                    localStorage.setItem(authStorageKeys.refreshToken, userData.refreshToken);
                 } else {
-                    localStorage.removeItem("refreshToken");
+                    localStorage.removeItem(authStorageKeys.refreshToken);
                 }
-                localStorage.setItem("user", JSON.stringify(userData));
+                localStorage.setItem(authStorageKeys.user, JSON.stringify(userData));
 
                 setAuthorizationHeaders(userData.accessToken);
             } catch (error) {
@@ -151,8 +152,8 @@ const userSlice = createSlice({
 
         loadUserFromStorage(state) {
             try {
-                const accessToken = localStorage.getItem("accessToken");
-                const storedUserData = localStorage.getItem("user");
+                const accessToken = localStorage.getItem(authStorageKeys.accessToken);
+                const storedUserData = localStorage.getItem(authStorageKeys.user);
 
                 // Check if we have the minimum required data
                 if (!accessToken || !storedUserData) {

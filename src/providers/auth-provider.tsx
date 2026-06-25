@@ -1,6 +1,11 @@
 // import { loadUserFromStorage } from '@/redux/user/user-slice';
 import { isTokenExpired } from '@/lib/auth-token';
-import { authSessionEvents, refreshStoredAuthSession } from '@/lib/http';
+import {
+    authSessionEvents,
+    getStoredAccessToken,
+    getStoredRefreshToken,
+    refreshStoredAuthSession,
+} from '@/lib/auth-session';
 import { loadUserFromStorage, logout, setUser } from '@/redux/User/user-slice';
 import { useEffect, type ReactNode } from 'react';
 import { useDispatch } from 'react-redux';
@@ -19,8 +24,8 @@ const AuthProvider = ( { children }: Props ) =>
 
         const restoreSession = async () =>
         {
-            const accessToken = localStorage.getItem( "accessToken" );
-            const refreshToken = localStorage.getItem( "refreshToken" );
+            const accessToken = getStoredAccessToken();
+            const refreshToken = getStoredRefreshToken();
 
             if ( refreshToken && ( !accessToken || isTokenExpired( accessToken ) ) )
             {

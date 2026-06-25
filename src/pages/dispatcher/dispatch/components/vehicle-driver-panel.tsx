@@ -1,0 +1,293 @@
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
+import type {
+  TDispatchDriverLookup,
+  TDispatchReadyLpn,
+  TDispatchVehicleLookup,
+} from "@/schemas/dispatch.schema";
+import {
+  CalendarClock,
+  CheckCircle2,
+  IdCard,
+  MapPin,
+  Route,
+  Scale,
+  Snowflake,
+  Truck,
+  UserRound,
+} from "lucide-react";
+import CapacityMeter from "./capacity-meter";
+import {
+  formatNumber,
+  getDriverWarehouseName,
+  getSelectedTemperatureRange,
+  getVehicleWarehouseName,
+  isVehicleTempCompatible,
+} from "./dispatch-helpers";
+
+type Props = {
+  vehicles: TDispatchVehicleLookup[];
+  drivers: TDispatchDriverLookup[];
+  selectedLpns: TDispatchReadyLpn[];
+  selectedVehicleId: string;
+  selectedDriverIds: string[];
+  plannedStartTime: string;
+  plannedEndTime: string;
+  isLoadingVehicles?: boolean;
+  isLoadingDrivers?: boolean;
+  isSubmitting?: boolean;
+  canCreateTrip: boolean;
+  validationMessages: string[];
+  onVehicleChange: (vehicleId: string) => void;
+  onDriverToggle: (driverId: string) => void;
+  onPlannedStartTimeChange: (value: string) => void;
+  onPlannedEndTimeChange: (value: string) => void;
+  onCreateTrip: () => void;
+};
+
+const VehicleDriverPanel = ({
+  vehicles,
+  drivers,
+  selectedLpns,
+  selectedVehicleId,
+  selectedDriverIds,
+  plannedStartTime,
+  plannedEndTime,
+  isLoadingVehicles,
+  isLoadingDrivers,
+  isSubmitting,
+  canCreateTrip,
+  validationMessages,
+  onVehicleChange,
+  onDriverToggle,
+  onPlannedStartTimeChange,
+  onPlannedEndTimeChange,
+  onCreateTrip,
+}: Props) => {
+  const selectedVehicle = vehicles.find((item) => item.vehicleId === selectedVehicleId);
+  const totalWeight = selectedLpns.reduce((sum, item) => sum + (item.actualWeightKg || 0), 0);
+  const totalCbm = selectedLpns.reduce((sum, item) => sum + (item.actualCbm || 0), 0);
+  const tempRange = getSelectedTemperatureRange(selectedLpns);
+  const tempCompatible = isVehicleTempCompatible(selectedVehicle, selectedLpns);
+
+  return (
+    <Card className="min-h-[620px] gap-0 rounded-lg py-0">
+      <CardHeader className="border-b px-5 py-4">
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <Truck className="h-5 w-5 text-sky-700" />
+          Xe, tài xế & sức chứa
+        </CardTitle>
+      </CardHeader>
+
+      <CardContent className="space-y-5 p-5">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="space-y-2 text-sm">
+            <span className="flex items-center gap-2 font-medium">
+              <CalendarClock className="h-4 w-4" />
+              Bắt đầu
+            </span>
+            <Input
+              type="datetime-local"
+              value={plannedStartTime}
+              onChange={(event) => onPlannedStartTimeChange(event.target.value)}
+            />
+          </label>
+          <label className="space-y-2 text-sm">
+            <span className="flex items-center gap-2 font-medium">
+              <Route className="h-4 w-4" />
+              Kết thúc dự kiến
+            </span>
+            <Input
+              type="datetime-local"
+              value={plannedEndTime}
+              onChange={(event) => onPlannedEndTimeChange(event.target.value)}
+            />
+          </label>
+        </div>
+
+        <section className="space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <h3 className="text-sm font-semibold">Xe đủ điều kiện</h3>
+            <Badge variant="outline">{vehicles.length} xe</Badge>
+          </div>
+          <ScrollArea className="h-[196px] rounded-lg border">
+            <div className="space-y-2 p-3">
+              {isLoadingVehicles &&
+                Array.from({ length: 3 }).map((_, index) => (
+                  <Skeleton key={index} className="h-20 w-full" />
+                ))}
+
+              {!isLoadingVehicles && vehicles.length === 0 && (
+                <div className="flex h-28 items-center justify-center text-sm text-muted-foreground">
+                  Không có xe phù hợp
+                </div>
+              )}
+
+              {!isLoadingVehicles &&
+                vehicles.map((vehicle) => {
+                  const checked = vehicle.vehicleId === selectedVehicleId;
+
+                  return (
+                    <Button
+                      key={vehicle.vehicleId}
+                      type="button"
+                      variant="outline"
+                      onClick={() => onVehicleChange(vehicle.vehicleId)}
+                      className={cn(
+                        "h-auto w-full justify-start rounded-lg p-0 text-left shadow-none",
+                        checked && "border-sky-600 bg-sky-50/80"
+                      )}
+                    >
+                      <div className="w-full p-3">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex min-w-0 items-center gap-2">
+                            <Truck className="h-4 w-4 text-sky-700" />
+                            <span className="truncate font-semibold">
+                              {vehicle.truckPlate}
+                            </span>
+                          </div>
+                          {checked && <CheckCircle2 className="h-4 w-4 text-sky-700" />}
+                        </div>
+                        <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
+                          <span>
+                            {vehicle.vehicleType || "—"} · {formatNumber(vehicle.maxWeight)} kg · {formatNumber(vehicle.maxCbm)} m³
+                          </span>
+                          <span className="flex items-center gap-1.5">
+                            <Snowflake className="h-3.5 w-3.5" />
+                            {formatNumber(vehicle.minTemp)}°C → {formatNumber(vehicle.maxTemp)}°C
+                          </span>
+                          <span className="flex items-center gap-1.5">
+                            <MapPin className="h-3.5 w-3.5" />
+                            {getVehicleWarehouseName(vehicle)}
+                          </span>
+                        </div>
+                      </div>
+                    </Button>
+                  );
+                })}
+            </div>
+          </ScrollArea>
+        </section>
+
+        <section className="space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <h3 className="text-sm font-semibold">Tài xế khả dụng</h3>
+            <Badge variant="outline">{selectedDriverIds.length}/2 đã chọn</Badge>
+          </div>
+          <ScrollArea className="h-[170px] rounded-lg border">
+            <div className="space-y-2 p-3">
+              {isLoadingDrivers &&
+                Array.from({ length: 3 }).map((_, index) => (
+                  <Skeleton key={index} className="h-16 w-full" />
+                ))}
+
+              {!isLoadingDrivers && drivers.length === 0 && (
+                <div className="flex h-24 items-center justify-center text-sm text-muted-foreground">
+                  Không có tài xế phù hợp
+                </div>
+              )}
+
+              {!isLoadingDrivers &&
+                drivers.map((driver) => {
+                  const checked = selectedDriverIds.includes(driver.driverId);
+                  const disabled = !checked && selectedDriverIds.length >= 2;
+
+                  return (
+                    <Button
+                      key={driver.driverId}
+                      type="button"
+                      variant="outline"
+                      disabled={disabled}
+                      onClick={() => onDriverToggle(driver.driverId)}
+                      className={cn(
+                        "h-auto w-full justify-start rounded-lg p-0 text-left shadow-none",
+                        checked && "border-emerald-600 bg-emerald-50/80"
+                      )}
+                    >
+                      <div className="w-full p-3">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex min-w-0 items-center gap-2">
+                            <UserRound className="h-4 w-4 text-emerald-700" />
+                            <span className="truncate font-semibold">
+                              {driver.fullName}
+                            </span>
+                          </div>
+                          {checked && <CheckCircle2 className="h-4 w-4 text-emerald-700" />}
+                        </div>
+                        <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
+                          <span>{driver.phoneNumber || "—"} · {driver.status || "—"}</span>
+                          <span className="flex items-center gap-1.5">
+                            <IdCard className="h-3.5 w-3.5" />
+                            Bằng {driver.licenseClass || "—"} · Hạn {driver.licenseExpiry || "—"}
+                          </span>
+                          <span className="flex items-center gap-1.5">
+                            <MapPin className="h-3.5 w-3.5" />
+                            {getDriverWarehouseName(driver)}
+                          </span>
+                        </div>
+                      </div>
+                    </Button>
+                  );
+                })}
+            </div>
+          </ScrollArea>
+        </section>
+
+        <section className="space-y-4 rounded-lg border bg-muted/20 p-4">
+          <div className="flex items-center justify-between gap-3">
+            <h3 className="flex items-center gap-2 text-sm font-semibold">
+              <Scale className="h-4 w-4" />
+              Sức chứa chuyến
+            </h3>
+            {tempRange && (
+              <Badge
+                variant="outline"
+                className={cn(!tempCompatible && "border-rose-300 bg-rose-50 text-rose-700")}
+              >
+                {tempRange.min}°C → {tempRange.max}°C
+              </Badge>
+            )}
+          </div>
+
+          <CapacityMeter
+            label="Tải trọng"
+            used={totalWeight}
+            capacity={selectedVehicle?.maxWeight}
+            unit="kg"
+          />
+          <CapacityMeter
+            label="Thể tích"
+            used={totalCbm}
+            capacity={selectedVehicle?.maxCbm}
+            unit="m³"
+          />
+        </section>
+
+        {validationMessages.length > 0 && (
+          <div className="space-y-1 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+            {validationMessages.map((message) => (
+              <p key={message}>{message}</p>
+            ))}
+          </div>
+        )}
+
+        <Button
+          type="button"
+          className="h-11 w-full"
+          disabled={!canCreateTrip || isSubmitting}
+          onClick={onCreateTrip}
+        >
+          <CheckCircle2 className="h-4 w-4" />
+          {isSubmitting ? "Đang tạo chuyến..." : "Plan Load · Tạo Trip"}
+        </Button>
+      </CardContent>
+    </Card>
+  );
+};
+
+export default VehicleDriverPanel;
