@@ -1,30 +1,31 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RotateCcw, Search } from "lucide-react";
 import { ALL_TRIP_STATUS, getTripStatusLabel } from "./trip-helpers";
 
 type Props = {
   search: string;
   status: string;
+  statusCounts?: Record<string, number>;
   isLoading?: boolean;
   onSearchChange: (value: string) => void;
   onStatusChange: (value: string) => void;
   onRefresh: () => void;
 };
 
-const statuses = ["PLANNED", "PICKING", "LOADING_COMPLETED"];
+const statusTabs = [
+  ALL_TRIP_STATUS,
+  "PLANNED",
+  "PICKING",
+  "LOADING_COMPLETED",
+];
 
 const TripFilterBar = ({
   search,
   status,
+  statusCounts,
   isLoading,
   onSearchChange,
   onStatusChange,
@@ -43,20 +44,6 @@ const TripFilterBar = ({
           />
         </div>
 
-        <Select value={status} onValueChange={onStatusChange}>
-          <SelectTrigger className="w-full lg:w-[220px]">
-            <SelectValue placeholder="Trạng thái" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={ALL_TRIP_STATUS}>Tất cả trạng thái</SelectItem>
-            {statuses.map((item) => (
-              <SelectItem key={item} value={item}>
-                {getTripStatusLabel(item)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
         <Button
           type="button"
           variant="outline"
@@ -68,6 +55,25 @@ const TripFilterBar = ({
           Tải lại
         </Button>
       </div>
+
+      <Tabs value={status} onValueChange={onStatusChange} className="mt-4">
+        <TabsList className="flex w-full gap-2 overflow-x-auto border-b-0">
+          {statusTabs.map((item) => (
+            <TabsTrigger
+              key={item}
+              value={item}
+              className="h-9 shrink-0 rounded-md border px-3 py-2 data-[state=active]:border-primary data-[state=active]:bg-primary/10 data-[state=active]:border-b-primary"
+            >
+              <span>
+                {item === ALL_TRIP_STATUS ? "Tất cả" : getTripStatusLabel(item)}
+              </span>
+              <span className="ml-2 rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
+                {statusCounts?.[item] ?? 0}
+              </span>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
     </Card>
   );
 };

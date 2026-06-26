@@ -41,7 +41,7 @@ const LpnSelectionPanel = ({
   onToggle,
 }: Props) => {
   return (
-    <Card className="min-h-[620px] gap-0 rounded-lg py-0">
+    <Card className="min-h-[580px] gap-0 overflow-hidden rounded-lg py-0">
       <CardHeader className="border-b px-5 py-4">
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -58,11 +58,11 @@ const LpnSelectionPanel = ({
       </CardHeader>
 
       <CardContent className="p-0">
-        <ScrollArea className="h-[560px]">
-          <div className="space-y-3 p-4">
+        <ScrollArea className="h-[520px]">
+          <div className="space-y-2.5 p-3">
             {isLoading &&
               Array.from({ length: 6 }).map((_, index) => (
-                <Skeleton key={index} className="h-24 w-full" />
+                <Skeleton key={index} className="h-28 w-full" />
               ))}
 
             {!isLoading && lpns.length === 0 && (
@@ -94,25 +94,37 @@ const LpnSelectionPanel = ({
                     disabled={blockedByDate}
                     onClick={() => onToggle(lpn)}
                     className={cn(
-                      "h-auto w-full justify-start rounded-lg border p-0 text-left shadow-none",
+                      "h-auto w-full justify-start overflow-hidden rounded-lg border p-0 text-left whitespace-normal shadow-none",
                       checked
                         ? "border-emerald-600 bg-emerald-50/70 text-foreground"
                         : "bg-background hover:bg-muted/50",
                       blockedByDate && "opacity-50"
                     )}
                   >
-                    <div className="flex w-full gap-3 p-4">
-                      <div className="pt-1">
+                    <div className="flex min-w-0 w-full gap-3 p-3.5">
+                      <div className="shrink-0 pt-1">
                         <Checkbox checked={checked} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="font-semibold">{lpn.lpnCode}</span>
+                        <div className="flex min-w-0 flex-wrap items-center gap-2">
+                          <span className="max-w-full truncate font-semibold sm:max-w-[240px]">
+                            {lpn.lpnCode}
+                          </span>
                           {lpn.trackingCode && (
-                            <Badge variant="outline">{lpn.trackingCode}</Badge>
+                            <Badge
+                              variant="outline"
+                              className="max-w-[180px] truncate"
+                              title={lpn.trackingCode}
+                            >
+                              {lpn.trackingCode}
+                            </Badge>
                           )}
                           {lpn.routeCode && (
-                            <Badge variant="outline" className="bg-violet-50 text-violet-800">
+                            <Badge
+                              variant="outline"
+                              className="max-w-[160px] truncate bg-violet-50 text-violet-800"
+                              title={lpn.routeCode}
+                            >
                               {lpn.routeCode}
                             </Badge>
                           )}
@@ -132,10 +144,10 @@ const LpnSelectionPanel = ({
                           {lpn.itemName || "Không có tên hàng"}
                         </p>
 
-                        <div className="mt-3 grid gap-2 text-xs text-muted-foreground sm:grid-cols-2">
-                          <span className="flex items-center gap-1.5">
-                            <MapPin className="h-3.5 w-3.5" />
-                            {getLpnWarehouseName(lpn)}
+                        <div className="mt-3 grid min-w-0 gap-x-5 gap-y-2 text-xs text-muted-foreground sm:grid-cols-2">
+                          <span className="flex min-w-0 items-center gap-1.5">
+                            <MapPin className="h-3.5 w-3.5 shrink-0" />
+                            <span className="truncate">{getLpnWarehouseName(lpn)}</span>
                           </span>
                           <span className="flex min-w-0 items-center gap-1.5">
                             <Route className="h-3.5 w-3.5 shrink-0" />
@@ -143,22 +155,30 @@ const LpnSelectionPanel = ({
                               {lpn.destinationAddress || "Chưa có điểm trả hàng"}
                             </span>
                           </span>
-                          <span className="flex items-center gap-1.5">
-                            <CalendarDays className="h-3.5 w-3.5" />
-                            {formatDate(getLpnDispatchDateValue(lpn))}
+                          <span className="flex min-w-0 items-center gap-1.5">
+                            <CalendarDays className="h-3.5 w-3.5 shrink-0" />
+                            <span className="truncate">
+                              {formatDate(getLpnDispatchDateValue(lpn))}
+                            </span>
                           </span>
-                          <span className="flex items-center gap-1.5">
-                            <Scale className="h-3.5 w-3.5" />
-                            {formatNumber(lpn.actualWeightKg)} kg · {formatNumber(lpn.actualCbm)} m³
+                          <span className="flex min-w-0 items-center gap-1.5">
+                            <Scale className="h-3.5 w-3.5 shrink-0" />
+                            <span className="truncate">
+                              {formatNumber(lpn.actualWeightKg)} kg ·{" "}
+                              {formatNumber(lpn.actualCbm)} m³
+                            </span>
                           </span>
-                          <span className="flex items-center gap-1.5">
-                            <Snowflake className="h-3.5 w-3.5" />
-                            {lpn.tempCondition || "—"}
+                          <span className="flex min-w-0 items-center gap-1.5">
+                            <Snowflake className="h-3.5 w-3.5 shrink-0" />
+                            <span className="truncate">{lpn.tempCondition || "—"}</span>
                           </span>
                         </div>
 
                         {lpn.label && (
-                          <p className="mt-2 line-clamp-1 text-xs text-muted-foreground">
+                          <p
+                            className="mt-2 line-clamp-2 whitespace-normal break-words text-xs leading-relaxed text-muted-foreground"
+                            title={lpn.label}
+                          >
                             {lpn.label}
                           </p>
                         )}

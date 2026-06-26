@@ -142,3 +142,44 @@ export type TCancelTripResult = {
   cancelledAt?: string | null;
   message?: string | null;
 };
+
+export type TStartPickingResult = {
+  tripId: string;
+  status: string;
+  lpnCount: number;
+};
+
+export type TDispatchTripDocuments = {
+  lifoPdfUrl?: string | null;
+  waybillPdfUrl?: string | null;
+};
+
+export type TDispatchTripRouteStep = {
+  stepIndex?: number | null;
+  instruction?: string | null;
+  distanceKm?: number | null;
+  durationSeconds?: number | null;
+  maneuver?: string | null;
+};
+
+export type TDispatchTripRouteLeg = {
+  legIndex?: number | null;
+  fromAddress?: string | null;
+  toAddress?: string | null;
+  startAddress?: string | null;
+  endAddress?: string | null;
+  distanceKm?: number | null;
+  durationMinutes?: number | null;
+  durationSeconds?: number | null;
+  steps?: TDispatchTripRouteStep[];
+};
+
+export type TDispatchTripRoute = {
+  totalDistanceKm?: number | null;
+  totalDurationMinutes?: number | null;
+  totalDurationSeconds?: number | null;
+  totalStops?: number | null;
+  overviewPolyline?: string | null;
+  goongRouteOverview?: string | null;
+  legs?: TDispatchTripRouteLeg[];
+};

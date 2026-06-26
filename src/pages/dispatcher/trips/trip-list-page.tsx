@@ -31,7 +31,7 @@ const matchTripSearch = (trip: TDispatchTrip, search: string) => {
 };
 
 const TripListPage = () => {
-  const { getCreatedTrips, cancelTrip } = useDispatchTrips();
+  const { getCreatedTrips, cancelTrip, startPicking } = useDispatchTrips();
   const tripsQuery = getCreatedTrips();
   const trips = tripsQuery.data ?? [];
   const [search, setSearch] = useState("");
@@ -46,6 +46,18 @@ const TripListPage = () => {
         (status === ALL_TRIP_STATUS || trip.status === status)
     );
   }, [search, status, trips]);
+
+  const statusCounts = useMemo(
+    () => ({
+      [ALL_TRIP_STATUS]: trips.length,
+      PLANNED: trips.filter((trip) => trip.status === "PLANNED").length,
+      PICKING: trips.filter((trip) => trip.status === "PICKING").length,
+      LOADING_COMPLETED: trips.filter(
+        (trip) => trip.status === "LOADING_COMPLETED"
+      ).length,
+    }),
+    [trips]
+  );
 
   const handleConfirmCancel = async () => {
     if (!tripToCancel) return;
@@ -63,6 +75,28 @@ const TripListPage = () => {
         error?.response?.data?.Error ||
         error?.message ||
         "Không thể hủy bốc hàng.";
+      toast.error(message);
+    }
+  };
+
+  const handleStartPicking = async (trip: TDispatchTrip) => {
+    try {
+      const result = await startPicking.mutateAsync(trip.tripId);
+      toast.success(
+        `Đã bắt đầu bốc hàng cho ${result.lpnCount} LPN trong trip ${result.tripId.slice(
+          0,
+          8
+        )}.`
+      );
+      if (selectedTrip?.tripId === trip.tripId) {
+        setSelectedTrip(null);
+      }
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.error ||
+        error?.response?.data?.Error ||
+        error?.message ||
+        "Không thể bắt đầu bốc hàng.";
       toast.error(message);
     }
   };
@@ -99,6 +133,7 @@ const TripListPage = () => {
       <TripFilterBar
         search={search}
         status={status}
+        statusCounts={statusCounts}
         isLoading={tripsQuery.isFetching}
         onSearchChange={setSearch}
         onStatusChange={setStatus}
@@ -108,8 +143,10 @@ const TripListPage = () => {
       <TripTable
         trips={filteredTrips}
         isLoading={tripsQuery.isLoading}
+        isStartingPicking={startPicking.isPending}
         onSelect={setSelectedTrip}
         onCancel={setTripToCancel}
+        onStartPicking={handleStartPicking}
       />
 
       <TripDetailDialog
@@ -119,6 +156,8 @@ const TripListPage = () => {
           if (!open) setSelectedTrip(null);
         }}
         onCancel={setTripToCancel}
+        onStartPicking={handleStartPicking}
+        isStartingPicking={startPicking.isPending}
       />
 
       <TripCancelDialog

@@ -18,12 +18,19 @@ import {
   Boxes,
   CalendarClock,
   CheckCircle2,
+  ExternalLink,
+  FileText,
+  Loader2,
+  MapPinned,
+  Navigation,
   Package,
+  Play,
   Truck,
   User,
 } from "lucide-react";
 import {
   canCancelTrip,
+  canStartPickingTrip,
   formatShortTripId,
   formatTripDateTime,
   getTripProgress,
@@ -34,12 +41,40 @@ import {
 type Props = {
   open: boolean;
   trip: TDispatchTrip | null;
+  isStartingPicking?: boolean;
   onOpenChange: (open: boolean) => void;
   onCancel: (trip: TDispatchTrip) => void;
+  onStartPicking: (trip: TDispatchTrip) => void;
 };
 
-const TripDetailDialog = ({ open, trip, onOpenChange, onCancel }: Props) => {
-  const { getPickingTripDetail, getTripPickList } = useDispatchTrips();
+const formatRouteDuration = (
+  totalDurationMinutes?: number | null,
+  totalDurationSeconds?: number | null
+) => {
+  const minutes =
+    totalDurationMinutes ??
+    (typeof totalDurationSeconds === "number"
+      ? Math.round(totalDurationSeconds / 60)
+      : null);
+  if (typeof minutes !== "number") return "—";
+  if (minutes < 60) return `${minutes} phút`;
+  return `${Math.floor(minutes / 60)} giờ ${minutes % 60} phút`;
+};
+
+const TripDetailDialog = ({
+  open,
+  trip,
+  isStartingPicking,
+  onOpenChange,
+  onCancel,
+  onStartPicking,
+}: Props) => {
+  const {
+    getPickingTripDetail,
+    getTripDocuments,
+    getTripPickList,
+    getTripRoute,
+  } = useDispatchTrips();
   const pickingDetailQuery = getPickingTripDetail(
     trip?.tripId,
     open && trip?.status === "PICKING"
@@ -48,12 +83,16 @@ const TripDetailDialog = ({ open, trip, onOpenChange, onCancel }: Props) => {
     trip?.tripId,
     open && trip?.status === "PLANNED"
   );
+  const documentsQuery = getTripDocuments(trip?.tripId, open && Boolean(trip));
+  const routeQuery = getTripRoute(trip?.tripId, open && Boolean(trip));
 
   if (!trip) {
     return <Dialog open={open} onOpenChange={onOpenChange} />;
   }
 
   const detailTrip = pickingDetailQuery.data ?? trip;
+  const documents = documentsQuery.data;
+  const route = routeQuery.data;
   const lpns =
     detailTrip.lpns ??
     (trip.status === "PLANNED" ? pickListQuery.data : undefined) ??
@@ -122,6 +161,154 @@ const TripDetailDialog = ({ open, trip, onOpenChange, onCancel }: Props) => {
                 <p className="mt-1 text-xs text-muted-foreground">
                   {progress.label}
                 </p>
+              </div>
+            </div>
+
+            <div className="grid gap-4 xl:grid-cols-[0.85fr_1.15fr]">
+              <div className="rounded-lg border">
+                <div className="border-b px-4 py-3">
+                  <h3 className="flex items-center gap-2 font-semibold">
+                    <FileText className="h-4 w-4 text-blue-700" />
+                    Giấy tờ chuyến
+                  </h3>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Lấy từ PDF LIFO và giấy đi đường theo trip
+                  </p>
+                </div>
+                <div className="space-y-3 p-4">
+                  {documentsQuery.isLoading && (
+                    <>
+                      <Skeleton className="h-11 w-full" />
+                      <Skeleton className="h-11 w-full" />
+                    </>
+                  )}
+
+                  {!documentsQuery.isLoading && documentsQuery.isError && (
+                    <p className="rounded-lg border border-dashed p-3 text-sm text-muted-foreground">
+                      Không tải được thông tin giấy tờ cho trip này.
+                    </p>
+                  )}
+
+                  {!documentsQuery.isLoading && !documentsQuery.isError && (
+                    <>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full justify-between"
+                        disabled={!documents?.lifoPdfUrl}
+                        onClick={() =>
+                          documents?.lifoPdfUrl &&
+                          window.open(documents.lifoPdfUrl, "_blank")
+                        }
+                      >
+                        <span>Sơ đồ LIFO</span>
+                        <ExternalLink className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full justify-between"
+                        disabled={!documents?.waybillPdfUrl}
+                        onClick={() =>
+                          documents?.waybillPdfUrl &&
+                          window.open(documents.waybillPdfUrl, "_blank")
+                        }
+                      >
+                        <span>Giấy đi đường</span>
+                        <ExternalLink className="h-4 w-4" />
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div className="rounded-lg border">
+                <div className="border-b px-4 py-3">
+                  <h3 className="flex items-center gap-2 font-semibold">
+                    <MapPinned className="h-4 w-4 text-emerald-700" />
+                    Lộ trình
+                  </h3>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Dữ liệu từ Goong route theo các điểm dừng của trip
+                  </p>
+                </div>
+                <div className="p-4">
+                  {routeQuery.isLoading && (
+                    <div className="space-y-3">
+                      <Skeleton className="h-20 w-full" />
+                      <Skeleton className="h-14 w-full" />
+                    </div>
+                  )}
+
+                  {!routeQuery.isLoading && routeQuery.isError && (
+                    <p className="rounded-lg border border-dashed p-3 text-sm text-muted-foreground">
+                      Không tải được lộ trình cho trip này.
+                    </p>
+                  )}
+
+                  {!routeQuery.isLoading && !routeQuery.isError && route && (
+                    <div className="space-y-4">
+                      <div className="grid gap-3 sm:grid-cols-3">
+                        <div className="rounded-lg bg-muted/50 p-3">
+                          <p className="text-xs text-muted-foreground">
+                            Quãng đường
+                          </p>
+                          <p className="mt-1 font-semibold">
+                            {route.totalDistanceKm ?? "—"} km
+                          </p>
+                        </div>
+                        <div className="rounded-lg bg-muted/50 p-3">
+                          <p className="text-xs text-muted-foreground">
+                            Thời lượng
+                          </p>
+                          <p className="mt-1 font-semibold">
+                            {formatRouteDuration(
+                              route.totalDurationMinutes,
+                              route.totalDurationSeconds
+                            )}
+                          </p>
+                        </div>
+                        <div className="rounded-lg bg-muted/50 p-3">
+                          <p className="text-xs text-muted-foreground">
+                            Chặng
+                          </p>
+                          <p className="mt-1 font-semibold">
+                            {route.legs?.length ?? route.totalStops ?? 0}
+                          </p>
+                        </div>
+                      </div>
+
+                      {route.legs && route.legs.length > 0 && (
+                        <div className="space-y-2">
+                          {route.legs.slice(0, 3).map((leg, index) => (
+                            <div key={index} className="rounded-lg border p-3">
+                              <div className="flex items-start gap-2">
+                                <Navigation className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                                <div className="min-w-0">
+                                  <p className="line-clamp-1 text-sm font-medium">
+                                    {leg.fromAddress ||
+                                      leg.startAddress ||
+                                      `Chặng ${index + 1}`}
+                                  </p>
+                                  <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">
+                                    {leg.toAddress || leg.endAddress || "Điểm tiếp theo"}
+                                  </p>
+                                  <p className="mt-2 text-xs text-muted-foreground">
+                                    {leg.distanceKm ?? "—"} km ·{" "}
+                                    {formatRouteDuration(
+                                      leg.durationMinutes,
+                                      leg.durationSeconds
+                                    )}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -205,6 +392,21 @@ const TripDetailDialog = ({ open, trip, onOpenChange, onCancel }: Props) => {
               >
                 Đóng
               </Button>
+              {canStartPickingTrip(trip) && (
+                <Button
+                  type="button"
+                  className="gap-2"
+                  disabled={isStartingPicking}
+                  onClick={() => onStartPicking(trip)}
+                >
+                  {isStartingPicking ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Play className="h-4 w-4" />
+                  )}
+                  Bắt đầu bốc hàng
+                </Button>
+              )}
               <Button
                 type="button"
                 variant="outline"

@@ -52,15 +52,15 @@ const shipmentStats = [
 
 const ShipmentPage = (_: Props) => {
   return (
-    <div className="space-y-6">
+    <div className="min-w-0 space-y-4">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-semibold">
+          <h1 className="text-2xl font-semibold">
             Quản lý lô hàng
           </h1>
 
-          <p className="text-muted-foreground mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             Duyệt, báo giá, điều phối và theo dõi
             toàn bộ lô hàng
           </p>
@@ -76,19 +76,19 @@ const ShipmentPage = (_: Props) => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-7 gap-4">
+      <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
         {shipmentStats.map((item) => (
           <Card
             key={item.title}
-            className="rounded-2xl py-6 flex flex-col items-center justify-center"
+            className="min-h-[82px] gap-1 rounded-xl px-3 py-3 flex flex-col items-center justify-center"
           >
             <h2
-              className={`text-4xl font-bold ${item.color}`}
+              className={`text-2xl font-bold leading-none ${item.color}`}
             >
               {item.value}
             </h2>
 
-            <p className="text-sm text-muted-foreground mt-2">
+            <p className="text-xs text-muted-foreground text-center">
               {item.title}
             </p>
           </Card>
@@ -96,7 +96,9 @@ const ShipmentPage = (_: Props) => {
       </div>
 
       {/* Table */}
-      <ShipmentTable />
+      <div className="min-w-0">
+        <ShipmentTable />
+      </div>
     </div>
   );
 };

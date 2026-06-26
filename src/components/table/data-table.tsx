@@ -106,7 +106,7 @@ function TableSkeleton<TData, TValue> ( {
   const skeletonRows = Array.from( { length: pageSize }, ( _, index ) => index );
 
   return (
-    <Table className="relative">
+    <Table className="relative w-max min-w-full">
       <TableHeader>
         <TableRow>
           { columns.map( ( _, index ) => (
@@ -270,7 +270,7 @@ export function DataTable<TData, TValue> ( {
   } );
 
   return (
-    <div className="space-y-4">
+    <div className="min-w-0 max-w-full space-y-4">
       {/* Enhanced Header Section */ }
       { hasToolbar && (
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -447,21 +447,21 @@ export function DataTable<TData, TValue> ( {
 
 
       {/* Table Container with improved styling */ }
-      <div className="overflow-hidden rounded-2xl border bg-card shadow-sm">
+      <div className="min-w-0 max-w-full rounded-2xl border bg-card shadow-sm">
         <ScrollArea
           // orientation="horizontal"
           className={ cn(
             isShort
               ? "h-[calc(30vh)] md:h-[calc(30dvh)]"
               : "h-[calc(80vh-280px)] md:h-[calc(90dvh-250px)]",
-            "rounded-t-2xl"
+            "min-w-0 w-full max-w-full rounded-t-2xl"
           ) }
         >
           {/* Conditionally render skeleton or actual table based on loading state */ }
           { isLoading ? (
             <TableSkeleton columns={ columns } pageSize={ pageSize } />
           ) : (
-            <Table className="relative">
+            <Table className="relative w-max min-w-full">
               <TableHeader className="sticky top-0 z-10 bg-muted/40">
                 { table.getHeaderGroups().map( ( headerGroup ) => (
                   <TableRow
@@ -529,9 +529,9 @@ export function DataTable<TData, TValue> ( {
 
         {/* Enhanced Pagination Section */ }
         { isPagingProp && (
-          <div className="flex flex-col items-center justify-end gap-4 border-t px-4 py-4 sm:flex-row">
+          <div className="flex min-w-0 max-w-full flex-col items-center justify-end gap-4 border-t px-4 py-4 sm:flex-row sm:flex-wrap">
             {/* Page Size Selector */ }
-            <div className="flex flex-col items-center gap-6 justify-end sm:flex-row">
+            <div className="flex min-w-0 max-w-full flex-col items-center gap-4 justify-end sm:flex-row sm:flex-wrap">
               <div className="flex items-center gap-2">
                 <p className="whitespace-nowrap text-sm font-medium">
                   Số hàng mỗi trang:

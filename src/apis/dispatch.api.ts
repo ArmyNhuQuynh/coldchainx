@@ -1,16 +1,25 @@
 import { apiRequest } from "@/lib/http";
-import type { TOrder } from "@/schemas/order.schema";
 import type {
+  TCancelTripResult,
   TDispatchDriverLookup,
   TDispatchLookupEnvelope,
   TDispatchReadyLpn,
   TDispatchTrip,
+  TDispatchTripDocuments,
   TDispatchTripLpn,
+  TDispatchTripRoute,
+  TDispatchTripRouteLeg,
+  TDispatchTripRouteStep,
   TDispatchVehicleLookup,
-  TCancelTripResult,
   TManualDispatchRequest,
   TManualDispatchResult,
+  TStartPickingResult,
 } from "@/schemas/dispatch.schema";
+import type { TOrder } from "@/schemas/order.schema";
+import {
+  DRIVER_STATUS,
+  normalizeDriverStatus,
+} from "@/types/enums/driver-status.enum";
 import { API_SUFFIX } from "./util.api";
 
 const unwrapLookup = <T>(payload: TDispatchLookupEnvelope<T[]> | T[]): T[] => {
@@ -195,6 +204,95 @@ const normalizeTripLpn = (
   };
 };
 
+const normalizeRouteStep = (
+  item: TDispatchTripRouteStep | Record<string, any>,
+  index: number
+): TDispatchTripRouteStep => {
+  const raw = item as Record<string, any>;
+  return {
+    stepIndex: read<number | null>(raw, "stepIndex", "StepIndex") ?? index + 1,
+    instruction: read<string | null>(raw, "instruction", "Instruction"),
+    distanceKm: read<number | null>(raw, "distanceKm", "DistanceKm"),
+    durationSeconds: read<number | null>(
+      raw,
+      "durationSeconds",
+      "DurationSeconds"
+    ),
+    maneuver: read<string | null>(raw, "maneuver", "Maneuver"),
+  };
+};
+
+const normalizeRouteLeg = (
+  item: TDispatchTripRouteLeg | Record<string, any>,
+  index: number
+): TDispatchTripRouteLeg => {
+  const raw = item as Record<string, any>;
+  const steps = read<unknown>(raw, "steps", "Steps");
+  return {
+    legIndex: read<number | null>(raw, "legIndex", "LegIndex") ?? index + 1,
+    fromAddress: read<string | null>(raw, "fromAddress", "FromAddress"),
+    toAddress: read<string | null>(raw, "toAddress", "ToAddress"),
+    startAddress: read<string | null>(raw, "startAddress", "StartAddress"),
+    endAddress: read<string | null>(raw, "endAddress", "EndAddress"),
+    distanceKm: read<number | null>(raw, "distanceKm", "DistanceKm"),
+    durationMinutes: read<number | null>(
+      raw,
+      "durationMinutes",
+      "DurationMinutes"
+    ),
+    durationSeconds: read<number | null>(
+      raw,
+      "durationSeconds",
+      "DurationSeconds"
+    ),
+    steps: Array.isArray(steps)
+      ? steps.map((step, stepIndex) =>
+          normalizeRouteStep(step as Record<string, any>, stepIndex)
+        )
+      : [],
+  };
+};
+
+const normalizeTripRoute = (
+  item: TDispatchTripRoute | Record<string, any>
+): TDispatchTripRoute => {
+  const raw = item as Record<string, any>;
+  const legs = read<unknown>(raw, "legs", "Legs");
+  return {
+    totalDistanceKm: read<number | null>(
+      raw,
+      "totalDistanceKm",
+      "TotalDistanceKm"
+    ),
+    totalDurationMinutes: read<number | null>(
+      raw,
+      "totalDurationMinutes",
+      "TotalDurationMinutes"
+    ),
+    totalDurationSeconds: read<number | null>(
+      raw,
+      "totalDurationSeconds",
+      "TotalDurationSeconds"
+    ),
+    totalStops: read<number | null>(raw, "totalStops", "TotalStops"),
+    overviewPolyline: read<string | null>(
+      raw,
+      "overviewPolyline",
+      "OverviewPolyline"
+    ),
+    goongRouteOverview: read<string | null>(
+      raw,
+      "goongRouteOverview",
+      "GoongRouteOverview"
+    ),
+    legs: Array.isArray(legs)
+      ? legs.map((leg, legIndex) =>
+          normalizeRouteLeg(leg as Record<string, any>, legIndex)
+        )
+      : [],
+  };
+};
+
 const normalizeTrip = (
   item: TDispatchTrip | Record<string, any>,
   source: TDispatchTrip["source"]
@@ -280,7 +378,11 @@ const getAvailableDrivers = async () => {
     TDispatchLookupEnvelope<TDispatchDriverLookup[]> | TDispatchDriverLookup[]
   >(`${API_SUFFIX.DISPATCH_API}/lookup/drivers`);
 
-  return unwrapLookup<TDispatchDriverLookup>(response.data).map(normalizeDriver);
+  return unwrapLookup<TDispatchDriverLookup>(response.data)
+    .map(normalizeDriver)
+    .filter(
+      (driver) => normalizeDriverStatus(driver.status) === DRIVER_STATUS.ACTIVE
+    );
 };
 
 const manualDispatch = async (data: TManualDispatchRequest) => {
@@ -358,6 +460,49 @@ const cancelTrip = async (tripId: string) => {
   return unwrapData<TCancelTripResult>(response.data);
 };
 
+const startPicking = async (tripId: string) => {
+  const response = await apiRequest.baseApi.post<
+    TDispatchLookupEnvelope<TStartPickingResult> | TStartPickingResult
+  >(`${API_SUFFIX.DISPATCH_API}/trip/${tripId}/start-picking`);
+
+  return unwrapData<TStartPickingResult>(response.data);
+};
+
+const getTripDocuments = async (
+  tripId: string
+): Promise<TDispatchTripDocuments> => {
+  const [lifoResult, waybillResult] = await Promise.allSettled([
+    apiRequest.baseApi.get<Record<string, any>>(
+      `${API_SUFFIX.DISPATCH_API}/trip/${tripId}/lifo-url`
+    ),
+    apiRequest.baseApi.get<Record<string, any>>(
+      `${API_SUFFIX.DISPATCH_API}/trip/${tripId}/waybill-url`
+    ),
+  ]);
+
+  const lifoData =
+    lifoResult.status === "fulfilled" ? lifoResult.value.data : undefined;
+  const waybillData =
+    waybillResult.status === "fulfilled" ? waybillResult.value.data : undefined;
+
+  return {
+    lifoPdfUrl: lifoData
+      ? read<string | null>(lifoData, "lifoPdfUrl", "LifoPdfUrl")
+      : null,
+    waybillPdfUrl: waybillData
+      ? read<string | null>(waybillData, "waybillPdfUrl", "WaybillPdfUrl")
+      : null,
+  };
+};
+
+const getTripRoute = async (tripId: string) => {
+  const response = await apiRequest.baseApi.get<
+    TDispatchLookupEnvelope<TDispatchTripRoute> | TDispatchTripRoute
+  >(`${API_SUFFIX.DISPATCH_API}/trip/${tripId}/route`);
+
+  return normalizeTripRoute(unwrapData<TDispatchTripRoute>(response.data));
+};
+
 export const dispatchApi = {
   getReadyLpns,
   getAvailableVehicles,
@@ -367,4 +512,7 @@ export const dispatchApi = {
   getPickingTrips,
   getTripPickList,
   cancelTrip,
+  startPicking,
+  getTripDocuments,
+  getTripRoute,
 };

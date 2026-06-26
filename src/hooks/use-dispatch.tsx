@@ -84,10 +84,40 @@ export const useDispatchTrips = () => {
     },
   });
 
+  const startPicking = useMutation({
+    mutationFn: (tripId: string) => dispatchApi.startPicking(tripId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["dispatch"] });
+    },
+  });
+
+  const getTripDocuments = (tripId?: string, enabled = true) =>
+    useQuery({
+      queryKey: ["dispatch", "trips", "documents", tripId],
+      queryFn: async () => {
+        if (!tripId) return null;
+        return dispatchApi.getTripDocuments(tripId);
+      },
+      enabled: enabled && Boolean(tripId),
+    });
+
+  const getTripRoute = (tripId?: string, enabled = true) =>
+    useQuery({
+      queryKey: ["dispatch", "trips", "route", tripId],
+      queryFn: async () => {
+        if (!tripId) return null;
+        return dispatchApi.getTripRoute(tripId);
+      },
+      enabled: enabled && Boolean(tripId),
+    });
+
   return {
     getCreatedTrips,
     getPickingTripDetail,
     getTripPickList,
     cancelTrip,
+    startPicking,
+    getTripDocuments,
+    getTripRoute,
   };
 };

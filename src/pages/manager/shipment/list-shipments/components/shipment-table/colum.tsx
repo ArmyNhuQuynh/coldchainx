@@ -22,16 +22,16 @@ const ActionCell = ({ order }: { order: TOrder }) => {
     const navigate = useNavigate();
 
     return (
-        <div className="flex justify-center items-center gap-2">
+        <div className="flex justify-center items-center gap-1.5">
             <TooltipProvider>
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <Button
                             variant="outline"
-                            className="h-9 px-3 rounded-xl"
+                            className="h-8 rounded-xl px-3 text-sm"
                             onClick={() => navigate(order.orderId)}
                         >
-                            <Eye className="h-4 w-4 mr-2" />
+                            <Eye className="h-4 w-4" />
                             Chi tiết
                         </Button>
                     </TooltipTrigger>
@@ -62,14 +62,14 @@ export const columns: ColumnDef<TOrder>[] = [
             const trackingCode = row.getValue("trackingCode") as string;
 
             return createFormattedCell(
-                <span className="font-semibold text-primary">
+                <span className="truncate font-semibold text-primary">
                     {trackingCode}
                 </span>,
-                { align: "left", tooltip: trackingCode }
+                { align: "left", maxWidth: "150px", tooltip: trackingCode, truncate: true }
             );
         },
 
-        size: 200,
+        size: 160,
     },
 
     {
@@ -81,12 +81,12 @@ export const columns: ColumnDef<TOrder>[] = [
             const customerName = row.getValue("customerName") as string;
 
             return createFormattedCell(
-                <span className="font-semibold">{customerName}</span>,
-                { align: "left", tooltip: customerName }
+                <span className="truncate font-semibold">{customerName}</span>,
+                { align: "left", maxWidth: "190px", tooltip: customerName, truncate: true }
             );
         },
 
-        size: 180,
+        size: 200,
     },
 
     {
@@ -99,11 +99,13 @@ export const columns: ColumnDef<TOrder>[] = [
 
             return createFormattedCell(address, {
                 align: "left",
+                maxWidth: "240px",
+                truncate: true,
                 tooltip: address,
             });
         },
 
-        size: 220,
+        size: 240,
     },
 
     {
@@ -116,14 +118,14 @@ export const columns: ColumnDef<TOrder>[] = [
             const { label, className } = getOrderCategoryLabel(category);
 
             return createFormattedCell(
-                <Badge className={`${className} hover:opacity-90`}>
+                <Badge className={`${className} max-w-[120px] truncate hover:opacity-90`}>
                     {label}
                 </Badge>,
                 { align: "left" }
             );
         },
 
-        size: 200,
+        size: 130,
     },
 
     {
@@ -140,7 +142,7 @@ export const columns: ColumnDef<TOrder>[] = [
             return createFormattedCell(formatted, { align: "center" });
         },
 
-        size: 130,
+        size: 110,
     },
 
     {
@@ -153,14 +155,14 @@ export const columns: ColumnDef<TOrder>[] = [
             const { label, className } = getOrderStatusLabel(status);
 
             return createFormattedCell(
-                <Badge className={`${className} hover:opacity-90`}>
+                <Badge className={`${className} max-w-[140px] truncate hover:opacity-90`}>
                     {label}
                 </Badge>,
                 { align: "center" }
             );
         },
 
-        size: 180,
+        size: 150,
     },
 
     {
@@ -170,6 +172,6 @@ export const columns: ColumnDef<TOrder>[] = [
 
         cell: ({ row }) => <ActionCell order={row.original} />,
 
-        size: 180,
+        size: 140,
     },
 ];

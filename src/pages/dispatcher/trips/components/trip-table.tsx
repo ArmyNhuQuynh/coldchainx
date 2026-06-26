@@ -13,9 +13,10 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import type { TDispatchTrip } from "@/schemas/dispatch.schema";
-import { Ban, Clock, Eye, PackageCheck, Truck, User } from "lucide-react";
+import { Ban, Clock, Eye, PackageCheck, Play, Truck, User } from "lucide-react";
 import {
   canCancelTrip,
+  canStartPickingTrip,
   formatShortTripId,
   formatTripDateTime,
   getTripProgress,
@@ -26,11 +27,20 @@ import {
 type Props = {
   trips: TDispatchTrip[];
   isLoading?: boolean;
+  isStartingPicking?: boolean;
   onSelect: (trip: TDispatchTrip) => void;
   onCancel: (trip: TDispatchTrip) => void;
+  onStartPicking: (trip: TDispatchTrip) => void;
 };
 
-const TripTable = ({ trips, isLoading, onSelect, onCancel }: Props) => {
+const TripTable = ({
+  trips,
+  isLoading,
+  isStartingPicking,
+  onSelect,
+  onCancel,
+  onStartPicking,
+}: Props) => {
   return (
     <Card className="rounded-lg py-0">
       <CardHeader className="border-b px-5 py-4">
@@ -160,6 +170,22 @@ const TripTable = ({ trips, isLoading, onSelect, onCancel }: Props) => {
                             <Eye className="h-3.5 w-3.5" />
                             Chi tiết
                           </Button>
+                          {canStartPickingTrip(trip) && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="gap-1.5 text-emerald-700 hover:text-emerald-800"
+                              disabled={isStartingPicking}
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                onStartPicking(trip);
+                              }}
+                            >
+                              <Play className="h-3.5 w-3.5" />
+                              Bắt đầu
+                            </Button>
+                          )}
                           <Button
                             type="button"
                             variant="outline"

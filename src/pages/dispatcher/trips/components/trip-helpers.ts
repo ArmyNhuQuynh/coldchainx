@@ -53,7 +53,7 @@ export const getTripProgress = (trip: TDispatchTrip) => {
 export const getTripStatusLabel = (status?: TDispatchTripStatus | null) => {
   switch (status) {
     case "PLANNED":
-      return "Đã tạo";
+      return "Sẵn sàng bốc hàng";
     case "PICKING":
       return "Đang bốc hàng";
     case "LOADING_COMPLETED":
@@ -90,3 +90,6 @@ export const getTripStatusClassName = (status?: TDispatchTripStatus | null) => {
 
 export const canCancelTrip = (trip: TDispatchTrip) =>
   ["PLANNED", "PICKING", "LOADING_COMPLETED", "SEALED"].includes(trip.status);
+
+export const canStartPickingTrip = (trip: TDispatchTrip) =>
+  trip.status === "PLANNED";
