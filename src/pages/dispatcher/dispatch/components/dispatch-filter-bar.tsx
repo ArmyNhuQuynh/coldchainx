@@ -8,12 +8,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { TDispatchFilters } from "@/schemas/dispatch.schema";
-import { CalendarDays, FilterX, RefreshCcw, Search } from "lucide-react";
+import type { TWarehouseLookup } from "@/schemas/warehouse.schema";
+import { FilterX, RefreshCcw, Search } from "lucide-react";
 import { ALL_FILTER_VALUE, getTemperatureGroupLabel } from "./dispatch-helpers";
 
 type Props = {
   filters: TDispatchFilters;
-  warehouseOptions: string[];
+  warehouseOptions: TWarehouseLookup[];
   onChange: (filters: TDispatchFilters) => void;
   onReset: () => void;
   onRefresh: () => void;
@@ -36,7 +37,7 @@ const DispatchFilterBar = ({
 
   return (
     <div className="rounded-lg border bg-card p-4 shadow-sm">
-      <div className="grid gap-3 md:grid-cols-[minmax(220px,1.4fr)_minmax(160px,0.9fr)_180px_180px_auto]">
+      <div className="grid gap-3 md:grid-cols-[minmax(220px,1.4fr)_minmax(180px,0.9fr)_180px_auto]">
         <div className="relative">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -48,8 +49,8 @@ const DispatchFilterBar = ({
         </div>
 
         <Select
-          value={filters.warehouse}
-          onValueChange={(value) => update({ warehouse: value })}
+          value={filters.warehouseId}
+          onValueChange={(value) => update({ warehouseId: value })}
         >
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Kho" />
@@ -57,22 +58,15 @@ const DispatchFilterBar = ({
           <SelectContent>
             <SelectItem value={ALL_FILTER_VALUE}>Tất cả kho</SelectItem>
             {warehouseOptions.map((warehouse) => (
-              <SelectItem key={warehouse} value={warehouse}>
-                {warehouse}
+              <SelectItem
+                key={warehouse.warehouseId}
+                value={warehouse.warehouseId}
+              >
+                {warehouse.label || warehouse.warehouseName}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
-
-        <div className="relative">
-          <CalendarDays className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            type="date"
-            value={filters.dispatchDate}
-            onChange={(event) => update({ dispatchDate: event.target.value })}
-            className="pl-9"
-          />
-        </div>
 
         <Select
           value={filters.temperatureGroup}

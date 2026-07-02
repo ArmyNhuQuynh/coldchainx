@@ -65,6 +65,7 @@ export type TDispatchReadyLpn = {
 };
 
 export type TManualDispatchRequest = {
+  warehouseId: string;
   lpnIds: string[];
   vehicleId: string;
   driverIds: string[];
@@ -83,8 +84,7 @@ export type TManualDispatchResult = {
 
 export type TDispatchFilters = {
   search: string;
-  warehouse: string;
-  dispatchDate: string;
+  warehouseId: string;
   temperatureGroup: string;
 };
 
@@ -174,12 +174,34 @@ export type TDispatchTripRouteLeg = {
   steps?: TDispatchTripRouteStep[];
 };
 
+export type TDispatchTripRoutePoint = {
+  locationId?: string | null;
+  address?: string | null;
+  lat?: number | null;
+  lon?: number | null;
+};
+
+export type TDispatchOptimizedStop = TDispatchTripRoutePoint & {
+  stopId?: string | null;
+  originalStopSequence?: number | null;
+  optimizedSequence?: number | null;
+  stopType?: string | null;
+  orders?: unknown[];
+  lpns?: TDispatchTripLpn[];
+};
+
 export type TDispatchTripRoute = {
+  tripId?: string | null;
   totalDistanceKm?: number | null;
+  totalDistanceMeters?: number | null;
   totalDurationMinutes?: number | null;
   totalDurationSeconds?: number | null;
   totalStops?: number | null;
   overviewPolyline?: string | null;
   goongRouteOverview?: string | null;
+  waypointOrder?: number[];
+  origin?: TDispatchTripRoutePoint | null;
+  destination?: TDispatchTripRoutePoint | null;
+  optimizedStops?: TDispatchOptimizedStop[];
   legs?: TDispatchTripRouteLeg[];
 };

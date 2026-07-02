@@ -253,28 +253,125 @@ const normalizeRouteLeg = (
   };
 };
 
+const normalizeRoutePoint = (item: unknown) => {
+  if (!item || typeof item !== "object") return null;
+  const raw = item as Record<string, any>;
+
+  return {
+    locationId: read<string | null>(raw, "locationId", "LocationId"),
+    address: read<string | null>(raw, "address", "Address"),
+    lat: read<number | null>(raw, "lat", "Lat"),
+    lon: read<number | null>(raw, "lon", "Lon"),
+  };
+};
+
+const normalizeOptimizedStop = (item: unknown) => {
+  if (!item || typeof item !== "object") {
+    return {
+      stopId: null,
+      locationId: null,
+      address: null,
+      lat: null,
+      lon: null,
+      originalStopSequence: null,
+      optimizedSequence: null,
+      stopType: null,
+      orders: [],
+      lpns: [],
+    };
+  }
+
+  const raw = item as Record<string, any>;
+  const lpns = read<unknown>(raw, "lpns", "Lpns");
+
+  return {
+    stopId: read<string | null>(raw, "stopId", "StopId"),
+    locationId: read<string | null>(raw, "locationId", "LocationId"),
+    address: read<string | null>(raw, "address", "Address"),
+    lat: read<number | null>(raw, "lat", "Lat"),
+    lon: read<number | null>(raw, "lon", "Lon"),
+    originalStopSequence: read<number | null>(
+      raw,
+      "originalStopSequence",
+      "OriginalStopSequence"
+    ),
+    optimizedSequence: read<number | null>(
+      raw,
+      "optimizedSequence",
+      "OptimizedSequence"
+    ),
+    stopType: read<string | null>(raw, "stopType", "StopType"),
+    orders: (read<unknown>(raw, "orders", "Orders") as unknown[]) ?? [],
+    lpns: Array.isArray(lpns) ? lpns.map(normalizeTripLpn) : [],
+  };
+};
+
+const buildRouteLegsFromStops = (
+  origin: ReturnType<typeof normalizeRoutePoint>,
+  destination: ReturnType<typeof normalizeRoutePoint>,
+  stops: ReturnType<typeof normalizeOptimizedStop>[]
+): TDispatchTripRouteLeg[] => {
+  const points = [origin, ...stops, destination].filter(Boolean) as {
+    address?: string | null;
+  }[];
+
+  if (points.length < 2) return [];
+
+  return points.slice(0, -1).map((point, index) => ({
+    legIndex: index + 1,
+    fromAddress: point.address ?? null,
+    toAddress: points[index + 1]?.address ?? null,
+    startAddress: point.address ?? null,
+    endAddress: points[index + 1]?.address ?? null,
+  }));
+};
+
 const normalizeTripRoute = (
   item: TDispatchTripRoute | Record<string, any>
 ): TDispatchTripRoute => {
   const raw = item as Record<string, any>;
   const legs = read<unknown>(raw, "legs", "Legs");
+  const optimizedStopsRaw = read<unknown>(raw, "optimizedStops", "OptimizedStops");
+  const optimizedStops = Array.isArray(optimizedStopsRaw)
+    ? optimizedStopsRaw.map(normalizeOptimizedStop)
+    : [];
+  const origin = normalizeRoutePoint(read<unknown>(raw, "origin", "Origin"));
+  const destination = normalizeRoutePoint(
+    read<unknown>(raw, "destination", "Destination")
+  );
+  const totalDistanceMeters = read<number | null>(
+    raw,
+    "totalDistanceMeters",
+    "TotalDistanceMeters"
+  );
+  const totalDurationSeconds = read<number | null>(
+    raw,
+    "totalDurationSeconds",
+    "TotalDurationSeconds"
+  );
+  const normalizedLegs = Array.isArray(legs)
+    ? legs.map((leg, legIndex) =>
+        normalizeRouteLeg(leg as Record<string, any>, legIndex)
+      )
+    : buildRouteLegsFromStops(origin, destination, optimizedStops);
+
   return {
-    totalDistanceKm: read<number | null>(
-      raw,
-      "totalDistanceKm",
-      "TotalDistanceKm"
-    ),
-    totalDurationMinutes: read<number | null>(
-      raw,
-      "totalDurationMinutes",
-      "TotalDurationMinutes"
-    ),
-    totalDurationSeconds: read<number | null>(
-      raw,
-      "totalDurationSeconds",
-      "TotalDurationSeconds"
-    ),
-    totalStops: read<number | null>(raw, "totalStops", "TotalStops"),
+    tripId: read<string | null>(raw, "tripId", "TripId"),
+    totalDistanceMeters,
+    totalDistanceKm:
+      read<number | null>(raw, "totalDistanceKm", "TotalDistanceKm") ??
+      (typeof totalDistanceMeters === "number"
+        ? Math.round((totalDistanceMeters / 1000) * 10) / 10
+        : null),
+    totalDurationMinutes:
+      read<number | null>(raw, "totalDurationMinutes", "TotalDurationMinutes") ??
+      (typeof totalDurationSeconds === "number"
+        ? Math.round(totalDurationSeconds / 60)
+        : null),
+    totalDurationSeconds,
+    totalStops:
+      read<number | null>(raw, "totalStops", "TotalStops") ??
+      optimizedStops.length,
     overviewPolyline: read<string | null>(
       raw,
       "overviewPolyline",
@@ -285,11 +382,14 @@ const normalizeTripRoute = (
       "goongRouteOverview",
       "GoongRouteOverview"
     ),
-    legs: Array.isArray(legs)
-      ? legs.map((leg, legIndex) =>
-          normalizeRouteLeg(leg as Record<string, any>, legIndex)
-        )
-      : [],
+    waypointOrder:
+      (read<number[] | undefined>(raw, "waypointOrder", "WaypointOrder") as
+        | number[]
+        | undefined) ?? [],
+    origin,
+    destination,
+    optimizedStops,
+    legs: normalizedLegs,
   };
 };
 
@@ -356,10 +456,12 @@ const mergeTrips = (trips: TDispatchTrip[]) => {
   });
 };
 
-const getReadyLpns = async () => {
+const getReadyLpns = async (warehouseId?: string) => {
   const response = await apiRequest.baseApi.get<
     TDispatchLookupEnvelope<TDispatchReadyLpn[]> | TDispatchReadyLpn[]
-  >(`${API_SUFFIX.DISPATCH_API}/lookup/lpns-ready`);
+  >(`${API_SUFFIX.DISPATCH_API}/lookup/lpns-ready`, {
+    params: warehouseId ? { warehouseId } : undefined,
+  });
 
   const lpns = unwrapLookup<TDispatchReadyLpn>(response.data).map(normalizeLpn);
   return enrichLpnsWithOrders(lpns);
@@ -387,6 +489,7 @@ const getAvailableDrivers = async () => {
 
 const manualDispatch = async (data: TManualDispatchRequest) => {
   const formData = new FormData();
+  formData.append("WarehouseId", data.warehouseId);
   formData.append("VehicleId", data.vehicleId);
   formData.append("PlannedStartTime", data.plannedStartTime);
   formData.append("PlannedEndTime", data.plannedEndTime);

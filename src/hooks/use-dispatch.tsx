@@ -10,10 +10,10 @@ import {
 export const useDispatchPlanning = () => {
   const queryClient = useQueryClient();
 
-  const getReadyLpns = () =>
+  const getReadyLpns = (warehouseId?: string) =>
     useQuery({
-      queryKey: ["dispatch", "ready-lpns"],
-      queryFn: dispatchApi.getReadyLpns,
+      queryKey: ["dispatch", "ready-lpns", warehouseId ?? null],
+      queryFn: () => dispatchApi.getReadyLpns(warehouseId),
       placeholderData: keepPreviousData,
     });
 

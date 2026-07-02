@@ -18,7 +18,6 @@ import {
 import {
   formatDate,
   formatNumber,
-  getLpnDispatchDateKey,
   getLpnDispatchDateValue,
   getLpnWarehouseName,
   getTemperatureGroup,
@@ -28,7 +27,6 @@ import {
 type Props = {
   lpns: TDispatchReadyLpn[];
   selectedIds: string[];
-  selectedDateKey?: string;
   isLoading?: boolean;
   onToggle: (lpn: TDispatchReadyLpn) => void;
 };
@@ -36,7 +34,6 @@ type Props = {
 const LpnSelectionPanel = ({
   lpns,
   selectedIds,
-  selectedDateKey,
   isLoading,
   onToggle,
 }: Props) => {
@@ -78,12 +75,6 @@ const LpnSelectionPanel = ({
             {!isLoading &&
               lpns.map((lpn) => {
                 const checked = selectedIds.includes(lpn.lpnId);
-                const dateKey = getLpnDispatchDateKey(lpn);
-                const blockedByDate =
-                  !!selectedDateKey &&
-                  !!dateKey &&
-                  selectedDateKey !== dateKey &&
-                  !checked;
                 const tempGroup = getTemperatureGroup(lpn.tempCondition);
 
                 return (
@@ -91,14 +82,12 @@ const LpnSelectionPanel = ({
                     key={lpn.lpnId}
                     type="button"
                     variant="outline"
-                    disabled={blockedByDate}
                     onClick={() => onToggle(lpn)}
                     className={cn(
                       "h-auto w-full justify-start overflow-hidden rounded-lg border p-0 text-left whitespace-normal shadow-none",
                       checked
                         ? "border-emerald-600 bg-emerald-50/70 text-foreground"
-                        : "bg-background hover:bg-muted/50",
-                      blockedByDate && "opacity-50"
+                        : "bg-background hover:bg-muted/50"
                     )}
                   >
                     <div className="flex min-w-0 w-full gap-3 p-3.5">

@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useDispatchPlanning } from "@/hooks/use-dispatch";
+import { useWarehouse } from "@/hooks/use-warehouse";
 import type {
   TDispatchFilters,
   TDispatchReadyLpn,
@@ -12,11 +13,7 @@ import {
   ALL_FILTER_VALUE,
   formatNumber,
   getDefaultPlanningWindow,
-  getDriverWarehouseName,
-  getLpnDispatchDateKey,
-  getLpnWarehouseName,
   getTemperatureGroup,
-  getVehicleWarehouseName,
   isVehicleTempCompatible,
 } from "./components/dispatch-helpers";
 import DispatchStepper from "./components/dispatch-stepper";
@@ -26,8 +23,7 @@ import VehicleDriverPanel from "./components/vehicle-driver-panel";
 
 const defaultFilters: TDispatchFilters = {
   search: "",
-  warehouse: ALL_FILTER_VALUE,
-  dispatchDate: "",
+  warehouseId: ALL_FILTER_VALUE,
   temperatureGroup: ALL_FILTER_VALUE,
 };
 
@@ -40,6 +36,7 @@ const DispatchPage = () => {
     getAvailableDrivers,
     manualDispatch,
   } = useDispatchPlanning();
+  const { getWarehouses } = useWarehouse();
 
   const [filters, setFilters] = useState<TDispatchFilters>(defaultFilters);
   const [selectedLpnIds, setSelectedLpnIds] = useState<string[]>([]);
@@ -48,13 +45,17 @@ const DispatchPage = () => {
   const [plannedStartTime, setPlannedStartTime] = useState(planningWindow.start);
   const [plannedEndTime, setPlannedEndTime] = useState(planningWindow.end);
 
-  const readyLpnsQuery = getReadyLpns();
+  const selectedWarehouseId =
+    filters.warehouseId === ALL_FILTER_VALUE ? undefined : filters.warehouseId;
+  const readyLpnsQuery = getReadyLpns(selectedWarehouseId);
   const vehiclesQuery = getAvailableVehicles();
   const driversQuery = getAvailableDrivers();
+  const warehousesQuery = getWarehouses();
 
   const lpns = readyLpnsQuery.data ?? [];
   const vehicles = vehiclesQuery.data ?? [];
   const drivers = driversQuery.data ?? [];
+  const warehouses = warehousesQuery.data ?? [];
 
   useEffect(() => {
     if (!selectedVehicleId && vehicles.length > 0) {
@@ -71,18 +72,10 @@ const DispatchPage = () => {
     (vehicle) => vehicle.vehicleId === selectedVehicleId
   );
 
-  const warehouseOptions = useMemo(() => {
-    return Array.from(new Set(lpns.map(getLpnWarehouseName))).sort((a, b) =>
-      a.localeCompare(b, "vi")
-    );
-  }, [lpns]);
-
   const filteredLpns = useMemo(() => {
     const search = filters.search.trim().toLowerCase();
 
     return lpns.filter((lpn) => {
-      const warehouseName = getLpnWarehouseName(lpn);
-      const dateKey = getLpnDispatchDateKey(lpn);
       const tempGroup = getTemperatureGroup(lpn.tempCondition);
       const searchable = [
         lpn.lpnCode,
@@ -95,7 +88,6 @@ const DispatchPage = () => {
         lpn.routeDestCity,
         lpn.tempCondition,
         lpn.label,
-        warehouseName,
       ]
         .filter(Boolean)
         .join(" ")
@@ -103,37 +95,14 @@ const DispatchPage = () => {
 
       return (
         (!search || searchable.includes(search)) &&
-        (filters.warehouse === ALL_FILTER_VALUE ||
-          warehouseName === filters.warehouse) &&
-        (!filters.dispatchDate || dateKey === filters.dispatchDate) &&
         (filters.temperatureGroup === ALL_FILTER_VALUE ||
           tempGroup === filters.temperatureGroup)
       );
     });
   }, [filters, lpns]);
 
-  const resourceWarehouseFilterEnabled =
-    filters.warehouse !== ALL_FILTER_VALUE &&
-    (vehicles.some((item) => item.warehouseName || item.currentLocation) ||
-      drivers.some((item) => item.warehouseName || item.currentLocation));
-
-  const filteredVehicles = useMemo(() => {
-    if (!resourceWarehouseFilterEnabled) return vehicles;
-    return vehicles.filter(
-      (vehicle) => getVehicleWarehouseName(vehicle) === filters.warehouse
-    );
-  }, [filters.warehouse, resourceWarehouseFilterEnabled, vehicles]);
-
-  const filteredDrivers = useMemo(() => {
-    if (!resourceWarehouseFilterEnabled) return drivers;
-    return drivers.filter(
-      (driver) => getDriverWarehouseName(driver) === filters.warehouse
-    );
-  }, [drivers, filters.warehouse, resourceWarehouseFilterEnabled]);
-
-  const selectedDateKey = selectedLpns
-    .map(getLpnDispatchDateKey)
-    .find(Boolean);
+  const filteredVehicles = vehicles;
+  const filteredDrivers = drivers;
 
   const totalWeight = selectedLpns.reduce(
     (sum, item) => sum + (item.actualWeightKg || 0),
@@ -144,18 +113,12 @@ const DispatchPage = () => {
     0
   );
 
-  const selectedWarehouses = Array.from(
-    new Set(selectedLpns.map(getLpnWarehouseName).filter(Boolean))
-  );
-  const selectedDateKeys = Array.from(
-    new Set(selectedLpns.map(getLpnDispatchDateKey).filter(Boolean))
-  );
-
   const validationMessages = useMemo(() => {
     const messages: string[] = [];
     const start = new Date(plannedStartTime);
     const end = new Date(plannedEndTime);
 
+    if (!selectedWarehouseId) messages.push("Chọn kho trước khi tạo chuyến.");
     if (selectedLpns.length === 0) messages.push("Chọn ít nhất 1 LPN.");
     if (!selectedVehicle) messages.push("Chọn 1 xe để ghép chuyến.");
     if (selectedDriverIds.length < 1) messages.push("Chọn 1 hoặc 2 tài xế.");
@@ -177,12 +140,6 @@ const DispatchPage = () => {
         )} m³.`
       );
     }
-    if (selectedWarehouses.length > 1) {
-      messages.push("Chỉ ghép các LPN cùng kho trong một chuyến.");
-    }
-    if (selectedDateKeys.length > 1) {
-      messages.push("Chỉ ghép các LPN cùng ngày vận chuyển trong một chuyến.");
-    }
     if (!isVehicleTempCompatible(selectedVehicle, selectedLpns)) {
       messages.push("Dải nhiệt hàng đã chọn nằm ngoài khả năng của xe.");
     }
@@ -191,11 +148,10 @@ const DispatchPage = () => {
   }, [
     plannedEndTime,
     plannedStartTime,
-    selectedDateKeys.length,
     selectedDriverIds.length,
     selectedLpns,
+    selectedWarehouseId,
     selectedVehicle,
-    selectedWarehouses.length,
     totalCbm,
     totalWeight,
   ]);
@@ -206,21 +162,6 @@ const DispatchPage = () => {
     const exists = selectedLpnIds.includes(lpn.lpnId);
     if (exists) {
       setSelectedLpnIds((ids) => ids.filter((id) => id !== lpn.lpnId));
-      return;
-    }
-
-    const selectedWarehouse = selectedLpns[0]
-      ? getLpnWarehouseName(selectedLpns[0])
-      : "";
-    const currentWarehouse = getLpnWarehouseName(lpn);
-    if (selectedWarehouse && selectedWarehouse !== currentWarehouse) {
-      toast.warning("Chỉ ghép LPN cùng kho trong một chuyến.");
-      return;
-    }
-
-    const currentDateKey = getLpnDispatchDateKey(lpn);
-    if (selectedDateKey && currentDateKey && selectedDateKey !== currentDateKey) {
-      toast.warning("Chỉ ghép LPN cùng ngày vận chuyển trong một chuyến.");
       return;
     }
 
@@ -242,13 +183,27 @@ const DispatchPage = () => {
     readyLpnsQuery.refetch();
     vehiclesQuery.refetch();
     driversQuery.refetch();
+    warehousesQuery.refetch();
+  };
+
+  const handleFilterChange = (nextFilters: TDispatchFilters) => {
+    if (nextFilters.warehouseId !== filters.warehouseId) {
+      setSelectedLpnIds([]);
+    }
+    setFilters(nextFilters);
+  };
+
+  const handleResetFilters = () => {
+    setSelectedLpnIds([]);
+    setFilters(defaultFilters);
   };
 
   const handleCreateTrip = async () => {
-    if (!canCreateTrip || !selectedVehicle) return;
+    if (!canCreateTrip || !selectedVehicle || !selectedWarehouseId) return;
 
     try {
       const result = await manualDispatch.mutateAsync({
+        warehouseId: selectedWarehouseId,
         lpnIds: selectedLpnIds,
         vehicleId: selectedVehicle.vehicleId,
         driverIds: selectedDriverIds,
@@ -270,7 +225,10 @@ const DispatchPage = () => {
   };
 
   const isLoading =
-    readyLpnsQuery.isLoading || vehiclesQuery.isLoading || driversQuery.isLoading;
+    readyLpnsQuery.isLoading ||
+    vehiclesQuery.isLoading ||
+    driversQuery.isLoading ||
+    warehousesQuery.isLoading;
 
   return (
     <div className="space-y-5">
@@ -296,9 +254,9 @@ const DispatchPage = () => {
 
       <DispatchFilterBar
         filters={filters}
-        warehouseOptions={warehouseOptions}
-        onChange={setFilters}
-        onReset={() => setFilters(defaultFilters)}
+        warehouseOptions={warehouses}
+        onChange={handleFilterChange}
+        onReset={handleResetFilters}
         onRefresh={handleRefresh}
         isLoading={isLoading}
       />
@@ -314,7 +272,6 @@ const DispatchPage = () => {
         <LpnSelectionPanel
           lpns={filteredLpns}
           selectedIds={selectedLpnIds}
-          selectedDateKey={selectedDateKey}
           isLoading={readyLpnsQuery.isLoading}
           onToggle={handleToggleLpn}
         />
