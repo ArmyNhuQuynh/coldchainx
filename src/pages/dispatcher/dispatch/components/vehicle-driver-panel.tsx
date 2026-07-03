@@ -14,7 +14,6 @@ import {
   CalendarClock,
   CheckCircle2,
   IdCard,
-  MapPin,
   Route,
   Scale,
   Snowflake,
@@ -24,9 +23,7 @@ import {
 import CapacityMeter from "./capacity-meter";
 import {
   formatNumber,
-  getDriverWarehouseName,
   getSelectedTemperatureRange,
-  getVehicleWarehouseName,
   isVehicleTempCompatible,
 } from "./dispatch-helpers";
 
@@ -161,10 +158,6 @@ const VehicleDriverPanel = ({
                             <Snowflake className="h-3.5 w-3.5" />
                             {formatNumber(vehicle.minTemp)}°C → {formatNumber(vehicle.maxTemp)}°C
                           </span>
-                          <span className="flex items-center gap-1.5">
-                            <MapPin className="h-3.5 w-3.5" />
-                            {getVehicleWarehouseName(vehicle)}
-                          </span>
                         </div>
                       </div>
                     </Button>
@@ -224,10 +217,6 @@ const VehicleDriverPanel = ({
                           <span className="flex items-center gap-1.5">
                             <IdCard className="h-3.5 w-3.5" />
                             Bằng {driver.licenseClass || "—"} · Hạn {driver.licenseExpiry || "—"}
-                          </span>
-                          <span className="flex items-center gap-1.5">
-                            <MapPin className="h-3.5 w-3.5" />
-                            {getDriverWarehouseName(driver)}
                           </span>
                         </div>
                       </div>

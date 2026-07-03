@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/select";
 import type { TDispatchFilters } from "@/schemas/dispatch.schema";
 import type { TWarehouseLookup } from "@/schemas/warehouse.schema";
+import { DISPATCH_TEMPERATURE_GROUP } from "@/types/enums/dispatch.enum";
 import { FilterX, RefreshCcw, Search } from "lucide-react";
 import { ALL_FILTER_VALUE, getTemperatureGroupLabel } from "./dispatch-helpers";
 
@@ -21,7 +22,12 @@ type Props = {
   isLoading?: boolean;
 };
 
-const tempOptions = [ALL_FILTER_VALUE, "FROZEN", "CHILLED", "AMBIENT"];
+const tempOptions = [
+  ALL_FILTER_VALUE,
+  DISPATCH_TEMPERATURE_GROUP.FROZEN,
+  DISPATCH_TEMPERATURE_GROUP.CHILLED,
+  DISPATCH_TEMPERATURE_GROUP.AMBIENT,
+];
 
 const DispatchFilterBar = ({
   filters,

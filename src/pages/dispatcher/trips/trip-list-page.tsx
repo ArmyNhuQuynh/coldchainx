@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { useDispatchTrips } from "@/hooks/use-dispatch";
+import { useDispatchTrips } from "@/hooks/use-dispatch-trip";
 import type { TDispatchTrip } from "@/schemas/dispatch.schema";
 import { ClipboardList, Route } from "lucide-react";
 import { useMemo, useState } from "react";

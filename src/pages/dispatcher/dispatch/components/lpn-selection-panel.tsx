@@ -6,19 +6,18 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import type { TDispatchReadyLpn } from "@/schemas/dispatch.schema";
+import { DISPATCH_TEMPERATURE_GROUP } from "@/types/enums/dispatch.enum";
 import {
   Box,
-  CalendarDays,
   MapPin,
   PackageCheck,
   Route,
   Scale,
   Snowflake,
+  UserRound,
 } from "lucide-react";
 import {
-  formatDate,
   formatNumber,
-  getLpnDispatchDateValue,
   getLpnWarehouseName,
   getTemperatureGroup,
   getTemperatureGroupLabel,
@@ -108,21 +107,24 @@ const LpnSelectionPanel = ({
                               {lpn.trackingCode}
                             </Badge>
                           )}
-                          {lpn.routeCode && (
+                          {lpn.routeName && (
                             <Badge
                               variant="outline"
                               className="max-w-[160px] truncate bg-violet-50 text-violet-800"
-                              title={lpn.routeCode}
+                              title={lpn.routeName}
                             >
-                              {lpn.routeCode}
+                              {lpn.routeName}
                             </Badge>
                           )}
                           <Badge
                             variant="secondary"
                             className={cn(
-                              tempGroup === "FROZEN" && "bg-sky-100 text-sky-800",
-                              tempGroup === "CHILLED" && "bg-cyan-100 text-cyan-800",
-                              tempGroup === "AMBIENT" && "bg-stone-100 text-stone-800"
+                              tempGroup === DISPATCH_TEMPERATURE_GROUP.FROZEN &&
+                                "bg-sky-100 text-sky-800",
+                              tempGroup === DISPATCH_TEMPERATURE_GROUP.CHILLED &&
+                                "bg-cyan-100 text-cyan-800",
+                              tempGroup === DISPATCH_TEMPERATURE_GROUP.AMBIENT &&
+                                "bg-stone-100 text-stone-800"
                             )}
                           >
                             {getTemperatureGroupLabel(tempGroup)}
@@ -145,9 +147,9 @@ const LpnSelectionPanel = ({
                             </span>
                           </span>
                           <span className="flex min-w-0 items-center gap-1.5">
-                            <CalendarDays className="h-3.5 w-3.5 shrink-0" />
+                            <UserRound className="h-3.5 w-3.5 shrink-0" />
                             <span className="truncate">
-                              {formatDate(getLpnDispatchDateValue(lpn))}
+                              {lpn.customerName || "Chưa có khách hàng"}
                             </span>
                           </span>
                           <span className="flex min-w-0 items-center gap-1.5">

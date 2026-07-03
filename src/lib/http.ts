@@ -53,28 +53,32 @@ const deleteHeader = (
 };
 
 const parseParams = (params: any) => {
-  const keys = Object.keys(params);
-  let options = "";
+  if (!params) return "";
 
-  keys.forEach((key) => {
-    const isParamTypeObject = typeof params[key] === "object";
-    const isParamTypeArray =
-      isParamTypeObject &&
-      Array.isArray(params[key]) &&
-      params[key].length >= 0;
+  const options: string[] = [];
 
-    if (!isParamTypeObject) {
-      options += `${key}=${params[key]}&`;
+  Object.entries(params).forEach(([key, value]) => {
+    if (value === undefined || value === null) return;
+
+    if (Array.isArray(value)) {
+      value.forEach((element) => {
+        if (element !== undefined && element !== null) {
+          options.push(
+            `${encodeURIComponent(key)}=${encodeURIComponent(String(element))}`
+          );
+        }
+      });
+      return;
     }
 
-    if (isParamTypeObject && isParamTypeArray) {
-      params[key].forEach((element: any) => {
-        options += `${key}=${element}&`;
-      });
+    if (typeof value !== "object") {
+      options.push(
+        `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`
+      );
     }
   });
 
-  return options ? options.slice(0, -1) : options;
+  return options.join("&");
 };
 
 const request = (apiUrl: string): AxiosInstance => {

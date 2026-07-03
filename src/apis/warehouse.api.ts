@@ -1,12 +1,16 @@
 import { apiRequest } from "@/lib/http";
-import type { TDispatchLookupEnvelope } from "@/schemas/dispatch.schema";
 import type { TWarehouseLookup } from "@/schemas/warehouse.schema";
 import { API_SUFFIX } from "./util.api";
+
+type LookupEnvelope<T> = {
+  data?: T;
+  Data?: T;
+};
 
 const read = <T>(item: Record<string, any>, camelKey: string, pascalKey: string): T =>
   (item[camelKey] ?? item[pascalKey]) as T;
 
-const unwrapLookup = <T>(payload: TDispatchLookupEnvelope<T[]> | T[]): T[] => {
+const unwrapLookup = <T>(payload: LookupEnvelope<T[]> | T[]): T[] => {
   if (Array.isArray(payload)) return payload;
   return payload.data ?? payload.Data ?? [];
 };
@@ -31,7 +35,7 @@ const normalizeWarehouse = (
 
 const getWarehouses = async () => {
   const response = await apiRequest.baseApi.get<
-    TDispatchLookupEnvelope<TWarehouseLookup[]> | TWarehouseLookup[]
+    LookupEnvelope<TWarehouseLookup[]> | TWarehouseLookup[]
   >(`${API_SUFFIX.DISPATCH_API}/lookup/warehouses`);
 
   return unwrapLookup<TWarehouseLookup>(response.data).map(normalizeWarehouse);
@@ -40,4 +44,3 @@ const getWarehouses = async () => {
 export const warehouseApi = {
   getWarehouses,
 };
-

@@ -10,9 +10,9 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useDispatchTrips } from "@/hooks/use-dispatch-trip";
 import { cn } from "@/lib/utils";
 import type { TDispatchTrip } from "@/schemas/dispatch.schema";
-import { useDispatchTrips } from "@/hooks/use-dispatch";
 import {
   Ban,
   Boxes,

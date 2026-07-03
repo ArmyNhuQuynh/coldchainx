@@ -1,70 +1,42 @@
 import type {
-  TDispatchDriverLookup,
   TDispatchReadyLpn,
   TDispatchVehicleLookup,
 } from "@/schemas/dispatch.schema";
+import {
+  DISPATCH_FILTER_VALUE,
+  DISPATCH_TEMPERATURE_GROUP,
+} from "@/types/enums/dispatch.enum";
 
-export const ALL_FILTER_VALUE = "all";
+export const ALL_FILTER_VALUE = DISPATCH_FILTER_VALUE.ALL;
 
 export const formatNumber = (value?: number | null, maximumFractionDigits = 1) =>
   typeof value === "number" && Number.isFinite(value)
     ? value.toLocaleString("vi-VN", { maximumFractionDigits })
     : "—";
 
-export const toDateInputValue = (value?: string | null) => {
-  if (!value) return "";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-  return date.toISOString().slice(0, 10);
-};
-
-export const formatDate = (value?: string | null) => {
-  const key = toDateInputValue(value);
-  if (!key) return "—";
-  return new Date(`${key}T00:00:00`).toLocaleDateString("vi-VN");
-};
-
 export const getLpnWarehouseName = (lpn: TDispatchReadyLpn) => {
   if (lpn.warehouseName) return lpn.warehouseName;
-  const labelWarehouse = lpn.label?.match(/Kho:\s*([^|]+)/i)?.[1]?.trim();
-  return labelWarehouse || "Chưa có dữ liệu kho";
+  return "Chưa có dữ liệu kho";
 };
-
-export const getVehicleWarehouseName = (vehicle: TDispatchVehicleLookup) =>
-  vehicle.warehouseName || vehicle.currentLocation || "Chưa có dữ liệu kho";
-
-export const getDriverWarehouseName = (driver: TDispatchDriverLookup) =>
-  driver.warehouseName || driver.currentLocation || "Chưa có dữ liệu kho";
-
-export const getLpnDispatchDateValue = (lpn: TDispatchReadyLpn) =>
-  lpn.plannedDispatchDate ||
-  lpn.dispatchDate ||
-  lpn.deliveryDate ||
-  lpn.slaDeadline ||
-  lpn.createdAt ||
-  null;
-
-export const getLpnDispatchDateKey = (lpn: TDispatchReadyLpn) =>
-  toDateInputValue(getLpnDispatchDateValue(lpn));
 
 export const getTemperatureGroup = (temp?: string | null) => {
   const value = (temp || "").toUpperCase();
   if (value.includes("FROZEN") || value.includes("-18") || value.startsWith("-")) {
-    return "FROZEN";
+    return DISPATCH_TEMPERATURE_GROUP.FROZEN;
   }
   if (value.includes("CHILLED") || value.includes("2-8") || value.includes("0-4")) {
-    return "CHILLED";
+    return DISPATCH_TEMPERATURE_GROUP.CHILLED;
   }
-  return "AMBIENT";
+  return DISPATCH_TEMPERATURE_GROUP.AMBIENT;
 };
 
 export const getTemperatureGroupLabel = (group: string) => {
   switch (group) {
-    case "FROZEN":
+    case DISPATCH_TEMPERATURE_GROUP.FROZEN:
       return "Đông lạnh";
-    case "CHILLED":
+    case DISPATCH_TEMPERATURE_GROUP.CHILLED:
       return "Hàng mát";
-    case "AMBIENT":
+    case DISPATCH_TEMPERATURE_GROUP.AMBIENT:
       return "Nhiệt độ thường";
     default:
       return "Tất cả";
@@ -86,8 +58,8 @@ export const parseTempRange = (temp?: string | null) => {
   }
 
   const group = getTemperatureGroup(temp);
-  if (group === "FROZEN") return { min: -25, max: -10 };
-  if (group === "CHILLED") return { min: 0, max: 8 };
+  if (group === DISPATCH_TEMPERATURE_GROUP.FROZEN) return { min: -25, max: -10 };
+  if (group === DISPATCH_TEMPERATURE_GROUP.CHILLED) return { min: 0, max: 8 };
   return { min: 15, max: 25 };
 };
 

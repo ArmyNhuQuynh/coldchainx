@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { useDispatchLookup } from "@/hooks/use-dispatch-lookup";
 import { useDispatchPlanning } from "@/hooks/use-dispatch";
 import { useWarehouse } from "@/hooks/use-warehouse";
 import type {
@@ -28,14 +29,12 @@ const defaultFilters: TDispatchFilters = {
 };
 
 const planningWindow = getDefaultPlanningWindow();
+const READY_LPN_PAGE_SIZE = 100;
 
 const DispatchPage = () => {
-  const {
-    getReadyLpns,
-    getAvailableVehicles,
-    getAvailableDrivers,
-    manualDispatch,
-  } = useDispatchPlanning();
+  const { manualDispatch } = useDispatchPlanning();
+  const { getReadyLpns, getAvailableVehicles, getAvailableDrivers } =
+    useDispatchLookup();
   const { getWarehouses } = useWarehouse();
 
   const [filters, setFilters] = useState<TDispatchFilters>(defaultFilters);
@@ -47,7 +46,15 @@ const DispatchPage = () => {
 
   const selectedWarehouseId =
     filters.warehouseId === ALL_FILTER_VALUE ? undefined : filters.warehouseId;
-  const readyLpnsQuery = getReadyLpns(selectedWarehouseId);
+  const readyLpnParams = useMemo(
+    () => ({
+      pageNumber: 1,
+      pageSize: READY_LPN_PAGE_SIZE,
+      ...(selectedWarehouseId ? { warehouseId: selectedWarehouseId } : {}),
+    }),
+    [selectedWarehouseId]
+  );
+  const readyLpnsQuery = getReadyLpns(readyLpnParams);
   const vehiclesQuery = getAvailableVehicles();
   const driversQuery = getAvailableDrivers();
   const warehousesQuery = getWarehouses();
@@ -83,9 +90,7 @@ const DispatchPage = () => {
         lpn.itemName,
         lpn.customerName,
         lpn.destinationAddress,
-        lpn.routeCode,
-        lpn.routeOriginCity,
-        lpn.routeDestCity,
+        lpn.routeName,
         lpn.tempCondition,
         lpn.label,
       ]

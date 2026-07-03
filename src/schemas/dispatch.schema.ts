@@ -1,9 +1,19 @@
+import type { TDispatchTripStatus } from "@/types/enums/dispatch.enum";
+
 export type TDispatchLookupEnvelope<T> = {
   success?: boolean;
   count?: number;
+  pageNumber?: number;
+  pageSize?: number;
+  totalRecords?: number;
+  totalPages?: number;
   data?: T;
   Success?: boolean;
   Count?: number;
+  PageNumber?: number;
+  PageSize?: number;
+  TotalRecords?: number;
+  TotalPages?: number;
   Data?: T;
 };
 
@@ -16,9 +26,6 @@ export type TDispatchVehicleLookup = {
   maxCbm: number;
   minTemp?: number | null;
   maxTemp?: number | null;
-  warehouseId?: string | null;
-  warehouseName?: string | null;
-  currentLocation?: string | null;
 };
 
 export type TDispatchDriverLookup = {
@@ -30,9 +37,6 @@ export type TDispatchDriverLookup = {
   licenseExpiry?: string | null;
   hasValidLicense?: boolean;
   label?: string;
-  warehouseId?: string | null;
-  warehouseName?: string | null;
-  currentLocation?: string | null;
 };
 
 export type TDispatchReadyLpn = {
@@ -50,18 +54,15 @@ export type TDispatchReadyLpn = {
   warehouseId?: string | null;
   warehouseName?: string | null;
   plannedDispatchDate?: string | null;
-  dispatchDate?: string | null;
-  deliveryDate?: string | null;
-  slaDeadline?: string | null;
   customerName?: string | null;
-  destinationLocationId?: string | null;
   destinationAddress?: string | null;
-  destinationLatitude?: number | null;
-  destinationLongitude?: number | null;
-  routeId?: string | null;
-  routeCode?: string | null;
-  routeOriginCity?: string | null;
-  routeDestCity?: string | null;
+  routeName?: string | null;
+};
+
+export type TDispatchReadyLpnQuery = {
+  warehouseId?: string;
+  pageNumber?: number;
+  pageSize?: number;
 };
 
 export type TManualDispatchRequest = {
@@ -87,15 +88,6 @@ export type TDispatchFilters = {
   warehouseId: string;
   temperatureGroup: string;
 };
-
-export type TDispatchTripStatus =
-  | "PLANNED"
-  | "PICKING"
-  | "LOADING_COMPLETED"
-  | "SEALED"
-  | "DISPATCHED"
-  | "CANCELLED"
-  | string;
 
 export type TDispatchTripLpn = {
   lpnId: string;
