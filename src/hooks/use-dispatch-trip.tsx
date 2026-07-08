@@ -1,4 +1,5 @@
 import { dispatchTripApi } from "@/apis/dispatch-trip.api";
+import type { TSealAndDispatchRequest } from "@/schemas/dispatch.schema";
 import {
   keepPreviousData,
   useMutation,
@@ -51,6 +52,14 @@ export const useDispatchTrips = () => {
     },
   });
 
+  const sealAndDispatch = useMutation({
+    mutationFn: (data: TSealAndDispatchRequest) =>
+      dispatchTripApi.sealAndDispatch(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["dispatch"] });
+    },
+  });
+
   const getTripDocuments = (tripId?: string, enabled = true) =>
     useQuery({
       queryKey: ["dispatch", "trips", "documents", tripId],
@@ -77,6 +86,7 @@ export const useDispatchTrips = () => {
     getTripPickList,
     cancelTrip,
     startPicking,
+    sealAndDispatch,
     getTripDocuments,
     getTripRoute,
   };

@@ -103,3 +103,6 @@ export const canCancelTrip = (trip: TDispatchTrip) =>
 
 export const canStartPickingTrip = (trip: TDispatchTrip) =>
   trip.status === DISPATCH_TRIP_STATUS.PLANNED;
+
+export const canDepartTrip = (trip: TDispatchTrip) =>
+  trip.status === DISPATCH_TRIP_STATUS.LOADING_COMPLETED;

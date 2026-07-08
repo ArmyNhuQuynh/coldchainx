@@ -1,7 +1,17 @@
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useDispatchTrips } from "@/hooks/use-dispatch-trip";
 import type { TDispatchTrip } from "@/schemas/dispatch.schema";
-import { ClipboardList, Route } from "lucide-react";
+import { ClipboardList, Loader2, Route, Send } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import TripCancelDialog from "./components/trip-cancel-dialog";
@@ -9,7 +19,7 @@ import TripDetailDialog from "./components/trip-detail-dialog";
 import TripFilterBar from "./components/trip-filter-bar";
 import TripSummaryCards from "./components/trip-summary-cards";
 import TripTable from "./components/trip-table";
-import { ALL_TRIP_STATUS } from "./components/trip-helpers";
+import { ALL_TRIP_STATUS, formatShortTripId } from "./components/trip-helpers";
 
 const matchTripSearch = (trip: TDispatchTrip, search: string) => {
   const keyword = search.trim().toLowerCase();
@@ -31,13 +41,16 @@ const matchTripSearch = (trip: TDispatchTrip, search: string) => {
 };
 
 const TripListPage = () => {
-  const { getCreatedTrips, cancelTrip, startPicking } = useDispatchTrips();
+  const { getCreatedTrips, cancelTrip, startPicking, sealAndDispatch } =
+    useDispatchTrips();
   const tripsQuery = getCreatedTrips();
   const trips = tripsQuery.data ?? [];
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState(ALL_TRIP_STATUS);
   const [selectedTrip, setSelectedTrip] = useState<TDispatchTrip | null>(null);
   const [tripToCancel, setTripToCancel] = useState<TDispatchTrip | null>(null);
+  const [tripToDepart, setTripToDepart] = useState<TDispatchTrip | null>(null);
+  const [sealCode, setSealCode] = useState("");
 
   const filteredTrips = useMemo(() => {
     return trips.filter(
@@ -101,6 +114,48 @@ const TripListPage = () => {
     }
   };
 
+  const handleRequestDepart = (trip: TDispatchTrip) => {
+    setSelectedTrip(null);
+    setTripToDepart(trip);
+    setSealCode(trip.sealNumber ?? "");
+  };
+
+  const handleCloseDepartDialog = () => {
+    setTripToDepart(null);
+    setSealCode("");
+  };
+
+  const handleConfirmDepart = async () => {
+    if (!tripToDepart) return;
+
+    const trimmedSealCode = sealCode.trim();
+    if (!trimmedSealCode) {
+      toast.warning("Nhập mã kẹp chì trước khi xuất phát.");
+      return;
+    }
+
+    try {
+      const result = await sealAndDispatch.mutateAsync({
+        tripId: tripToDepart.tripId,
+        sealCode: trimmedSealCode,
+      });
+      const nextStatus = result.tripStatus ? ` (${result.tripStatus})` : "";
+      toast.success(
+        `Đã xuất phát trip ${formatShortTripId(tripToDepart.tripId)}${nextStatus}.`
+      );
+      handleCloseDepartDialog();
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.error ||
+        error?.response?.data?.Error ||
+        error?.response?.data?.message ||
+        error?.response?.data?.Message ||
+        error?.message ||
+        "Không thể xuất phát chuyến.";
+      toast.error(message);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -144,9 +199,11 @@ const TripListPage = () => {
         trips={filteredTrips}
         isLoading={tripsQuery.isLoading}
         isStartingPicking={startPicking.isPending}
+        isDeparting={sealAndDispatch.isPending}
         onSelect={setSelectedTrip}
         onCancel={setTripToCancel}
         onStartPicking={handleStartPicking}
+        onDepart={handleRequestDepart}
       />
 
       <TripDetailDialog
@@ -157,7 +214,9 @@ const TripListPage = () => {
         }}
         onCancel={setTripToCancel}
         onStartPicking={handleStartPicking}
+        onDepart={handleRequestDepart}
         isStartingPicking={startPicking.isPending}
+        isDeparting={sealAndDispatch.isPending}
       />
 
       <TripCancelDialog
@@ -168,6 +227,68 @@ const TripListPage = () => {
         }}
         onConfirm={handleConfirmCancel}
       />
+
+      <Dialog
+        open={Boolean(tripToDepart)}
+        onOpenChange={(open) => {
+          if (!open) handleCloseDepartDialog();
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Xuất Phát</DialogTitle>
+            <DialogDescription>
+              {tripToDepart
+                ? `Nhập mã kẹp chì cho trip ${formatShortTripId(
+                    tripToDepart.tripId
+                  )} để hoàn tất bước điều phối cuối.`
+                : "Nhập mã kẹp chì để xuất phát chuyến."}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-2">
+            <Label htmlFor="seal-code">Mã kẹp chì</Label>
+            <Input
+              id="seal-code"
+              value={sealCode}
+              placeholder="VD: SEAL-001"
+              autoFocus
+              disabled={sealAndDispatch.isPending}
+              onChange={(event) => setSealCode(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  handleConfirmDepart();
+                }
+              }}
+            />
+          </div>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={sealAndDispatch.isPending}
+              onClick={handleCloseDepartDialog}
+            >
+              Hủy
+            </Button>
+            <Button
+              type="button"
+              className="gap-2"
+              disabled={sealAndDispatch.isPending || !sealCode.trim()}
+              onClick={handleConfirmDepart}
+            >
+              {sealAndDispatch.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+              Xuất Phát
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

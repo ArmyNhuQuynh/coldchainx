@@ -10,6 +10,8 @@ import type {
   TDispatchTripRouteLeg,
   TDispatchTripRoutePoint,
   TDispatchTripRouteStep,
+  TSealAndDispatchRequest,
+  TSealAndDispatchResult,
   TStartPickingResult,
 } from "@/schemas/dispatch.schema";
 import { read, toNumber, unwrapData, unwrapLookup } from "./dispatch-api.helpers";
@@ -270,6 +272,28 @@ const normalizeTrip = (
   };
 };
 
+const normalizeSealAndDispatchResult = (
+  item: TSealAndDispatchResult | Record<string, any>
+): TSealAndDispatchResult => {
+  const raw = item as Record<string, any>;
+
+  return {
+    tripId: read<string>(raw, "tripId", "TripId"),
+    sealCode: read<string | null>(raw, "sealCode", "SealCode"),
+    allOrdersLoaded: read<boolean | null>(
+      raw,
+      "allOrdersLoaded",
+      "AllOrdersLoaded"
+    ),
+    totalOrders: read<number | null>(raw, "totalOrders", "TotalOrders"),
+    loadedOrders: read<number | null>(raw, "loadedOrders", "LoadedOrders"),
+    sealedAt: read<string | null>(raw, "sealedAt", "SealedAt"),
+    sealedBy: read<string | null>(raw, "sealedBy", "SealedBy"),
+    tripStatus: read<string | null>(raw, "tripStatus", "TripStatus"),
+    waybillUrl: read<string | null>(raw, "waybillUrl", "WaybillUrl"),
+  };
+};
+
 const mergeTrips = (trips: TDispatchTrip[]) => {
   const map = new Map<string, TDispatchTrip>();
 
@@ -359,6 +383,26 @@ const startPicking = async (tripId: string) => {
   return unwrapData<TStartPickingResult>(response.data);
 };
 
+const sealAndDispatch = async ({
+  tripId,
+  sealCode,
+}: TSealAndDispatchRequest) => {
+  const formData = new FormData();
+  formData.append("SealCode", sealCode);
+
+  const response = await apiRequest.baseApi.post<
+    TDispatchLookupEnvelope<TSealAndDispatchResult> | TSealAndDispatchResult
+  >(`${API_SUFFIX.DISPATCH_API}/seal-and-dispatch/${tripId}`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
+  return normalizeSealAndDispatchResult(
+    unwrapData<TSealAndDispatchResult>(response.data)
+  );
+};
+
 const getTripDocuments = async (
   tripId: string
 ): Promise<TDispatchTripDocuments> => {
@@ -400,6 +444,7 @@ export const dispatchTripApi = {
   getTripPickList,
   cancelTrip,
   startPicking,
+  sealAndDispatch,
   getTripDocuments,
   getTripRoute,
 };

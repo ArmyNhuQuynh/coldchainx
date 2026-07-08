@@ -141,6 +141,23 @@ export type TStartPickingResult = {
   lpnCount: number;
 };
 
+export type TSealAndDispatchRequest = {
+  tripId: string;
+  sealCode: string;
+};
+
+export type TSealAndDispatchResult = {
+  tripId: string;
+  sealCode?: string | null;
+  allOrdersLoaded?: boolean | null;
+  totalOrders?: number | null;
+  loadedOrders?: number | null;
+  sealedAt?: string | null;
+  sealedBy?: string | null;
+  tripStatus?: string | null;
+  waybillUrl?: string | null;
+};
+
 export type TDispatchTripDocuments = {
   lifoPdfUrl?: string | null;
   waybillPdfUrl?: string | null;

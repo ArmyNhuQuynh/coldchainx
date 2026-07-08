@@ -13,9 +13,10 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import type { TDispatchTrip } from "@/schemas/dispatch.schema";
-import { Ban, Clock, Eye, PackageCheck, Play, Truck, User } from "lucide-react";
+import { Ban, Clock, Eye, PackageCheck, Play, Send, Truck, User } from "lucide-react";
 import {
   canCancelTrip,
+  canDepartTrip,
   canStartPickingTrip,
   formatShortTripId,
   formatTripDateTime,
@@ -28,18 +29,22 @@ type Props = {
   trips: TDispatchTrip[];
   isLoading?: boolean;
   isStartingPicking?: boolean;
+  isDeparting?: boolean;
   onSelect: (trip: TDispatchTrip) => void;
   onCancel: (trip: TDispatchTrip) => void;
   onStartPicking: (trip: TDispatchTrip) => void;
+  onDepart: (trip: TDispatchTrip) => void;
 };
 
 const TripTable = ({
   trips,
   isLoading,
   isStartingPicking,
+  isDeparting,
   onSelect,
   onCancel,
   onStartPicking,
+  onDepart,
 }: Props) => {
   return (
     <Card className="rounded-lg py-0">
@@ -184,6 +189,22 @@ const TripTable = ({
                             >
                               <Play className="h-3.5 w-3.5" />
                               Bắt đầu
+                            </Button>
+                          )}
+                          {canDepartTrip(trip) && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="gap-1.5 text-blue-700 hover:text-blue-800"
+                              disabled={isDeparting}
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                onDepart(trip);
+                              }}
+                            >
+                              <Send className="h-3.5 w-3.5" />
+                              Xuất Phát
                             </Button>
                           )}
                           <Button
