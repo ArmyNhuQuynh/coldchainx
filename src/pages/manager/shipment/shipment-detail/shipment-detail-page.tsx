@@ -9,6 +9,7 @@ import ShipmentContract from "./shipment-contract";
 import OrderWeightSection from "./components/shipment-weight-section";
 import OrderDocuments from "./components/shipment-document";
 import OrderReviewActions from "./components/shipment-review-action";
+import ShipmentTrackingPanel from "./components/shipment-tracking-panel";
 import { ORDER_STATUS } from "@/types/enums/order-status.enum";
 import type { RootState } from "@/redux/store";
 import { useSelector } from "react-redux";
@@ -57,6 +58,11 @@ const OrderDetailPage = () => {
 
             {/* 4 info cards */}
             <OrderInfoCards order={order} />
+            
+            {/* Tracking Panel */}
+            {order.masterTripId && (
+                <ShipmentTrackingPanel tripId={order.masterTripId} />
+            )}
 
             {/* Detail info + Destination + Quotation */}
             <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
