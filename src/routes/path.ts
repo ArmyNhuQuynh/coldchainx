@@ -86,6 +86,10 @@ export const PATH_DISPATCHER_DASHBOARD = {
   trip: {
     root: path(ROOTS_DISPATCHER_DASHBOARD, "/trips"),
   },
+  tracking: {
+    root: path(ROOTS_DISPATCHER_DASHBOARD, "/tracking"),
+    detail: (id: string) => path(ROOTS_DISPATCHER_DASHBOARD, `/tracking/${id}`),
+  },
   shipment: {
     root: path(ROOTS_DISPATCHER_DASHBOARD, '/shipment'),
     edit: (id: string) => path(ROOTS_DISPATCHER_DASHBOARD, `/shipment/${id}`),

@@ -71,6 +71,12 @@ const DispatchPage = Loadable(
 const DispatchTripsPage = Loadable(
   lazy(() => import("@/pages/dispatcher/trips"))
 );
+const TrackingTripsPage = Loadable(
+  lazy(() => import("@/pages/dispatcher/tracking"))
+);
+const TrackingTripDetailPage = Loadable(
+  lazy(() => import("@/pages/dispatcher/tracking/detail/tracking-detail-page"))
+);
 
 
 // const GeneralAppPage = Loadable(lazy(() => import("@/pages/general-app")));
@@ -225,6 +231,14 @@ export const AppRoutes = () =>
         {
           path: "trips",
           element: <DispatchTripsPage />,
+        },
+        {
+          path: "tracking",
+          element: <TrackingTripsPage />,
+        },
+        {
+          path: "tracking/:tripId",
+          element: <TrackingTripDetailPage />,
         },
         {
           path: "shipment",

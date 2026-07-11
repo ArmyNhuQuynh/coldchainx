@@ -13,6 +13,7 @@ import {
   ClipboardList,
   HomeIcon,
   IdCard,
+  MapPinned,
   RouteIcon,
   TruckIcon,
 } from "lucide-react";
@@ -182,6 +183,11 @@ const dispatcherRoutes = {
         title: "Trip đã tạo",
         url: PATH_DISPATCHER_DASHBOARD.trip.root,
         icon: ClipboardList,
+      },
+      {
+        title: "Theo dõi chuyến",
+        url: PATH_DISPATCHER_DASHBOARD.tracking.root,
+        icon: MapPinned,
       },
       {
         title: "Lô hàng",

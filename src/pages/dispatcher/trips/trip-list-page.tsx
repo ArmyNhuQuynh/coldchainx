@@ -10,9 +10,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useDispatchTrips } from "@/hooks/use-dispatch-trip";
+import { useMonitoring } from "@/hooks/use-monitoring";
+import { PATH_DISPATCHER_DASHBOARD } from "@/routes/path";
 import type { TDispatchTrip } from "@/schemas/dispatch.schema";
 import { ClipboardList, Loader2, Route, Send } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import TripCancelDialog from "./components/trip-cancel-dialog";
 import TripDetailDialog from "./components/trip-detail-dialog";
@@ -41,8 +44,10 @@ const matchTripSearch = (trip: TDispatchTrip, search: string) => {
 };
 
 const TripListPage = () => {
+  const navigate = useNavigate();
   const { getCreatedTrips, cancelTrip, startPicking, sealAndDispatch } =
     useDispatchTrips();
+  const { checkTripVehicleIoT } = useMonitoring();
   const tripsQuery = getCreatedTrips();
   const trips = tripsQuery.data ?? [];
   const [search, setSearch] = useState("");
@@ -51,6 +56,8 @@ const TripListPage = () => {
   const [tripToCancel, setTripToCancel] = useState<TDispatchTrip | null>(null);
   const [tripToDepart, setTripToDepart] = useState<TDispatchTrip | null>(null);
   const [sealCode, setSealCode] = useState("");
+  const isDepartSubmitting =
+    sealAndDispatch.isPending || checkTripVehicleIoT.isPending;
 
   const filteredTrips = useMemo(() => {
     return trips.filter(
@@ -135,15 +142,36 @@ const TripListPage = () => {
     }
 
     try {
+      const departingTripId = tripToDepart.tripId;
       const result = await sealAndDispatch.mutateAsync({
-        tripId: tripToDepart.tripId,
+        tripId: departingTripId,
         sealCode: trimmedSealCode,
       });
+      const trackingTripId = result.tripId || departingTripId;
       const nextStatus = result.tripStatus ? ` (${result.tripStatus})` : "";
       toast.success(
-        `Đã xuất phát trip ${formatShortTripId(tripToDepart.tripId)}${nextStatus}.`
+        `Đã xuất phát trip ${formatShortTripId(departingTripId)}${nextStatus}.`
       );
+
+      try {
+        const trackingCheck = await checkTripVehicleIoT.mutateAsync(trackingTripId);
+        const iotStatus = trackingCheck.iotStatus?.overallStatus?.toUpperCase();
+
+        if (!trackingCheck.iotStatus) {
+          toast.warning("Chưa lấy được xe để kiểm tra thiết bị IoT cho chuyến này.");
+        } else if (iotStatus === "ONLINE") {
+          toast.success("Thiết bị IoT của xe đang online.");
+        } else if (iotStatus === "NO_DEVICE") {
+          toast.warning("Xe chưa gắn thiết bị IoT, bản đồ sẽ chờ dữ liệu telemetry.");
+        } else if (iotStatus === "OFFLINE" || iotStatus === "PARTIAL") {
+          toast.warning("Có thiết bị IoT đang offline, cần kiểm tra trước khi theo dõi.");
+        }
+      } catch {
+        toast.warning("Đã xuất phát, nhưng chưa kiểm tra được trạng thái IoT.");
+      }
+
       handleCloseDepartDialog();
+      navigate(PATH_DISPATCHER_DASHBOARD.tracking.detail(trackingTripId));
     } catch (error: any) {
       const message =
         error?.response?.data?.error ||
@@ -199,7 +227,7 @@ const TripListPage = () => {
         trips={filteredTrips}
         isLoading={tripsQuery.isLoading}
         isStartingPicking={startPicking.isPending}
-        isDeparting={sealAndDispatch.isPending}
+        isDeparting={isDepartSubmitting}
         onSelect={setSelectedTrip}
         onCancel={setTripToCancel}
         onStartPicking={handleStartPicking}
@@ -216,7 +244,7 @@ const TripListPage = () => {
         onStartPicking={handleStartPicking}
         onDepart={handleRequestDepart}
         isStartingPicking={startPicking.isPending}
-        isDeparting={sealAndDispatch.isPending}
+        isDeparting={isDepartSubmitting}
       />
 
       <TripCancelDialog
@@ -253,7 +281,7 @@ const TripListPage = () => {
               value={sealCode}
               placeholder="VD: SEAL-001"
               autoFocus
-              disabled={sealAndDispatch.isPending}
+              disabled={isDepartSubmitting}
               onChange={(event) => setSealCode(event.target.value)}
               onKeyDown={(event) => {
                 if (event.key === "Enter") {
@@ -268,7 +296,7 @@ const TripListPage = () => {
             <Button
               type="button"
               variant="outline"
-              disabled={sealAndDispatch.isPending}
+              disabled={isDepartSubmitting}
               onClick={handleCloseDepartDialog}
             >
               Hủy
@@ -276,10 +304,10 @@ const TripListPage = () => {
             <Button
               type="button"
               className="gap-2"
-              disabled={sealAndDispatch.isPending || !sealCode.trim()}
+              disabled={isDepartSubmitting || !sealCode.trim()}
               onClick={handleConfirmDepart}
             >
-              {sealAndDispatch.isPending ? (
+              {isDepartSubmitting ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <Send className="h-4 w-4" />
