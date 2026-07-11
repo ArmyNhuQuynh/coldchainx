@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import type { TDispatchReadyLpn } from "@/schemas/dispatch.schema";
 import { DISPATCH_TEMPERATURE_GROUP } from "@/types/enums/dispatch.enum";
+import type { CSSProperties } from "react";
 import {
   Box,
   MapPin,
@@ -27,6 +28,7 @@ type Props = {
   lpns: TDispatchReadyLpn[];
   selectedIds: string[];
   isLoading?: boolean;
+  panelHeight?: number | null;
   onToggle: (lpn: TDispatchReadyLpn) => void;
 };
 
@@ -34,10 +36,20 @@ const LpnSelectionPanel = ({
   lpns,
   selectedIds,
   isLoading,
+  panelHeight,
   onToggle,
 }: Props) => {
+  const panelStyle = panelHeight
+    ? ({
+        "--dispatch-lpn-panel-height": `${panelHeight}px`,
+      } as CSSProperties)
+    : undefined;
+
   return (
-    <Card className="min-h-[580px] gap-0 overflow-hidden rounded-lg py-0">
+    <Card
+      style={panelStyle}
+      className="min-h-[620px] gap-0 overflow-hidden rounded-lg py-0 xl:h-[var(--dispatch-lpn-panel-height)] xl:min-h-0"
+    >
       <CardHeader className="border-b px-5 py-4">
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -53,8 +65,8 @@ const LpnSelectionPanel = ({
         </div>
       </CardHeader>
 
-      <CardContent className="p-0">
-        <ScrollArea className="h-[520px]">
+      <CardContent className="min-h-0 flex-1 p-0">
+        <ScrollArea className="h-full min-h-[520px] xl:min-h-0">
           <div className="space-y-2.5 p-3">
             {isLoading &&
               Array.from({ length: 6 }).map((_, index) => (

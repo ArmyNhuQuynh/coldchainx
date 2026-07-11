@@ -112,7 +112,7 @@ const VehicleDriverPanel = ({
             <h3 className="text-sm font-semibold">Xe đủ điều kiện</h3>
             <Badge variant="outline">{vehicles.length} xe</Badge>
           </div>
-          <ScrollArea className="h-[196px] rounded-lg border">
+          <ScrollArea className="h-[392px] rounded-lg border">
             <div className="space-y-2 p-3">
               {isLoadingVehicles &&
                 Array.from({ length: 3 }).map((_, index) => (
@@ -172,7 +172,7 @@ const VehicleDriverPanel = ({
             <h3 className="text-sm font-semibold">Tài xế khả dụng</h3>
             <Badge variant="outline">{selectedDriverIds.length}/2 đã chọn</Badge>
           </div>
-          <ScrollArea className="h-[170px] rounded-lg border">
+          <ScrollArea className="h-[340px] rounded-lg border">
             <div className="space-y-2 p-3">
               {isLoadingDrivers &&
                 Array.from({ length: 3 }).map((_, index) => (

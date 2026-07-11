@@ -7,7 +7,7 @@ import type {
   TDispatchReadyLpn,
 } from "@/schemas/dispatch.schema";
 import { Boxes, Sparkles } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import DispatchFilterBar from "./components/dispatch-filter-bar";
 import {
@@ -43,6 +43,10 @@ const DispatchPage = () => {
   const [selectedDriverIds, setSelectedDriverIds] = useState<string[]>([]);
   const [plannedStartTime, setPlannedStartTime] = useState(planningWindow.start);
   const [plannedEndTime, setPlannedEndTime] = useState(planningWindow.end);
+  const vehicleDriverPanelRef = useRef<HTMLDivElement | null>(null);
+  const [vehicleDriverPanelHeight, setVehicleDriverPanelHeight] = useState<
+    number | null
+  >(null);
 
   const selectedWarehouseId =
     filters.warehouseId === ALL_FILTER_VALUE ? undefined : filters.warehouseId;
@@ -69,6 +73,18 @@ const DispatchPage = () => {
       setSelectedVehicleId(vehicles[0].vehicleId);
     }
   }, [selectedVehicleId, vehicles]);
+
+  useEffect(() => {
+    const element = vehicleDriverPanelRef.current;
+    if (!element || typeof ResizeObserver === "undefined") return;
+
+    const observer = new ResizeObserver(([entry]) => {
+      setVehicleDriverPanelHeight(Math.ceil(entry.contentRect.height));
+    });
+    observer.observe(element);
+
+    return () => observer.disconnect();
+  }, []);
 
   const selectedLpns = useMemo(
     () => lpns.filter((lpn) => selectedLpnIds.includes(lpn.lpnId)),
@@ -273,33 +289,36 @@ const DispatchPage = () => {
         driverCount={filteredDrivers.length}
       />
 
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.8fr)]">
+      <div className="grid min-h-0 items-start gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.8fr)]">
         <LpnSelectionPanel
           lpns={filteredLpns}
           selectedIds={selectedLpnIds}
           isLoading={readyLpnsQuery.isLoading}
+          panelHeight={vehicleDriverPanelHeight}
           onToggle={handleToggleLpn}
         />
 
-        <VehicleDriverPanel
-          vehicles={filteredVehicles}
-          drivers={filteredDrivers}
-          selectedLpns={selectedLpns}
-          selectedVehicleId={selectedVehicleId}
-          selectedDriverIds={selectedDriverIds}
-          plannedStartTime={plannedStartTime}
-          plannedEndTime={plannedEndTime}
-          isLoadingVehicles={vehiclesQuery.isLoading}
-          isLoadingDrivers={driversQuery.isLoading}
-          isSubmitting={manualDispatch.isPending}
-          canCreateTrip={canCreateTrip}
-          validationMessages={validationMessages}
-          onVehicleChange={setSelectedVehicleId}
-          onDriverToggle={handleDriverToggle}
-          onPlannedStartTimeChange={setPlannedStartTime}
-          onPlannedEndTimeChange={setPlannedEndTime}
-          onCreateTrip={handleCreateTrip}
-        />
+        <div ref={vehicleDriverPanelRef}>
+          <VehicleDriverPanel
+            vehicles={filteredVehicles}
+            drivers={filteredDrivers}
+            selectedLpns={selectedLpns}
+            selectedVehicleId={selectedVehicleId}
+            selectedDriverIds={selectedDriverIds}
+            plannedStartTime={plannedStartTime}
+            plannedEndTime={plannedEndTime}
+            isLoadingVehicles={vehiclesQuery.isLoading}
+            isLoadingDrivers={driversQuery.isLoading}
+            isSubmitting={manualDispatch.isPending}
+            canCreateTrip={canCreateTrip}
+            validationMessages={validationMessages}
+            onVehicleChange={setSelectedVehicleId}
+            onDriverToggle={handleDriverToggle}
+            onPlannedStartTimeChange={setPlannedStartTime}
+            onPlannedEndTimeChange={setPlannedEndTime}
+            onCreateTrip={handleCreateTrip}
+          />
+        </div>
       </div>
     </div>
   );
