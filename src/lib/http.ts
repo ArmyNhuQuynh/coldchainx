@@ -91,9 +91,6 @@ const request = (apiUrl: string): AxiosInstance => {
     baseURL: apiUrl,
     paramsSerializer: parseParams,
     withCredentials: false,
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-    },
   });
 
   configureAuthSession({

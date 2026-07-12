@@ -65,6 +65,12 @@ const DriverPage = Loadable(
 const DriverDetailPage = Loadable(
   lazy(() => import("@/pages/admin/driver/detail-driver"))
 );
+const UserPage = Loadable(
+  lazy(() => import("@/pages/admin/user/list-user"))
+);
+const UserDetailPage = Loadable(
+  lazy(() => import("@/pages/admin/user/detail-user"))
+);
 const DispatchPage = Loadable(
   lazy(() => import("@/pages/dispatcher/dispatch"))
 );
@@ -156,6 +162,14 @@ export const AppRoutes = () =>
         {
           path: "driver/:id",
           element: <DriverDetailPage />,
+        },
+        {
+          path: "user",
+          element: <UserPage />,
+        },
+        {
+          path: "user/:id",
+          element: <UserDetailPage />,
         },
       ],
     },

@@ -16,6 +16,7 @@ import {
   MapPinned,
   RouteIcon,
   TruckIcon,
+  Users,
 } from "lucide-react";
 import {
   PATH_ADMIN_DASHBOARD,
@@ -49,6 +50,11 @@ const adminRoutes = {
         title: "Tài xế",
         url: PATH_ADMIN_DASHBOARD.driver.root,
         icon: IdCard,
+      },
+      {
+        title: "User",
+        url: PATH_ADMIN_DASHBOARD.user.root,
+        icon: Users,
       },
     ],
   },

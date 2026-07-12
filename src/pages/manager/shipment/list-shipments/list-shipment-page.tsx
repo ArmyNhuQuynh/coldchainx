@@ -1,7 +1,4 @@
 import ShipmentTable from "./components/shipment-table";
-import { CirclePlusIcon } from "lucide-react";
-import { PATH_MANAGER_DASHBOARD } from "@/routes/path";
-import CustomButton from "@/components/button/custom-link-button";
 import { Card } from "@/components/ui/card";
 
 type Props = {};
@@ -65,14 +62,6 @@ const ShipmentPage = (_: Props) => {
             toàn bộ lô hàng
           </p>
         </div>
-
-        <CustomButton
-          linkUrl={
-            PATH_MANAGER_DASHBOARD.shipment.create
-          }
-          functionName="Tạo lô hàng mới"
-          icon={CirclePlusIcon}
-        />
       </div>
 
       {/* Stats */}

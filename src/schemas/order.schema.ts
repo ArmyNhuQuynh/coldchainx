@@ -101,9 +101,10 @@ export const OrderListResponseSchema = z.object({
 export const ReviewOrderSchema = z.object({
   action: z.union([
     z.literal("APPROVE", { message: "Action không hợp lệ" }),
-    z.literal("REJECT",  { message: "Action không hợp lệ" }),
+    z.literal("REQUEST_UPDATE", { message: "Action không hợp lệ" }),
+    z.literal("COMPLIANCE_REJECT", { message: "Action không hợp lệ" }),
   ]),
-  rejectReason: z.string({ message: "Lý do từ chối không hợp lệ" }).nullable().optional(),
+  customerNote: z.string({ message: "Ghi chú cho khách hàng không hợp lệ" }).nullable().optional(),
 });
 
 export const ReviewOrderResponseSchema = z.object({
