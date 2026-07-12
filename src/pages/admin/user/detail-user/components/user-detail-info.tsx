@@ -3,10 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { TUserProfile } from "@/schemas/user.schema";
 import { formatUserDate } from "../../components/user-formatters";
 import {
-  USER_ROLE,
   getUserRoleClassName,
   getUserRoleLabel,
-  normalizeUserRole,
+  isWarehouseOperatorRole,
 } from "@/types/enums/user-role.enum";
 import { getUserStatusLabel } from "@/types/enums/user-status.enum";
 import {
@@ -43,8 +42,10 @@ const InfoRow = ({ icon: Icon, label, value }: InfoRowProps) => (
 
 const UserDetailInfo = ({ user }: Props) => {
   const status = getUserStatusLabel(user.status);
-  const isWarehouseOperator =
-    normalizeUserRole(user.role) === USER_ROLE.WAREHOUSE_OPERATOR;
+  const shouldShowWarehouse =
+    isWarehouseOperatorRole(user.role) ||
+    !!user.warehouseId ||
+    !!user.warehouseName;
 
   return (
     <Card className="rounded-2xl">
@@ -73,7 +74,7 @@ const UserDetailInfo = ({ user }: Props) => {
           label="Trạng thái"
           value={<Badge className={status.className}>{status.label}</Badge>}
         />
-        {isWarehouseOperator && (
+        {shouldShowWarehouse && (
           <InfoRow
             icon={Warehouse}
             label="Kho làm việc"

@@ -16,8 +16,33 @@ export const USER_ROLE_OPTIONS = [
   { label: "Nhân viên kho", value: USER_ROLE.WAREHOUSE_OPERATOR },
 ];
 
-export const normalizeUserRole = (role?: string | null) =>
-  role === "Sale" ? USER_ROLE.SALES : role || null;
+const normalizeRoleToken = (role: string) =>
+  role.trim().replace(/[\s_-]/g, "").toLowerCase();
+
+export const normalizeUserRole = (role?: string | null) => {
+  if (!role) return null;
+
+  switch (normalizeRoleToken(role)) {
+    case "admin":
+      return USER_ROLE.ADMIN;
+    case "manager":
+      return USER_ROLE.MANAGER;
+    case "sale":
+    case "sales":
+      return USER_ROLE.SALES;
+    case "dispatcher":
+      return USER_ROLE.DISPATCHER;
+    case "warehouse":
+    case "warehouseoperator":
+    case "warehouseworker":
+      return USER_ROLE.WAREHOUSE_OPERATOR;
+    default:
+      return role.trim();
+  }
+};
+
+export const isWarehouseOperatorRole = (role?: string | null) =>
+  normalizeUserRole(role) === USER_ROLE.WAREHOUSE_OPERATOR;
 
 export const getUserRoleLabel = (role?: string | null) => {
   const normalized = normalizeUserRole(role);
@@ -44,4 +69,3 @@ export const getUserRoleClassName = (role?: string | null) => {
       return "border-slate-200 bg-slate-50 text-slate-700";
   }
 };
-

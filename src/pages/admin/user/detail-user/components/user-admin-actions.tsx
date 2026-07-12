@@ -1,10 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { TUserProfile } from "@/schemas/user.schema";
-import {
-  USER_ROLE,
-  normalizeUserRole,
-} from "@/types/enums/user-role.enum";
+import { isWarehouseOperatorRole } from "@/types/enums/user-role.enum";
 import { KeyRound, ShieldCheck, UserCog, Warehouse } from "lucide-react";
 import { useState } from "react";
 import UserPasswordDialog from "./user-password-dialog";
@@ -21,8 +18,10 @@ const UserAdminActions = ({ user }: Props) => {
   const [statusOpen, setStatusOpen] = useState(false);
   const [passwordOpen, setPasswordOpen] = useState(false);
   const [warehouseOpen, setWarehouseOpen] = useState(false);
-  const isWarehouseOperator =
-    normalizeUserRole(user.role) === USER_ROLE.WAREHOUSE_OPERATOR;
+  const canManageWarehouse =
+    isWarehouseOperatorRole(user.role) ||
+    !!user.warehouseId ||
+    !!user.warehouseName;
 
   return (
     <>
@@ -58,7 +57,7 @@ const UserAdminActions = ({ user }: Props) => {
             <KeyRound className="mr-2 h-4 w-4" />
             Đặt lại mật khẩu
           </Button>
-          {isWarehouseOperator && (
+          {canManageWarehouse && (
             <Button
               type="button"
               variant="outline"
@@ -83,7 +82,7 @@ const UserAdminActions = ({ user }: Props) => {
         onOpenChange={setPasswordOpen}
         user={user}
       />
-      {isWarehouseOperator && (
+      {canManageWarehouse && (
         <UserWarehouseDialog
           open={warehouseOpen}
           onOpenChange={setWarehouseOpen}

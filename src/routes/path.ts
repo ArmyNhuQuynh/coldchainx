@@ -52,6 +52,13 @@ export const PATH_ADMIN_DASHBOARD = {
     edit: (id: string) => path(ROOTS_ADMIN_DASHBOARD, `/vehicle/${id}/edit`),
   },
 
+  warehouse: {
+    root: path(ROOTS_ADMIN_DASHBOARD, "/warehouse"),
+    create: path(ROOTS_ADMIN_DASHBOARD, "/warehouse/new"),
+    detail: (id: string) => path(ROOTS_ADMIN_DASHBOARD, `/warehouse/${id}`),
+    edit: (id: string) => path(ROOTS_ADMIN_DASHBOARD, `/warehouse/${id}/edit`),
+  },
+
   driver: {
     root: path(ROOTS_ADMIN_DASHBOARD, "/driver"),
     detail: (id: string) => path(ROOTS_ADMIN_DASHBOARD, `/driver/${id}`),

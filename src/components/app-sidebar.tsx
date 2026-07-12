@@ -17,6 +17,7 @@ import {
   RouteIcon,
   TruckIcon,
   Users,
+  Warehouse,
 } from "lucide-react";
 import {
   PATH_ADMIN_DASHBOARD,
@@ -45,6 +46,11 @@ const adminRoutes = {
         title: "Xe tải",
         url: PATH_ADMIN_DASHBOARD.vehicle.root,
         icon: TruckIcon,
+      },
+      {
+        title: "Kho",
+        url: PATH_ADMIN_DASHBOARD.warehouse.root,
+        icon: Warehouse,
       },
       {
         title: "Tài xế",

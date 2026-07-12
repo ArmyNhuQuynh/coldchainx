@@ -59,6 +59,18 @@ const VehicleDetailPage = Loadable(
 const VehicleEditPage = Loadable(
   lazy(() => import("@/pages/admin/vehicle/edit-vehicle"))
 );
+const WarehousePage = Loadable(
+  lazy(() => import("@/pages/admin/warehouse/list-warehouse"))
+);
+const WarehouseCreatePage = Loadable(
+  lazy(() => import("@/pages/admin/warehouse/create-warehouse"))
+);
+const WarehouseDetailPage = Loadable(
+  lazy(() => import("@/pages/admin/warehouse/detail-warehouse"))
+);
+const WarehouseEditPage = Loadable(
+  lazy(() => import("@/pages/admin/warehouse/edit-warehouse"))
+);
 const DriverPage = Loadable(
   lazy(() => import("@/pages/admin/driver/list-driver"))
 );
@@ -154,6 +166,22 @@ export const AppRoutes = () =>
         {
           path: "vehicle/:id/edit",
           element: <VehicleEditPage />,
+        },
+        {
+          path: "warehouse",
+          element: <WarehousePage />,
+        },
+        {
+          path: "warehouse/new",
+          element: <WarehouseCreatePage />,
+        },
+        {
+          path: "warehouse/:id",
+          element: <WarehouseDetailPage />,
+        },
+        {
+          path: "warehouse/:id/edit",
+          element: <WarehouseEditPage />,
         },
         {
           path: "driver",

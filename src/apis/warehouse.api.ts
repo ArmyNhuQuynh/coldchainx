@@ -1,5 +1,12 @@
 import { apiRequest } from "@/lib/http";
-import type { TWarehouseLookup } from "@/schemas/warehouse.schema";
+import type {
+  TWarehouse,
+  TWarehouseListParams,
+  TWarehouseListResponse,
+  TWarehouseLookup,
+  TWarehouseRequest,
+} from "@/schemas/warehouse.schema";
+import type { BaseResponse } from "@/types/response.type";
 import { API_SUFFIX } from "./util.api";
 
 type LookupEnvelope<T> = {
@@ -33,6 +40,13 @@ const normalizeWarehouse = (
   };
 };
 
+const cleanParams = (params: TWarehouseListParams) =>
+  Object.fromEntries(
+    Object.entries(params).filter(
+      ([, value]) => value !== undefined && value !== null && value !== ""
+    )
+  );
+
 const getWarehouses = async () => {
   const response = await apiRequest.baseApi.get<
     LookupEnvelope<TWarehouseLookup[]> | TWarehouseLookup[]
@@ -41,6 +55,48 @@ const getWarehouses = async () => {
   return unwrapLookup<TWarehouseLookup>(response.data).map(normalizeWarehouse);
 };
 
+const getWarehouseList = async (params: TWarehouseListParams) => {
+  const response = await apiRequest.baseApi.get<
+    BaseResponse<TWarehouseListResponse>
+  >(API_SUFFIX.WAREHOUSES_API, { params: cleanParams(params) });
+  return response.data;
+};
+
+const getWarehouseById = async (id: string) => {
+  const response = await apiRequest.baseApi.get<BaseResponse<TWarehouse>>(
+    `${API_SUFFIX.WAREHOUSES_API}/${id}`
+  );
+  return response.data;
+};
+
+const createWarehouse = async (data: TWarehouseRequest) => {
+  const response = await apiRequest.baseApi.post<BaseResponse<TWarehouse>>(
+    API_SUFFIX.WAREHOUSES_API,
+    data
+  );
+  return response.data;
+};
+
+const updateWarehouse = async (id: string, data: TWarehouseRequest) => {
+  const response = await apiRequest.baseApi.put<BaseResponse<TWarehouse>>(
+    `${API_SUFFIX.WAREHOUSES_API}/${id}`,
+    data
+  );
+  return response.data;
+};
+
+const deleteWarehouse = async (id: string) => {
+  const response = await apiRequest.baseApi.delete<BaseResponse<boolean>>(
+    `${API_SUFFIX.WAREHOUSES_API}/${id}`
+  );
+  return response.data;
+};
+
 export const warehouseApi = {
   getWarehouses,
+  getWarehouseList,
+  getWarehouseById,
+  createWarehouse,
+  updateWarehouse,
+  deleteWarehouse,
 };
