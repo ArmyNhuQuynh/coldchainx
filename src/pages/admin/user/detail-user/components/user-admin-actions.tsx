@@ -1,11 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { TUserProfile } from "@/schemas/user.schema";
-import { KeyRound, ShieldCheck, UserCog } from "lucide-react";
+import {
+  USER_ROLE,
+  normalizeUserRole,
+} from "@/types/enums/user-role.enum";
+import { KeyRound, ShieldCheck, UserCog, Warehouse } from "lucide-react";
 import { useState } from "react";
 import UserPasswordDialog from "./user-password-dialog";
 import UserRoleDialog from "./user-role-dialog";
 import UserStatusDialog from "./user-status-dialog";
+import UserWarehouseDialog from "./user-warehouse-dialog";
 
 type Props = {
   user: TUserProfile;
@@ -15,6 +20,9 @@ const UserAdminActions = ({ user }: Props) => {
   const [roleOpen, setRoleOpen] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);
   const [passwordOpen, setPasswordOpen] = useState(false);
+  const [warehouseOpen, setWarehouseOpen] = useState(false);
+  const isWarehouseOperator =
+    normalizeUserRole(user.role) === USER_ROLE.WAREHOUSE_OPERATOR;
 
   return (
     <>
@@ -50,6 +58,17 @@ const UserAdminActions = ({ user }: Props) => {
             <KeyRound className="mr-2 h-4 w-4" />
             Đặt lại mật khẩu
           </Button>
+          {isWarehouseOperator && (
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full justify-start rounded-xl"
+              onClick={() => setWarehouseOpen(true)}
+            >
+              <Warehouse className="mr-2 h-4 w-4" />
+              Chỉnh sửa kho
+            </Button>
+          )}
         </CardContent>
       </Card>
 
@@ -64,9 +83,15 @@ const UserAdminActions = ({ user }: Props) => {
         onOpenChange={setPasswordOpen}
         user={user}
       />
+      {isWarehouseOperator && (
+        <UserWarehouseDialog
+          open={warehouseOpen}
+          onOpenChange={setWarehouseOpen}
+          user={user}
+        />
+      )}
     </>
   );
 };
 
 export default UserAdminActions;
-

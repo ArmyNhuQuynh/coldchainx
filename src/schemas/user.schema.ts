@@ -21,6 +21,8 @@ export const UserProfileSchema = z.object({
   email: z.string().nullable().optional(),
   role: z.string().nullable().optional(),
   status: z.string().nullable().optional(),
+  warehouseId: z.string().uuid().nullable().optional(),
+  warehouseName: z.string().nullable().optional(),
   createdAt: z.string().nullable().optional(),
   updatedAt: z.string().nullable().optional(),
 });
@@ -67,6 +69,10 @@ export const ChangeUserRoleRequestSchema = z.object({
 
 export const ChangeUserStatusRequestSchema = z.object({
   status: z.enum([USER_STATUS_REQUEST.ACTIVE, USER_STATUS_REQUEST.INACTIVE]),
+});
+
+export const ChangeUserWarehouseRequestSchema = z.object({
+  warehouseId: z.string().uuid("Kho không hợp lệ"),
 });
 
 export const ResetUserPasswordRequestSchema = z.object({
@@ -138,6 +144,10 @@ export const UserStatusFormSchema = z.object({
   status: z.enum([USER_STATUS_REQUEST.ACTIVE, USER_STATUS_REQUEST.INACTIVE]),
 });
 
+export const UserWarehouseFormSchema = z.object({
+  warehouseId: z.string().uuid("Kho không hợp lệ"),
+});
+
 export const UserPasswordFormSchema = z
   .object({
     newPassword: z.string().trim().min(1, "Mật khẩu mới không được để trống"),
@@ -157,12 +167,16 @@ export type TChangeUserRoleRequest = z.infer<typeof ChangeUserRoleRequestSchema>
 export type TChangeUserStatusRequest = z.infer<
   typeof ChangeUserStatusRequestSchema
 >;
+export type TChangeUserWarehouseRequest = z.infer<
+  typeof ChangeUserWarehouseRequestSchema
+>;
 export type TResetUserPasswordRequest = z.infer<
   typeof ResetUserPasswordRequestSchema
 >;
 export type TUserCreateFormValues = z.infer<typeof UserCreateFormSchema>;
 export type TUserRoleFormValues = z.infer<typeof UserRoleFormSchema>;
 export type TUserStatusFormValues = z.infer<typeof UserStatusFormSchema>;
+export type TUserWarehouseFormValues = z.infer<typeof UserWarehouseFormSchema>;
 export type TUserPasswordFormValues = z.infer<typeof UserPasswordFormSchema>;
 
 export const USER_CREATE_FORM_DEFAULTS: TUserCreateFormValues = {

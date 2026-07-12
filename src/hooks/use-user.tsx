@@ -3,6 +3,7 @@ import type {
   TAdminUpdateUserRequest,
   TChangeUserRoleRequest,
   TChangeUserStatusRequest,
+  TChangeUserWarehouseRequest,
   TCreateSaleUserRequest,
   TResetUserPasswordRequest,
   TUserListParams,
@@ -65,6 +66,20 @@ export const useUser = () => {
     },
   });
 
+  const changeUserWarehouse = useMutation({
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: TChangeUserWarehouseRequest;
+    }) => userApi.changeUserWarehouse(id, data),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ["user", id] });
+    },
+  });
+
   const resetUserPassword = useMutation({
     mutationFn: ({ id, data }: { id: string; data: TResetUserPasswordRequest }) =>
       userApi.resetUserPassword(id, data),
@@ -80,6 +95,7 @@ export const useUser = () => {
     updateUser,
     changeUserRole,
     changeUserStatus,
+    changeUserWarehouse,
     resetUserPassword,
   };
 };

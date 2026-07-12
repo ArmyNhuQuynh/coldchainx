@@ -3,6 +3,7 @@ import type {
   TAdminUpdateUserRequest,
   TChangeUserRoleRequest,
   TChangeUserStatusRequest,
+  TChangeUserWarehouseRequest,
   TCreateSaleUserRequest,
   TResetUserPasswordRequest,
   TUserListParams,
@@ -66,6 +67,17 @@ const changeUserStatus = async (id: string, data: TChangeUserStatusRequest) => {
   return response.data;
 };
 
+const changeUserWarehouse = async (
+  id: string,
+  data: TChangeUserWarehouseRequest
+) => {
+  const response = await apiRequest.baseApi.patch<BaseResponse<boolean>>(
+    `${API_SUFFIX.USERS_API}/${id}/warehouse`,
+    data
+  );
+  return response.data;
+};
+
 const resetUserPassword = async (
   id: string,
   data: TResetUserPasswordRequest
@@ -84,5 +96,6 @@ export const userApi = {
   updateUser,
   changeUserRole,
   changeUserStatus,
+  changeUserWarehouse,
   resetUserPassword,
 };
