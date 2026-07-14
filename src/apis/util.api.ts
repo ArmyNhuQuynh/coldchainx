@@ -38,5 +38,7 @@ export const API_SUFFIX = {
   // Drivers
   DRIVERS_API: "/drivers",
   DRIVER_LICENSES_API: "/driver-licenses",
+  // Routes
+  ROUTES_API: "/routes",
   IMPORT_TEMPLATES_API: "/import-templates",
 };

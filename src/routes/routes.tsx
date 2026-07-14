@@ -71,6 +71,18 @@ const WarehouseDetailPage = Loadable(
 const WarehouseEditPage = Loadable(
   lazy(() => import("@/pages/admin/warehouse/edit-warehouse"))
 );
+const RoutePage = Loadable(
+  lazy(() => import("@/pages/admin/route/list-route"))
+);
+const RouteCreatePage = Loadable(
+  lazy(() => import("@/pages/admin/route/create-route"))
+);
+const RouteDetailPage = Loadable(
+  lazy(() => import("@/pages/admin/route/detail-route"))
+);
+const RouteEditPage = Loadable(
+  lazy(() => import("@/pages/admin/route/edit-route"))
+);
 const DriverPage = Loadable(
   lazy(() => import("@/pages/admin/driver/list-driver"))
 );
@@ -182,6 +194,22 @@ export const AppRoutes = () =>
         {
           path: "warehouse/:id/edit",
           element: <WarehouseEditPage />,
+        },
+        {
+          path: "route",
+          element: <RoutePage />,
+        },
+        {
+          path: "route/new",
+          element: <RouteCreatePage />,
+        },
+        {
+          path: "route/:id",
+          element: <RouteDetailPage />,
+        },
+        {
+          path: "route/:id/edit",
+          element: <RouteEditPage />,
         },
         {
           path: "driver",

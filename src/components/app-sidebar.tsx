@@ -53,6 +53,11 @@ const adminRoutes = {
         icon: Warehouse,
       },
       {
+        title: "Tuyến",
+        url: PATH_ADMIN_DASHBOARD.route.root,
+        icon: RouteIcon,
+      },
+      {
         title: "Tài xế",
         url: PATH_ADMIN_DASHBOARD.driver.root,
         icon: IdCard,
