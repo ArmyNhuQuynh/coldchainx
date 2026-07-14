@@ -102,6 +102,9 @@ export const PATH_DISPATCHER_DASHBOARD = {
   dispatch: {
     root: path(ROOTS_DISPATCHER_DASHBOARD, "/dispatch"),
   },
+  schedule: {
+    root: path(ROOTS_DISPATCHER_DASHBOARD, "/schedules"),
+  },
   trip: {
     root: path(ROOTS_DISPATCHER_DASHBOARD, "/trips"),
   },

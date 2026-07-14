@@ -10,6 +10,7 @@ import type { RootState } from "@/redux/store";
 import { useSelector } from "react-redux";
 import {
   AlertTriangle,
+  CalendarClock,
   ClipboardList,
   HomeIcon,
   IdCard,
@@ -195,6 +196,11 @@ const dispatcherRoutes = {
         title: "Điều phối",
         url: PATH_DISPATCHER_DASHBOARD.dispatch.root,
         icon: RouteIcon,
+      },
+      {
+        title: "Lịch đi",
+        url: PATH_DISPATCHER_DASHBOARD.schedule.root,
+        icon: CalendarClock,
       },
       {
         title: "Trip đã tạo",

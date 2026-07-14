@@ -27,7 +27,8 @@ const ShipmentContract = ({ order }: Props) => {
   const [sendConfirmationOpen, setSendConfirmationOpen] = useState(false);
   const [verifyConfirmationOpen, setVerifyConfirmationOpen] = useState(false);
 
-  const hasAcceptedQuotation = order.quotations.some(
+  const quotations = order.quotations ?? [];
+  const hasAcceptedQuotation = quotations.some(
     (quotation) => quotation.status === QUOTATION_STATUS.ACCEPTED
   );
 

@@ -13,7 +13,9 @@ type Props = {
 
 const OrderDocuments = ({ order }: Props) => {
     const { getContractByOrderId } = useContract();
-    const hasAcceptedQuotation = order.quotations.some(
+    const quotations = order.quotations ?? [];
+    const documents = order.documents ?? [];
+    const hasAcceptedQuotation = quotations.some(
         (quotation) => quotation.status === QUOTATION_STATUS.ACCEPTED
     );
     const { data: contractResponse } = getContractByOrderId(
@@ -23,7 +25,7 @@ const OrderDocuments = ({ order }: Props) => {
     const signedContract = contractResponse?.data;
     const hasSignedContract = Boolean(signedContract?.signedFileUrl?.trim());
 
-    if (order.documents.length === 0 && !hasSignedContract) {
+    if (documents.length === 0 && !hasSignedContract) {
         return (
             <Card>
                 <CardHeader className="font-semibold text-lg pb-2 flex flex-row items-center gap-2">
@@ -45,7 +47,7 @@ const OrderDocuments = ({ order }: Props) => {
             </CardHeader>
             <CardContent>
                 <div className="space-y-4">
-                    {order.documents.map((doc) => (
+                    {documents.map((doc) => (
                         <div key={doc.docId} className="flex items-start gap-4">
                             <FilePreview
                                 fileUrl={doc.imageUrl}

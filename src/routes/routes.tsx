@@ -98,6 +98,9 @@ const UserDetailPage = Loadable(
 const DispatchPage = Loadable(
   lazy(() => import("@/pages/dispatcher/dispatch"))
 );
+const DispatchSchedulesPage = Loadable(
+  lazy(() => import("@/pages/dispatcher/schedules"))
+);
 const DispatchTripsPage = Loadable(
   lazy(() => import("@/pages/dispatcher/trips"))
 );
@@ -297,6 +300,10 @@ export const AppRoutes = () =>
         {
           path: "dispatch",
           element: <DispatchPage />,
+        },
+        {
+          path: "schedules",
+          element: <DispatchSchedulesPage />,
         },
         {
           path: "trips",

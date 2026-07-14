@@ -24,8 +24,8 @@ export const OrderCategoryEnum = z.union([
 export const OrderDestinationSchema = z.object({
   locationId: z.string().uuid({ message: "ID địa điểm không hợp lệ" }),
   address:    z.string({ message: "Địa chỉ không hợp lệ" }),
-  latitude:   z.number({ message: "Vĩ độ không hợp lệ" }),
-  longitude:  z.number({ message: "Kinh độ không hợp lệ" }),
+  latitude:   z.number({ message: "Vĩ độ không hợp lệ" }).optional(),
+  longitude:  z.number({ message: "Kinh độ không hợp lệ" }).optional(),
 });
 
 // ===== DOCUMENT =====
@@ -33,7 +33,7 @@ export const OrderDocumentSchema = z.object({
   docId:     z.string().uuid({ message: "ID tài liệu không hợp lệ" }),
   docType:   z.string({ message: "Loại tài liệu không hợp lệ" }),
   imageUrl:  z.string({ message: "URL ảnh không hợp lệ" }),
-  status:    z.string({ message: "Trạng thái không hợp lệ" }).nullable(),
+  status:    z.string({ message: "Trạng thái không hợp lệ" }).nullable().optional(),
   createdAt: z.string({ message: "Thời gian tạo không hợp lệ" }).nullable(),
 });
 
@@ -75,13 +75,13 @@ export const OrderSchema = z.object({
   actualWeightKg:   z.number({ message: "Cân nặng thực tế không hợp lệ" }),
   expectedCbm:      z.number({ message: "Thể tích dự kiến không hợp lệ" }),
   actualCbm:        z.number({ message: "Thể tích thực tế không hợp lệ" }).nullable(),
-  cargoValue:       z.number({ message: "Giá trị hàng hóa không hợp lệ" }),
+  cargoValue:       z.number({ message: "Giá trị hàng hóa không hợp lệ" }).nullable().optional(),
   status:           OrderStatusSchema,
   createdAt:        z.string({ message: "Thời gian tạo không hợp lệ" }).nullable(),
   route:             OrderRouteSchema.nullable(),
   destination:      OrderDestinationSchema.nullable(),
   documents:        z.array(OrderDocumentSchema, { message: "Danh sách tài liệu không hợp lệ" }),
-  quotations:       z.array(OrderQuotationSchema, { message: "Danh sách báo giá không hợp lệ" }),
+  quotations:       z.array(OrderQuotationSchema, { message: "Danh sách báo giá không hợp lệ" }).optional(),
 });
 
 // ===== ORDER LIST RESPONSE =====

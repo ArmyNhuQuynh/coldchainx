@@ -37,9 +37,16 @@ const InfoRow = ({
     </div>
 );
 
+const formatCurrency = (value?: number | null) => {
+    if (value === null || value === undefined) return "—";
+
+    return `${value.toLocaleString("vi-VN")}đ`;
+};
+
 const OrderDetailInfo = ({ order }: Props) => {
     const { label: statusLabel, className: statusClass } = getOrderStatusLabel(order.status);
     const { label: categoryLabel } = getOrderCategoryLabel(order.category);
+    const quotations = order.quotations ?? [];
 
     return (
         <Card>
@@ -73,7 +80,7 @@ const OrderDetailInfo = ({ order }: Props) => {
                         <InfoRow icon={Package} label="Loại đóng gói" value={order.packingType} />
                         <InfoRow icon={Thermometer} label="Nhiệt độ" value={`${order.tempCondition}°C`} />
                         <InfoRow icon={DollarSign} label="Giá trị hàng hóa" value={
-                            order.cargoValue.toLocaleString("vi-VN") + "đ"
+                            formatCurrency(order.cargoValue)
                         } />
                     </div>
 
@@ -87,7 +94,7 @@ const OrderDetailInfo = ({ order }: Props) => {
                             Báo giá
                         </p>
                         <p className="text-sm text-muted-foreground italic">
-                            {order.quotations.length > 0
+                            {quotations.length > 0
                                 ? "Đã có báo giá cho đơn hàng"
                                 : "Chưa có báo giá"}
                         </p>

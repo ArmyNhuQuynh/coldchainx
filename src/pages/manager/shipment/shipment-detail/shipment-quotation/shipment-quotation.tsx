@@ -46,7 +46,8 @@ const OrderQuotation = ({ order, preferredQuoteId }: Props) => {
     () => selectActiveQuotation(quotations, preferredQuoteId),
     [preferredQuoteId, quotations]
   );
-  const hasQuotation = !!preferredQuoteId || order.quotations.length > 0;
+  const embeddedQuotations = order.quotations ?? [];
+  const hasQuotation = !!preferredQuoteId || embeddedQuotations.length > 0;
 
   const handleOpenChange = (nextOpen: boolean) => {
     setOpen(nextOpen);
@@ -88,11 +89,10 @@ const OrderQuotation = ({ order, preferredQuoteId }: Props) => {
       <Button
         variant="outline"
         className="h-9 w-full justify-start gap-2 text-sm"
-        disabled={!hasQuotation}
         onClick={() => setOpen(true)}
       >
         <FileText className="h-4 w-4" />
-        {hasQuotation ? "Xem bảng báo giá chi tiết" : "Chưa có báo giá"}
+        {hasQuotation ? "Xem bảng báo giá chi tiết" : "Kiểm tra báo giá"}
       </Button>
 
       <Dialog open={open} onOpenChange={handleOpenChange}>
