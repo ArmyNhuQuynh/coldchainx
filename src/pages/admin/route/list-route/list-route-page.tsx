@@ -89,7 +89,7 @@ const ListRoutePage = () => {
           </p>
         </div>
         <Button
-          className="rounded-xl"
+          className="rounded-md"
           onClick={() => navigate(PATH_ADMIN_DASHBOARD.route.create)}
         >
           <CirclePlusIcon className="mr-2 h-4 w-4" />
@@ -101,15 +101,17 @@ const ListRoutePage = () => {
         {routeStats.map((item) => (
           <Card
             key={item.title}
-            className="flex flex-col items-center justify-center rounded-2xl px-4 py-6"
+            className="rounded-lg px-4 py-4"
           >
-            <div className="mb-2 flex items-center gap-2 text-muted-foreground">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm text-muted-foreground">{item.title}</p>
+                <h2 className={`mt-2 text-2xl font-semibold ${item.color}`}>
+                  {item.value}
+                </h2>
+              </div>
               <item.icon className="h-5 w-5" />
-              <p className="text-sm">{item.title}</p>
             </div>
-            <h2 className={`text-4xl font-bold ${item.color}`}>
-              {item.value}
-            </h2>
           </Card>
         ))}
       </div>

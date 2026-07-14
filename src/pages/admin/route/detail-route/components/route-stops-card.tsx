@@ -125,8 +125,8 @@ const RouteStopsCard = ({ routeId }: Props) => {
   };
 
   return (
-    <Card>
-      <CardHeader className="pb-2">
+    <Card className="rounded-lg">
+      <CardHeader className="border-b pb-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold">Điểm dừng của tuyến</h2>
@@ -134,14 +134,14 @@ const RouteStopsCard = ({ routeId }: Props) => {
               Quản lý các điểm trả hàng/dropoff thuộc tuyến này.
             </p>
           </div>
-          <Button className="rounded-xl" onClick={openCreateDialog}>
+          <Button className="rounded-md" onClick={openCreateDialog}>
             <CirclePlus className="mr-2 h-4 w-4" />
             Thêm điểm dừng
           </Button>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="overflow-hidden rounded-2xl border">
+      <CardContent className="pt-4">
+        <div className="overflow-hidden rounded-md border">
           <Table>
             <TableHeader className="bg-muted/40">
               <TableRow>

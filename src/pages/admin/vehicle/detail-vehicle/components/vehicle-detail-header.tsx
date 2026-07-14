@@ -40,7 +40,10 @@ const VehicleDetailHeader = ({ vehicle }: Props) => {
       </div>
 
       <div className="flex gap-3">
-        <Button variant="outline" onClick={() => navigate(-1)}>
+        <Button
+          variant="outline"
+          onClick={() => navigate(PATH_ADMIN_DASHBOARD.vehicle.root)}
+        >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Quay lại
         </Button>

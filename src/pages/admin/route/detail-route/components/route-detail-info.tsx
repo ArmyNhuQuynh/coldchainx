@@ -63,22 +63,15 @@ const RouteDetailInfo = ({ route }: Props) => {
   ];
 
   return (
-    <Card>
-      <CardHeader className="pb-2 text-lg font-semibold">
+    <Card className="rounded-lg">
+      <CardHeader className="border-b pb-4 text-base font-semibold">
         Thông tin tuyến
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-4">
         <div>
           {rows.map((row) => (
             <InfoRow key={row.label} {...row} />
           ))}
-        </div>
-        <div className="mt-4 rounded-xl border border-dashed bg-muted/30 p-4 text-sm text-muted-foreground">
-          <div className="mb-1 flex items-center gap-2 font-medium text-foreground">
-            <Route className="h-4 w-4" />
-            Chưa quản lý lịch chạy tại đây
-          </div>
-          Lịch đi theo ngày, giờ xuất phát và giờ cut-off sẽ được xử lý riêng ở luồng điều phối.
         </div>
       </CardContent>
     </Card>

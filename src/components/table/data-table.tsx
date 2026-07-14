@@ -462,7 +462,7 @@ export function DataTable<TData, TValue> ( {
             <TableSkeleton columns={ columns } pageSize={ pageSize } />
           ) : (
             <Table className="relative w-max min-w-full">
-              <TableHeader className="sticky top-0 z-10 bg-muted/40">
+              <TableHeader className="sticky top-0 z-20 bg-card shadow-sm">
                 { table.getHeaderGroups().map( ( headerGroup ) => (
                   <TableRow
                     key={ headerGroup.id }
@@ -471,7 +471,7 @@ export function DataTable<TData, TValue> ( {
                     { headerGroup.headers.map( ( header ) => (
                       <TableHead
                         key={ header.id }
-                        className="h-12 px-5 text-left align-middle font-medium text-muted-foreground"
+                        className="h-12 bg-card px-5 text-left align-middle font-medium text-muted-foreground"
                       >
                         { header.isPlaceholder
                           ? null

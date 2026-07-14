@@ -9,11 +9,11 @@ type Props = {
 
 const RouteOriginWarehousesCard = ({ warehouses, isLoading }: Props) => {
   return (
-    <Card>
-      <CardHeader className="pb-2 text-lg font-semibold">
+    <Card className="rounded-lg">
+      <CardHeader className="border-b pb-4 text-base font-semibold">
         Kho xuất phát phù hợp
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-4">
         {isLoading && (
           <div className="py-8 text-center text-sm text-muted-foreground">
             Đang tải kho...
@@ -21,7 +21,7 @@ const RouteOriginWarehousesCard = ({ warehouses, isLoading }: Props) => {
         )}
 
         {!isLoading && warehouses.length === 0 && (
-          <div className="rounded-xl border border-dashed bg-muted/30 p-4 text-sm text-muted-foreground">
+          <div className="rounded-md border bg-muted/20 p-3 text-sm text-muted-foreground">
             Chưa tìm thấy kho theo thành phố xuất phát của tuyến.
           </div>
         )}
@@ -31,7 +31,7 @@ const RouteOriginWarehousesCard = ({ warehouses, isLoading }: Props) => {
             {warehouses.map((warehouse) => (
               <div
                 key={warehouse.warehouseId}
-                className="rounded-xl border bg-background/60 p-4"
+                className="rounded-md border bg-background/60 p-3"
               >
                 <div className="flex items-center gap-2 font-medium">
                   <Warehouse className="h-4 w-4 text-primary" />

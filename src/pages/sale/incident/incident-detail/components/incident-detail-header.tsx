@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PATH_SALE_DASHBOARD } from "@/routes/path";
 import type { TDiscrepancyDetail } from "@/schemas/discrepancy.schema";
 import type { TOrder } from "@/schemas/order.schema";
 import { ArrowLeft, AlertTriangle } from "lucide-react";
@@ -21,7 +22,7 @@ const IncidentDetailHeader = ({ detail, order }: Props) => {
             variant="ghost"
             size="icon"
             className="h-9 w-9"
-            onClick={() => navigate(-1)}
+            onClick={() => navigate(PATH_SALE_DASHBOARD.incident.root)}
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>

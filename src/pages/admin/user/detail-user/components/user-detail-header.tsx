@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PATH_ADMIN_DASHBOARD } from "@/routes/path";
 import type { TUserProfile } from "@/schemas/user.schema";
 import {
   getUserRoleClassName,
@@ -35,7 +36,11 @@ const UserDetailHeader = ({ user }: Props) => {
         </p>
       </div>
 
-      <Button variant="outline" className="rounded-xl" onClick={() => navigate(-1)}>
+      <Button
+        variant="outline"
+        className="rounded-xl"
+        onClick={() => navigate(PATH_ADMIN_DASHBOARD.user.root)}
+      >
         <ArrowLeft className="mr-2 h-4 w-4" />
         Quay lại
       </Button>

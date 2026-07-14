@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PATH_ADMIN_DASHBOARD } from "@/routes/path";
 import type { TDriver } from "@/schemas/driver.schema";
 import { getDriverStatusLabel } from "@/types/enums/driver-status.enum";
 import { ArrowLeft, Pencil } from "lucide-react";
@@ -42,7 +43,11 @@ const DriverDetailHeader = ({ driver, onEdit }: Props) => {
           <Pencil className="h-4 w-4 mr-2" />
           Chỉnh sửa
         </Button>
-        <Button variant="outline" className="rounded-xl" onClick={() => navigate(-1)}>
+        <Button
+          variant="outline"
+          className="rounded-xl"
+          onClick={() => navigate(PATH_ADMIN_DASHBOARD.driver.root)}
+        >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Quay lại
         </Button>

@@ -40,5 +40,6 @@ export const API_SUFFIX = {
   DRIVER_LICENSES_API: "/driver-licenses",
   // Routes
   ROUTES_API: "/routes",
+  WEIGHT_TIERS_API: "/weight-tiers",
   IMPORT_TEMPLATES_API: "/import-templates",
 };

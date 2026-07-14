@@ -62,7 +62,10 @@ const WarehouseDetailHeader = ({ warehouse }: Props) => {
       </div>
 
       <div className="flex flex-wrap gap-3">
-        <Button variant="outline" onClick={() => navigate(-1)}>
+        <Button
+          variant="outline"
+          onClick={() => navigate(PATH_ADMIN_DASHBOARD.warehouse.root)}
+        >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Quay lại
         </Button>
