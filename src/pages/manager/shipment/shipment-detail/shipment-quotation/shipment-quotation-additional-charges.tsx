@@ -1,111 +1,123 @@
-import { Button } from "@/components/ui/button";
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useServiceCatalog } from "@/hooks/use-service-catalog";
+import { cn, formatPrice } from "@/lib/utils";
 import type { TQuotationFormValues } from "@/schemas/quotation.schema";
-import { Plus, Trash2 } from "lucide-react";
-import { useFieldArray, type UseFormReturn } from "react-hook-form";
+import type { TServiceCatalog } from "@/schemas/service-catalog.schema";
+import { useMemo } from "react";
+import type { UseFormReturn } from "react-hook-form";
 
 type Props = {
   form: UseFormReturn<TQuotationFormValues>;
 };
 
 const ShipmentQuotationAdditionalCharges = ({ form }: Props) => {
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: "additionalCharges",
-  });
+  const { getActiveServiceCatalogs } = useServiceCatalog();
+  const servicesQuery = getActiveServiceCatalogs();
+  const selectedCharges = form.watch("additionalCharges") ?? [];
+  const selectedIds = selectedCharges.map((charge) => charge.serviceCatalogId);
+
+  const services = useMemo(
+    () =>
+      (servicesQuery.data?.data ?? [])
+        .filter((service) => service.isActive && service.isMandatory)
+        .sort((left, right) => left.serviceCode.localeCompare(right.serviceCode)),
+    [servicesQuery.data?.data]
+  );
+
+  const toggleService = (serviceId: string, checked: boolean) => {
+    const nextIds = checked
+      ? Array.from(new Set([...selectedIds, serviceId]))
+      : selectedIds.filter((id) => id !== serviceId);
+
+    form.setValue(
+      "additionalCharges",
+      nextIds.map((serviceCatalogId) => ({ serviceCatalogId })),
+      {
+        shouldDirty: true,
+        shouldValidate: true,
+      }
+    );
+  };
 
   return (
-    <div className="space-y-2.5">
-      <div className="flex items-center justify-between">
-        <h3 className="font-semibold">Phụ phí bổ sung</h3>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => append({ name: "", amount: 0, note: "" })}
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Thêm phụ phí
-        </Button>
+    <div className="space-y-3">
+      <div>
+        <h3 className="font-semibold">Dịch vụ tính thêm</h3>
+        <p className="text-sm text-muted-foreground">
+          Chọn dịch vụ từ bảng giá hệ thống. BE sẽ tự lấy giá mặc định để cộng vào báo giá.
+        </p>
       </div>
 
-      {fields.length === 0 ? (
-        <p className="text-sm italic text-muted-foreground">
-          Chưa có phụ phí bổ sung
-        </p>
-      ) : (
-        fields.map((field, index) => (
-          <div
-            key={field.id}
-            className="grid gap-2.5 rounded-md border p-2.5 lg:grid-cols-[1fr_140px_1fr_auto]"
-          >
-            <FormField
-              control={form.control}
-              name={`additionalCharges.${index}.name`}
-              render={({ field: nameField }) => (
-                <FormItem>
-                  <FormLabel>Tên phụ phí</FormLabel>
-                  <FormControl>
-                    <Input {...nameField} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+      {servicesQuery.isFetching && (
+        <div className="rounded-md border px-3 py-5 text-center text-sm text-muted-foreground">
+          Đang tải danh sách dịch vụ...
+        </div>
+      )}
+
+      {!servicesQuery.isFetching && services.length === 0 && (
+        <div className="rounded-md border px-3 py-5 text-center text-sm text-muted-foreground">
+          Chưa có dịch vụ bắt buộc đang hoạt động.
+        </div>
+      )}
+
+      {!servicesQuery.isFetching && services.length > 0 && (
+        <div className="grid gap-2">
+          {services.map((service) => (
+            <ServiceOption
+              key={service.serviceCatalogId}
+              service={service}
+              checked={selectedIds.includes(service.serviceCatalogId)}
+              onCheckedChange={(checked) =>
+                toggleService(service.serviceCatalogId, checked)
+              }
             />
-            <FormField
-              control={form.control}
-              name={`additionalCharges.${index}.amount`}
-              render={({ field: amountField }) => (
-                <FormItem>
-                  <FormLabel>Số tiền</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      min={0}
-                      {...amountField}
-                      onChange={(event) =>
-                        amountField.onChange(Number(event.target.value))
-                      }
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name={`additionalCharges.${index}.note`}
-              render={({ field: noteField }) => (
-                <FormItem>
-                  <FormLabel>Ghi chú</FormLabel>
-                  <FormControl>
-                    <Input {...noteField} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="self-end text-destructive"
-              onClick={() => remove(index)}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
-        ))
+          ))}
+        </div>
       )}
     </div>
   );
 };
+
+type ServiceOptionProps = {
+  service: TServiceCatalog;
+  checked: boolean;
+  onCheckedChange: (checked: boolean) => void;
+};
+
+const ServiceOption = ({
+  service,
+  checked,
+  onCheckedChange,
+}: ServiceOptionProps) => (
+  <label
+    className={cn(
+      "flex cursor-pointer items-start gap-3 rounded-md border p-3 transition hover:border-primary/60 hover:bg-muted/30",
+      checked && "border-primary bg-primary/5"
+    )}
+  >
+    <Checkbox
+      checked={checked}
+      className="mt-1"
+      onCheckedChange={(value) => onCheckedChange(value === true)}
+    />
+    <div className="min-w-0 flex-1">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <span className="font-medium">{service.serviceName}</span>
+          <Badge variant="outline">{service.serviceCode}</Badge>
+        </div>
+        <span className="font-semibold text-primary">
+          {formatPrice(service.defaultPrice)}
+        </span>
+      </div>
+      {service.description && (
+        <p className="mt-1 text-sm text-muted-foreground">
+          {service.description}
+        </p>
+      )}
+    </div>
+  </label>
+);
 
 export default ShipmentQuotationAdditionalCharges;

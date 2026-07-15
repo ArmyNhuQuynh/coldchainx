@@ -13,6 +13,11 @@ export const QuotationStatusSchema = z.union([
 ]);
 
 export const QuotationAdditionalChargeSchema = z.object({
+  serviceCatalogId: z
+    .string()
+    .uuid({ message: "ID dịch vụ không hợp lệ" })
+    .nullable()
+    .optional(),
   name: z.string().min(1, { message: "Tên phụ phí không được để trống" }),
   amount: z.number().min(0, { message: "Phụ phí không được là số âm" }),
   note: z.string().nullable(),
@@ -45,9 +50,7 @@ export const QuotationSchema = z.object({
 });
 
 export const UpdateQuotationAdditionalChargeSchema = z.object({
-  name: z.string().min(1, { message: "Tên phụ phí không được để trống" }),
-  amount: z.number().min(0, { message: "Phụ phí không được là số âm" }),
-  note: z.string().nullable().optional(),
+  serviceCatalogId: z.string().uuid({ message: "ID dịch vụ không hợp lệ" }),
 });
 
 export const UpdateQuotationSchema = z.object({
@@ -59,9 +62,7 @@ export const UpdateQuotationSchema = z.object({
 });
 
 export const QuotationFormAdditionalChargeSchema = z.object({
-  name: z.string().min(1, { message: "Tên phụ phí không được để trống" }),
-  amount: z.number().min(0, { message: "Phụ phí không được là số âm" }),
-  note: z.string(),
+  serviceCatalogId: z.string().uuid({ message: "ID dịch vụ không hợp lệ" }),
 });
 
 export const QuotationFormSchema = z.object({

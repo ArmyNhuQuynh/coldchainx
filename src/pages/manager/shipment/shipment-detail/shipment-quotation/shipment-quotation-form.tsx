@@ -38,11 +38,7 @@ const getDefaultValues = (quotation: TQuotation): TQuotationFormValues => ({
   baseFreight: quotation.baseFreight,
   lastMileSurcharge: quotation.lastMileSurcharge,
   vatPercentage: quotation.vatPercentage ?? 8,
-  additionalCharges: quotation.additionalCharges.map((charge) => ({
-    name: charge.name,
-    amount: charge.amount,
-    note: charge.note ?? "",
-  })),
+  additionalCharges: getSelectedServiceCharges(quotation),
   overrideReason: quotation.overrideReason ?? "",
 });
 
@@ -61,9 +57,7 @@ const ShipmentQuotationForm = ({ quotation, isPending, onCancel, onSubmit }: Pro
       lastMileSurcharge: values.lastMileSurcharge,
       vatPercentage: values.vatPercentage,
       additionalCharges: values.additionalCharges.map((charge) => ({
-        name: charge.name,
-        amount: charge.amount,
-        note: charge.note || null,
+        serviceCatalogId: charge.serviceCatalogId,
       })),
       overrideReason: values.overrideReason || null,
     });
@@ -160,5 +154,16 @@ const ShipmentQuotationForm = ({ quotation, isPending, onCancel, onSubmit }: Pro
     </>
   );
 };
+
+const getSelectedServiceCharges = (quotation: TQuotation) =>
+  Array.from(
+    new Set(
+      quotation.additionalCharges
+        .map((charge) => charge.serviceCatalogId)
+        .filter((serviceCatalogId): serviceCatalogId is string =>
+          Boolean(serviceCatalogId)
+        )
+    )
+  ).map((serviceCatalogId) => ({ serviceCatalogId }));
 
 export default ShipmentQuotationForm;
