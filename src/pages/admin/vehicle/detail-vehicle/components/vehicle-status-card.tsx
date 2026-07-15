@@ -54,7 +54,7 @@ const VehicleStatusCard = ({ vehicle }: Props) => {
     {
       icon: Files,
       label: "Số giấy tờ",
-      value: vehicle.documents.length,
+      value: vehicle.documents?.length ?? 0,
     },
   ]);
 

@@ -35,6 +35,8 @@ export const API_SUFFIX = {
   OUTBOUND_API: "/Outbound",
   // Vehicles
   VEHICLES_API: "/vehicles",
+  VEHICLE_DOCUMENTS_API: "/vehicle-documents",
+  MAINTENANCE_TICKETS_API: "/maintenance-tickets",
   // IoT Devices
   IOT_DEVICES_API: "/iot-devices",
   // Drivers

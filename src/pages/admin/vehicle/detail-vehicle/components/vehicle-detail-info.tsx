@@ -6,6 +6,7 @@ import {
   Fuel,
   Gauge,
   Hash,
+  Ruler,
   MapPin,
   Snowflake,
   Tag,
@@ -31,6 +32,17 @@ const hasValue = (value: unknown) =>
 
 const formatNumber = (value: number, unit: string) =>
   `${value.toLocaleString("vi-VN")} ${unit}`;
+
+const formatOptionalNumber = (value: number | null | undefined, unit: string) =>
+  typeof value !== "number" ? "-" : formatNumber(value, unit);
+
+const formatDate = (value: string | null | undefined) => {
+  if (!value) return "-";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? value
+    : date.toLocaleDateString("vi-VN");
+};
 
 const compactRows = (rows: Array<InfoRowData | null>) =>
   rows.filter((row): row is InfoRowData => row !== null);
@@ -93,12 +105,25 @@ const VehicleDetailInfo = ({ vehicle }: Props) => {
     {
       icon: Gauge,
       label: "Số km hiện tại",
-      value: formatNumber(vehicle.currentOdometer, "km"),
+      value: formatOptionalNumber(vehicle.currentOdometer, "km"),
     },
     {
       icon: Gauge,
       label: "Mốc bảo dưỡng tiếp theo",
-      value: formatNumber(vehicle.nextMaintenanceOdometer, "km"),
+      value: formatOptionalNumber(vehicle.nextMaintenanceOdometer, "km"),
+    },
+    {
+      icon: Gauge,
+      label: "Ngày bảo dưỡng tiếp theo",
+      value: formatDate(vehicle.nextMaintenanceDate),
+    },
+    {
+      icon: Gauge,
+      label: "Cảnh báo trước",
+      value: `${formatOptionalNumber(
+        vehicle.warningKmBeforeDue,
+        "km"
+      )} / ${formatOptionalNumber(vehicle.warningDaysBeforeDue, "ngày")}`,
     },
   ]);
 
@@ -122,6 +147,28 @@ const VehicleDetailInfo = ({ vehicle }: Props) => {
           icon: Hash,
           label: "Thể tích tối đa",
           value: formatNumber(vehicle.maxCbm, "m³"),
+        }
+      : null,
+    hasValue(vehicle.usableCbm)
+      ? {
+          icon: Hash,
+          label: "CBM khả dụng",
+          value: formatNumber(vehicle.usableCbm!, "m³"),
+        }
+      : null,
+    hasValue(vehicle.innerLengthCm) ||
+    hasValue(vehicle.innerWidthCm) ||
+    hasValue(vehicle.innerHeightCm)
+      ? {
+          icon: Ruler,
+          label: "Lòng thùng",
+          value: `${formatOptionalNumber(
+            vehicle.innerLengthCm,
+            "cm"
+          )} x ${formatOptionalNumber(
+            vehicle.innerWidthCm,
+            "cm"
+          )} x ${formatOptionalNumber(vehicle.innerHeightCm, "cm")}`,
         }
       : null,
     hasValue(vehicle.minTemp) && hasValue(vehicle.maxTemp)

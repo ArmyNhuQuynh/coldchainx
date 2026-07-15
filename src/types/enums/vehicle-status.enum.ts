@@ -2,6 +2,7 @@ export const VEHICLE_STATUS = {
   ACTIVE: "ACTIVE",
   ON_TRIP: "ON_TRIP",
   MAINTENANCE: "MAINTENANCE",
+  MAINTENANCE_PENDING: "MAINTENANCE_PENDING",
   SUSPENDED_DOCS: "SUSPENDED_DOCS",
   INACTIVE: "INACTIVE",
 } as const;
@@ -37,6 +38,11 @@ export function normalizeVehicleStatus(
     case "MAINTENANCE":
     case "2":
       return VEHICLE_STATUS.MAINTENANCE;
+    case "MAINTENANCEPENDING":
+    case "MAINTENANCE_PENDING":
+    case "PENDING_MAINTENANCE":
+    case "WAITING_MAINTENANCE":
+      return VEHICLE_STATUS.MAINTENANCE_PENDING;
     case "SUSPENDED_DOCS":
       return VEHICLE_STATUS.SUSPENDED_DOCS;
     case "INACTIVE":
@@ -66,6 +72,11 @@ export function getVehicleStatusLabel(
       return {
         label: "Bảo trì",
         className: "border-amber-200 bg-amber-50 text-amber-700",
+      };
+    case VEHICLE_STATUS.MAINTENANCE_PENDING:
+      return {
+        label: "Chờ bảo dưỡng",
+        className: "border-yellow-200 bg-yellow-50 text-yellow-800",
       };
     case VEHICLE_STATUS.SUSPENDED_DOCS:
       return {

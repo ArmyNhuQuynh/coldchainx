@@ -1,9 +1,11 @@
 import { useVehicle } from "@/hooks/use-vehicle";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useParams } from "react-router-dom";
 import VehicleDetailHeader from "./components/vehicle-detail-header";
 import VehicleDetailInfo from "./components/vehicle-detail-info";
 import VehicleStatusCard from "./components/vehicle-status-card";
 import VehicleDocumentCard from "./components/vehicle-document-card";
+import VehicleMaintenanceCard from "./components/vehicle-maintenance-card";
 
 const VehicleDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -32,16 +34,35 @@ const VehicleDetailPage = () => {
     <div className="space-y-6">
       <VehicleDetailHeader vehicle={vehicle} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <VehicleDetailInfo vehicle={vehicle} />
-        </div>
-        <div>
-          <VehicleStatusCard vehicle={vehicle} />
-        </div>
-      </div>
+      <Tabs defaultValue="overview" className="space-y-5">
+        <TabsList>
+          <TabsTrigger value="overview">Tổng quan</TabsTrigger>
+          <TabsTrigger value="documents">Giấy tờ</TabsTrigger>
+          <TabsTrigger value="maintenance">Bảo dưỡng</TabsTrigger>
+        </TabsList>
 
-      <VehicleDocumentCard documents={vehicle.documents} />
+        <TabsContent value="overview" className="mt-0">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <div className="lg:col-span-2">
+              <VehicleDetailInfo vehicle={vehicle} />
+            </div>
+            <div>
+              <VehicleStatusCard vehicle={vehicle} />
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="documents" className="mt-0">
+          <VehicleDocumentCard
+            vehicleId={vehicle.vehicleId}
+            documents={vehicle.documents ?? []}
+          />
+        </TabsContent>
+
+        <TabsContent value="maintenance" className="mt-0">
+          <VehicleMaintenanceCard vehicle={vehicle} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

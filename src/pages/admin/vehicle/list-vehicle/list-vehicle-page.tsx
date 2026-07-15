@@ -1,6 +1,15 @@
 import VehicleTable from "./components/vehicle-table";
-import { CirclePlusIcon, Truck, TruckIcon, Wrench, CheckCircle } from "lucide-react";
+import {
+  CheckCircle,
+  CirclePlusIcon,
+  FileSpreadsheet,
+  Truck,
+  TruckIcon,
+  Upload,
+  Wrench,
+} from "lucide-react";
 import CustomButton from "@/components/button/custom-link-button";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useVehicle } from "@/hooks/use-vehicle";
 import { PATH_ADMIN_DASHBOARD } from "@/routes/path";
@@ -8,10 +17,14 @@ import {
   normalizeVehicleStatus,
   VEHICLE_STATUS,
 } from "@/types/enums/vehicle-status.enum";
+import { useState } from "react";
+import VehicleImportDialog from "./components/vehicle-import-dialog";
 
 const ListVehiclePage = () => {
   const { getVehicles } = useVehicle();
   const { data } = getVehicles();
+  const [importVehiclesOpen, setImportVehiclesOpen] = useState(false);
+  const [importDocumentsOpen, setImportDocumentsOpen] = useState(false);
 
   const vehicles = data?.data ?? [];
 
@@ -36,7 +49,13 @@ const ListVehiclePage = () => {
     },
     {
       title: "Bảo trì",
-      value: vehicles.filter((v) => normalizeVehicleStatus(v.status) === VEHICLE_STATUS.MAINTENANCE).length,
+      value: vehicles.filter((v) => {
+        const status = normalizeVehicleStatus(v.status);
+        return (
+          status === VEHICLE_STATUS.MAINTENANCE ||
+          status === VEHICLE_STATUS.MAINTENANCE_PENDING
+        );
+      }).length,
       color: "text-orange-500",
       icon: Wrench,
     },
@@ -52,11 +71,31 @@ const ListVehiclePage = () => {
             Theo dõi đầu kéo, container, bảo dưỡng và trạng thái xe
           </p>
         </div>
-        <CustomButton
-          linkUrl={PATH_ADMIN_DASHBOARD.vehicle.create}
-          functionName="Thêm xe"
-          icon={CirclePlusIcon}
-        />
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            className="rounded-xl"
+            onClick={() => setImportVehiclesOpen(true)}
+          >
+            <Upload className="mr-2 h-4 w-4" />
+            Import xe
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            className="rounded-xl"
+            onClick={() => setImportDocumentsOpen(true)}
+          >
+            <FileSpreadsheet className="mr-2 h-4 w-4" />
+            Import giấy tờ
+          </Button>
+          <CustomButton
+            linkUrl={PATH_ADMIN_DASHBOARD.vehicle.create}
+            functionName="Thêm xe"
+            icon={CirclePlusIcon}
+          />
+        </div>
       </div>
 
       {/* Stats */}
@@ -79,6 +118,17 @@ const ListVehiclePage = () => {
 
       {/* Table */}
       <VehicleTable />
+
+      <VehicleImportDialog
+        open={importVehiclesOpen}
+        onOpenChange={setImportVehiclesOpen}
+        type="vehicles"
+      />
+      <VehicleImportDialog
+        open={importDocumentsOpen}
+        onOpenChange={setImportDocumentsOpen}
+        type="vehicle-documents"
+      />
     </div>
   );
 };

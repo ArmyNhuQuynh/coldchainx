@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { MAINTENANCE_TICKET_STATUS } from "@/types/enums/maintenance-ticket-status.enum";
+import { VEHICLE_DOCUMENT_TYPE } from "@/types/enums/vehicle-document-type.enum";
 import { VEHICLE_STATUS } from "@/types/enums/vehicle-status.enum";
 import { VEHICLE_TYPE } from "@/types/enums/vehicle-type.enum";
 
@@ -21,6 +23,29 @@ export const VehicleDocumentSchema = z.object({
   expireDate: z.string({ message: "Ngày hết hạn không hợp lệ" }).nullable(),
   status: z.string({ message: "Trạng thái giấy tờ không hợp lệ" }).nullable(),
 });
+
+export const VehicleDocumentRequestSchema = z
+  .object({
+    documentType: z.string().min(1, "Loại giấy tờ không được để trống"),
+    documentNumber: z.string().trim().min(1, "Số giấy tờ không được để trống"),
+    issuer: nullableString("Nơi cấp không hợp lệ"),
+    issueDate: z.string().min(1, "Ngày cấp không được để trống"),
+    expireDate: nullableString("Ngày hết hạn không hợp lệ"),
+  })
+  .strict()
+  .superRefine((values, context) => {
+    if (
+      values.issueDate &&
+      values.expireDate &&
+      values.expireDate <= values.issueDate
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["expireDate"],
+        message: "Ngày hết hạn phải sau ngày cấp",
+      });
+    }
+  });
 
 export const InlineVehicleDocumentRequestSchema = z.object({
   documentNumber: z.string().min(1, "Số giấy tờ không được để trống"),
@@ -50,6 +75,34 @@ export const VehicleSchema = z.object({
   nextMaintenanceOdometer: z.number({
     message: "Mốc bảo dưỡng tiếp theo không hợp lệ",
   }),
+  nextMaintenanceDate: z
+    .string({ message: "Ngày bảo dưỡng tiếp theo không hợp lệ" })
+    .nullable()
+    .optional(),
+  warningDaysBeforeDue: z
+    .number({ message: "Ngưỡng cảnh báo ngày không hợp lệ" })
+    .nullable()
+    .optional(),
+  warningKmBeforeDue: z
+    .number({ message: "Ngưỡng cảnh báo km không hợp lệ" })
+    .nullable()
+    .optional(),
+  innerLengthCm: z
+    .number({ message: "Chiều dài lòng thùng không hợp lệ" })
+    .nullable()
+    .optional(),
+  innerWidthCm: z
+    .number({ message: "Chiều rộng lòng thùng không hợp lệ" })
+    .nullable()
+    .optional(),
+  innerHeightCm: z
+    .number({ message: "Chiều cao lòng thùng không hợp lệ" })
+    .nullable()
+    .optional(),
+  usableCbm: z
+    .number({ message: "CBM khả dụng không hợp lệ" })
+    .nullable()
+    .optional(),
   status: z.string({ message: "Trạng thái xe không hợp lệ" }).nullable(),
   documents: z.array(VehicleDocumentSchema),
 });
@@ -154,13 +207,116 @@ export const VehicleFormSchema = z
     }
   );
 
+export const VehicleImportResultSchema = z.object({
+  inserted: z.number(),
+  updated: z.number(),
+  skipped: z.number(),
+  errors: z.array(z.string()),
+});
+
+export const MaintenanceTicketSchema = z.object({
+  ticketId: z.string().uuid({ message: "ID phiếu bảo dưỡng không hợp lệ" }),
+  ticketCode: z.string({ message: "Mã phiếu không hợp lệ" }).nullable().optional(),
+  vehicleId: z.string().uuid({ message: "ID xe không hợp lệ" }).nullable(),
+  maintenanceType: z.string({ message: "Loại bảo dưỡng không hợp lệ" }),
+  triggeredAtOdometer: z
+    .number({ message: "Số km ghi nhận không hợp lệ" })
+    .nullable()
+    .optional(),
+  garageName: z.string({ message: "Garage không hợp lệ" }).nullable(),
+  description: z.string({ message: "Mô tả không hợp lệ" }).nullable(),
+  cost: z.number({ message: "Chi phí không hợp lệ" }).nullable().optional(),
+  issueDate: z.string({ message: "Ngày tạo phiếu không hợp lệ" }).nullable(),
+  completionDate: z
+    .string({ message: "Ngày hoàn tất không hợp lệ" })
+    .nullable()
+    .optional(),
+  status: z.string({ message: "Trạng thái phiếu không hợp lệ" }).nullable(),
+  attachmentUrl: z
+    .string({ message: "Đường dẫn chứng từ không hợp lệ" })
+    .nullable()
+    .optional(),
+});
+
+export const CreateMaintenanceTicketRequestSchema = z
+  .object({
+    maintenanceType: z
+      .string()
+      .trim()
+      .min(1, "Loại bảo dưỡng không được để trống"),
+    garageName: z.string().trim().min(1, "Garage không được để trống"),
+    description: z.string().trim().min(1, "Mô tả không được để trống"),
+  })
+  .strict();
+
+export const CompleteMaintenanceTicketRequestSchema = z
+  .object({
+    cost: z.number().nonnegative("Chi phí không được âm"),
+    completionDate: z.string().min(1, "Ngày hoàn tất không được để trống"),
+  })
+  .strict();
+
+export const MaintenanceForecastSchema = z.object({
+  vehicleId: z.string().uuid({ message: "ID xe không hợp lệ" }),
+  truckPlate: z.string({ message: "Biển số không hợp lệ" }),
+  isDueByDate: z.boolean(),
+  isDueByKm: z.boolean(),
+  isWarningByDate: z.boolean(),
+  isWarningByKm: z.boolean(),
+  isOverrunForecast: z.boolean(),
+  headroomKm: z.number({ message: "Headroom km không hợp lệ" }).nullable(),
+  remainingDays: z.number({ message: "Số ngày còn lại không hợp lệ" }).nullable(),
+  forecastStatus: z.string({ message: "Trạng thái dự báo không hợp lệ" }),
+  message: z.string({ message: "Thông báo dự báo không hợp lệ" }).nullable(),
+});
+
+export const MaintenanceTicketPageSchema = z.object({
+  items: z.array(MaintenanceTicketSchema),
+  pageNumber: z.number(),
+  pageSize: z.number(),
+  totalRecords: z.number(),
+  totalPages: z.number(),
+});
+
+export const MaintenanceTicketQuerySchema = z.object({
+  vehicleId: z.string().uuid().optional(),
+  status: z
+    .enum([
+      MAINTENANCE_TICKET_STATUS.OPEN,
+      MAINTENANCE_TICKET_STATUS.IN_PROGRESS,
+      MAINTENANCE_TICKET_STATUS.RESOLVED,
+      MAINTENANCE_TICKET_STATUS.CANCELLED,
+    ])
+    .optional(),
+  pageNumber: z.number().optional(),
+  pageSize: z.number().optional(),
+});
+
 export type TVehicleDocument = z.infer<typeof VehicleDocumentSchema>;
+export type TVehicleDocumentRequest = z.infer<
+  typeof VehicleDocumentRequestSchema
+>;
 export type TInlineVehicleDocumentRequest = z.infer<
   typeof InlineVehicleDocumentRequestSchema
 >;
 export type TVehicle = z.infer<typeof VehicleSchema>;
 export type TVehicleCreateRequest = z.infer<typeof VehicleCreateRequestSchema>;
 export type TVehicleUpdateRequest = z.infer<typeof VehicleUpdateRequestSchema>;
+export type TVehicleImportResult = z.infer<typeof VehicleImportResultSchema>;
+export type TMaintenanceTicket = z.infer<typeof MaintenanceTicketSchema>;
+export type TCreateMaintenanceTicketRequest = z.infer<
+  typeof CreateMaintenanceTicketRequestSchema
+>;
+export type TCompleteMaintenanceTicketRequest = z.infer<
+  typeof CompleteMaintenanceTicketRequestSchema
+>;
+export type TMaintenanceForecast = z.infer<typeof MaintenanceForecastSchema>;
+export type TMaintenanceTicketPage = z.infer<
+  typeof MaintenanceTicketPageSchema
+>;
+export type TMaintenanceTicketQuery = z.infer<
+  typeof MaintenanceTicketQuerySchema
+>;
 
 export type TVehicleFormValues = {
   truckPlate: string;
@@ -180,4 +336,12 @@ export type TVehicleFormValues = {
 export const VEHICLE_FORM_DEFAULTS = {
   vehicleType: VEHICLE_TYPE.REFRIGERATED,
   status: VEHICLE_STATUS.ACTIVE,
+} as const;
+
+export const VEHICLE_DOCUMENT_FORM_DEFAULTS = {
+  documentType: VEHICLE_DOCUMENT_TYPE.REGISTRATION,
+} as const;
+
+export const MAINTENANCE_TICKET_FORM_DEFAULTS = {
+  maintenanceType: "ROUTINE_AND_PTI",
 } as const;
