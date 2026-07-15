@@ -1,9 +1,9 @@
 import { useRoute } from "@/hooks/use-route";
+import RoutePricingCard from "@/pages/admin/pricing/components/route-pricing/route-pricing-card";
 import { useParams } from "react-router-dom";
 import RouteDetailHeader from "./components/route-detail-header";
 import RouteDetailInfo from "./components/route-detail-info";
 import RouteOriginWarehousesCard from "./components/route-origin-warehouses-card";
-import RoutePricingCard from "./components/route-pricing-card";
 import RouteStopsCard from "./components/route-stops-card";
 
 const DetailRoutePage = () => {
@@ -37,7 +37,11 @@ const DetailRoutePage = () => {
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <div className="space-y-6 xl:col-span-2">
           <RouteDetailInfo route={route} />
-          <RoutePricingCard routeId={id} />
+          <RoutePricingCard
+            routeId={id}
+            routeLabel={`${route.routeCode} · ${route.originCity} → ${route.destCity}`}
+            readOnly
+          />
           <RouteStopsCard routeId={id} />
         </div>
         <div>

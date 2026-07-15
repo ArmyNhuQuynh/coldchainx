@@ -95,6 +95,9 @@ const RouteDetailPage = Loadable(
 const RouteEditPage = Loadable(
   lazy(() => import("@/pages/admin/route/edit-route"))
 );
+const PricingPage = Loadable(
+  lazy(() => import("@/pages/admin/pricing"))
+);
 const DriverPage = Loadable(
   lazy(() => import("@/pages/admin/driver/list-driver"))
 );
@@ -241,6 +244,10 @@ export const AppRoutes = () =>
         {
           path: "route/:id/edit",
           element: <RouteEditPage />,
+        },
+        {
+          path: "pricing",
+          element: <PricingPage />,
         },
         {
           path: "driver",

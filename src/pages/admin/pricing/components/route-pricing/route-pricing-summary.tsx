@@ -18,11 +18,11 @@ const RoutePricingSummary = ({ tiers }: Props) => {
       <SummaryItem label="Số mức giá" value={tiers.length} />
       <SummaryItem
         label="Giá thấp nhất"
-        value={minPrice === null ? "—" : formatCurrency(minPrice)}
+        value={minPrice === null ? "-" : formatCurrency(minPrice)}
       />
       <SummaryItem
         label="Giá cao nhất"
-        value={maxPrice === null ? "—" : formatCurrency(maxPrice)}
+        value={maxPrice === null ? "-" : formatCurrency(maxPrice)}
       />
     </div>
   );

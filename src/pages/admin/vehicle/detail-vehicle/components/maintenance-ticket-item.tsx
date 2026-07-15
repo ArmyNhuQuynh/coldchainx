@@ -97,7 +97,7 @@ const MaintenanceTicketItem = ({ ticket, onComplete }: Props) => {
                 changeStatus(MAINTENANCE_TICKET_STATUS.IN_PROGRESS)
               }
             >
-              Bắt đầu
+              Đem xe đi sửa
             </Button>
           )}
 

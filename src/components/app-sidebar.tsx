@@ -15,6 +15,7 @@ import {
   HomeIcon,
   IdCard,
   MapPinned,
+  ReceiptText,
   RadioTower,
   RouteIcon,
   TruckIcon,
@@ -63,6 +64,11 @@ const adminRoutes = {
         title: "Tuyến",
         url: PATH_ADMIN_DASHBOARD.route.root,
         icon: RouteIcon,
+      },
+      {
+        title: "Giá dịch vụ",
+        url: PATH_ADMIN_DASHBOARD.pricing.root,
+        icon: ReceiptText,
       },
       {
         title: "Tài xế",

@@ -1,6 +1,14 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useWeightTier } from "@/hooks/use-weight-tier";
 import { handleApiError } from "@/lib/error";
 import {
@@ -10,9 +18,9 @@ import {
 import { CirclePlus, ReceiptText } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import RoutePricingDialog from "./route-pricing/route-pricing-dialog";
-import RoutePricingSummary from "./route-pricing/route-pricing-summary";
-import RoutePricingTable from "./route-pricing/route-pricing-table";
+import RoutePricingDialog from "./route-pricing-dialog";
+import RoutePricingSummary from "./route-pricing-summary";
+import RoutePricingTable from "./route-pricing-table";
 import {
   collectWeightTierFormErrors,
   EMPTY_WEIGHT_TIER_FORM,
@@ -22,13 +30,15 @@ import {
   toWeightTierFormState,
   type WeightTierFormErrors,
   type WeightTierFormState,
-} from "./route-pricing/route-pricing.utils";
+} from "./route-pricing.utils";
 
 type Props = {
   routeId: string;
+  routeLabel?: string;
+  readOnly?: boolean;
 };
 
-const RoutePricingCard = ({ routeId }: Props) => {
+const RoutePricingCard = ({ routeId, routeLabel, readOnly = false }: Props) => {
   const {
     getWeightTiersByRoute,
     createWeightTier,
@@ -37,6 +47,7 @@ const RoutePricingCard = ({ routeId }: Props) => {
   } = useWeightTier();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingTier, setEditingTier] = useState<TWeightTier | null>(null);
+  const [deletingTier, setDeletingTier] = useState<TWeightTier | null>(null);
   const [formValues, setFormValues] = useState<WeightTierFormState>(
     EMPTY_WEIGHT_TIER_FORM
   );
@@ -62,6 +73,8 @@ const RoutePricingCard = ({ routeId }: Props) => {
   };
 
   const openCreateDialog = () => {
+    if (readOnly) return;
+
     setEditingTier(null);
     setFormValues({
       ...EMPTY_WEIGHT_TIER_FORM,
@@ -72,6 +85,8 @@ const RoutePricingCard = ({ routeId }: Props) => {
   };
 
   const openEditDialog = (tier: TWeightTier) => {
+    if (readOnly) return;
+
     setEditingTier(tier);
     setFormValues(toWeightTierFormState(tier));
     setFormErrors({});
@@ -129,14 +144,18 @@ const RoutePricingCard = ({ routeId }: Props) => {
   };
 
   const handleDelete = async (tier: TWeightTier) => {
-    const confirmed = window.confirm(
-      `Xóa mức giá ${formatWeightTierRange(tier)}?`
-    );
-    if (!confirmed) return;
+    if (readOnly) return;
+
+    setDeletingTier(tier);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingTier) return;
 
     try {
-      await deleteWeightTier.mutateAsync({ id: tier.id, routeId });
+      await deleteWeightTier.mutateAsync({ id: deletingTier.id, routeId });
       toast.success("Xóa mức giá thành công");
+      setDeletingTier(null);
     } catch (error) {
       handleApiError(error);
     }
@@ -161,13 +180,17 @@ const RoutePricingCard = ({ routeId }: Props) => {
               </Badge>
             </div>
             <p className="mt-1 text-sm text-muted-foreground">
-              Các mức giá này được dùng để tính báo giá tự động cho order thuộc tuyến.
+              {routeLabel
+                ? `Áp dụng cho tuyến ${routeLabel}.`
+                : "Các mức giá này được dùng để tính báo giá tự động cho order thuộc tuyến."}
             </p>
           </div>
-          <Button className="rounded-md" onClick={openCreateDialog}>
-            <CirclePlus className="mr-2 h-4 w-4" />
-            Thêm mức giá
-          </Button>
+          {!readOnly && (
+            <Button className="rounded-md" onClick={openCreateDialog}>
+              <CirclePlus className="mr-2 h-4 w-4" />
+              Thêm mức giá
+            </Button>
+          )}
         </div>
       </CardHeader>
 
@@ -177,22 +200,59 @@ const RoutePricingCard = ({ routeId }: Props) => {
           tiers={tiers}
           isLoading={tiersQuery.isFetching}
           isDeleting={deleteWeightTier.isPending}
+          readOnly={readOnly}
           onEdit={openEditDialog}
           onDelete={handleDelete}
         />
       </CardContent>
 
-      <RoutePricingDialog
-        open={dialogOpen}
-        editingTier={editingTier}
-        formValues={formValues}
-        formErrors={formErrors}
-        isSubmitting={isSubmitting}
-        onOpenChange={handleDialogOpenChange}
-        onFieldChange={handleFieldChange}
-        onCancel={resetDialog}
-        onSubmit={handleSubmit}
-      />
+      {!readOnly && (
+        <>
+          <RoutePricingDialog
+            open={dialogOpen}
+            editingTier={editingTier}
+            formValues={formValues}
+            formErrors={formErrors}
+            isSubmitting={isSubmitting}
+            onOpenChange={handleDialogOpenChange}
+            onFieldChange={handleFieldChange}
+            onCancel={resetDialog}
+            onSubmit={handleSubmit}
+          />
+
+          <Dialog
+            open={!!deletingTier}
+            onOpenChange={(open) => !open && setDeletingTier(null)}
+          >
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Xóa mức giá?</DialogTitle>
+                <DialogDescription>
+                  Mức giá {deletingTier ? formatWeightTierRange(deletingTier) : ""} sẽ bị xóa khỏi tuyến này.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={deleteWeightTier.isPending}
+                  onClick={() => setDeletingTier(null)}
+                >
+                  Hủy
+                </Button>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  disabled={deleteWeightTier.isPending}
+                  onClick={handleConfirmDelete}
+                >
+                  Xóa
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </>
+      )}
     </Card>
   );
 };

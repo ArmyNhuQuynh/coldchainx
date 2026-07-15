@@ -45,5 +45,7 @@ export const API_SUFFIX = {
   // Routes
   ROUTES_API: "/routes",
   WEIGHT_TIERS_API: "/weight-tiers",
+  // Service pricing
+  SERVICE_CATALOGS_API: "/service-catalogs",
   IMPORT_TEMPLATES_API: "/import-templates",
 };
