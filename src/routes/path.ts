@@ -52,6 +52,14 @@ export const PATH_ADMIN_DASHBOARD = {
     edit: (id: string) => path(ROOTS_ADMIN_DASHBOARD, `/vehicle/${id}/edit`),
   },
 
+  iotDevice: {
+    root: path(ROOTS_ADMIN_DASHBOARD, "/iot-device"),
+    create: path(ROOTS_ADMIN_DASHBOARD, "/iot-device/new"),
+    detail: (id: string) => path(ROOTS_ADMIN_DASHBOARD, `/iot-device/${id}`),
+    edit: (id: string) =>
+      path(ROOTS_ADMIN_DASHBOARD, `/iot-device/${id}/edit`),
+  },
+
   warehouse: {
     root: path(ROOTS_ADMIN_DASHBOARD, "/warehouse"),
     create: path(ROOTS_ADMIN_DASHBOARD, "/warehouse/new"),

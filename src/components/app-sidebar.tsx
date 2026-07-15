@@ -15,6 +15,7 @@ import {
   HomeIcon,
   IdCard,
   MapPinned,
+  RadioTower,
   RouteIcon,
   TruckIcon,
   Users,
@@ -47,6 +48,11 @@ const adminRoutes = {
         title: "Xe tải",
         url: PATH_ADMIN_DASHBOARD.vehicle.root,
         icon: TruckIcon,
+      },
+      {
+        title: "Thiết bị IoT",
+        url: PATH_ADMIN_DASHBOARD.iotDevice.root,
+        icon: RadioTower,
       },
       {
         title: "Kho",

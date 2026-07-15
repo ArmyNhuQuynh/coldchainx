@@ -59,6 +59,18 @@ const VehicleDetailPage = Loadable(
 const VehicleEditPage = Loadable(
   lazy(() => import("@/pages/admin/vehicle/edit-vehicle"))
 );
+const IotDevicePage = Loadable(
+  lazy(() => import("@/pages/admin/iot-device/list-iot-device"))
+);
+const IotDeviceCreatePage = Loadable(
+  lazy(() => import("@/pages/admin/iot-device/create-iot-device"))
+);
+const IotDeviceDetailPage = Loadable(
+  lazy(() => import("@/pages/admin/iot-device/detail-iot-device"))
+);
+const IotDeviceEditPage = Loadable(
+  lazy(() => import("@/pages/admin/iot-device/edit-iot-device"))
+);
 const WarehousePage = Loadable(
   lazy(() => import("@/pages/admin/warehouse/list-warehouse"))
 );
@@ -181,6 +193,22 @@ export const AppRoutes = () =>
         {
           path: "vehicle/:id/edit",
           element: <VehicleEditPage />,
+        },
+        {
+          path: "iot-device",
+          element: <IotDevicePage />,
+        },
+        {
+          path: "iot-device/new",
+          element: <IotDeviceCreatePage />,
+        },
+        {
+          path: "iot-device/:id",
+          element: <IotDeviceDetailPage />,
+        },
+        {
+          path: "iot-device/:id/edit",
+          element: <IotDeviceEditPage />,
         },
         {
           path: "warehouse",
