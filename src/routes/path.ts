@@ -103,6 +103,9 @@ export const PATH_SALE_DASHBOARD = {
     root: path(ROOTS_SALE_DASHBOARD, '/incident'),
     detail: (id: string) => path(ROOTS_SALE_DASHBOARD, `/incident/${id}`),
   },
+  customerCare: {
+    root: path(ROOTS_SALE_DASHBOARD, '/customer-care'),
+  },
 };
 
 export const PATH_DISPATCHER_DASHBOARD = {

@@ -8,11 +8,29 @@ import type {
 } from "@/schemas/discrepancy.schema";
 import { API_SUFFIX } from "./util.api";
 
+type PendingDiscrepancyPayload =
+  | TPendingDiscrepancy[]
+  | {
+      data?: TPendingDiscrepancy[] | { data?: TPendingDiscrepancy[] };
+    };
+
+const normalizePendingDiscrepancies = (
+  payload: PendingDiscrepancyPayload
+): TPendingDiscrepancy[] => {
+  if (Array.isArray(payload)) return payload;
+
+  const data = payload?.data;
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.data)) return data.data;
+
+  return [];
+};
+
 const getPendingDiscrepancies = async () => {
-  const response = await apiRequest.baseApi.get<TPendingDiscrepancy[]>(
+  const response = await apiRequest.baseApi.get<PendingDiscrepancyPayload>(
     `${API_SUFFIX.DISCREPANCY_API}/pending`
   );
-  return response.data;
+  return normalizePendingDiscrepancies(response.data);
 };
 
 const getDiscrepancyDetail = async (lpnId: string) => {

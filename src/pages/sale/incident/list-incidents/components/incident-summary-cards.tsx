@@ -8,18 +8,22 @@ type Props = {
 
 const formatPercent = (value: number) => `${value.toFixed(2)}%`;
 
-const IncidentSummaryCards = ({ items }: Props) => {
-  const maxDiff = items.length
-    ? Math.max(...items.map((item) => item.diffPercent))
+const IncidentSummaryCards = ({ items = [] }: Props) => {
+  const safeItems = Array.isArray(items) ? items : [];
+  const maxDiff = safeItems.length
+    ? Math.max(...safeItems.map((item) => Number(item.diffPercent) || 0))
     : 0;
-  const averageDiff = items.length
-    ? items.reduce((total, item) => total + item.diffPercent, 0) / items.length
+  const averageDiff = safeItems.length
+    ? safeItems.reduce(
+        (total, item) => total + (Number(item.diffPercent) || 0),
+        0
+      ) / safeItems.length
     : 0;
 
   const cards = [
     {
       title: "Đang chờ xử lý",
-      value: items.length.toString(),
+      value: safeItems.length.toString(),
       icon: ClipboardList,
       className: "text-slate-700",
     },
@@ -37,7 +41,7 @@ const IncidentSummaryCards = ({ items }: Props) => {
     },
     {
       title: "LPN bị giữ",
-      value: items.length.toString(),
+      value: safeItems.length.toString(),
       icon: PackageSearch,
       className: "text-emerald-700",
     },

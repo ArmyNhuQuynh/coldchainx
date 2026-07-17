@@ -23,6 +23,10 @@ export const API_SUFFIX = {
   WAREHOUSES_API: "/v1/warehouses",
   // Orders
   ORDERS_API: "/orders",
+  // Customers
+  CUSTOMERS_API: "/customers",
+  // Chat
+  CHAT_API: "/chat",
   // Quotations
   QUOTATIONS_API: "/quotations",
   // Contracts

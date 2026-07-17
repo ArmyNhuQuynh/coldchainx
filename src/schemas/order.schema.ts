@@ -5,6 +5,7 @@ import { ORDER_CATEGORY } from "../types/enums/order-category.enum";
 export interface TGetOrdersQuery {
   pageNumber?: number;
   pageSize?: number;
+  status?: string;
 }
 
 // ===== ENUM =====

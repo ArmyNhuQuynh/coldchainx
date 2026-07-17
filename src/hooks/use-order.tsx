@@ -10,8 +10,16 @@ export const useOrder = () => {
     const { pageNumber = 1, pageSize = 10 } = params;
 
     return useQuery({
-      queryKey: ["orders", { pageNumber, pageSize }],
-      queryFn: () => orderApi.getOrders({ pageNumber, pageSize }),
+      queryKey: ["orders", { ...params, pageNumber, pageSize }],
+      queryFn: () => orderApi.getOrders({ ...params, pageNumber, pageSize }),
+      placeholderData: keepPreviousData,
+    });
+  };
+
+  const getAllOrders = (params: Omit<TGetOrdersQuery, "pageNumber" | "pageSize"> = {}) => {
+    return useQuery({
+      queryKey: ["orders", "all", params],
+      queryFn: () => orderApi.getAllOrders(params),
       placeholderData: keepPreviousData,
     });
   };
@@ -36,6 +44,7 @@ export const useOrder = () => {
 
   return {
     getOrders,
+    getAllOrders,
     getOrderById,
     reviewOrder,
   };

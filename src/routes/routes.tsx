@@ -47,6 +47,9 @@ const SaleIncidentPage = Loadable(
 const SaleIncidentDetailPage = Loadable(
   lazy(() => import("@/pages/sale/incident/incident-detail"))
 );
+const SaleCustomerCarePage = Loadable(
+  lazy(() => import("@/pages/sale/customer-care"))
+);
 const VehiclePage = Loadable(
   lazy(() => import("@/pages/admin/vehicle/list-vehicle/list-vehicle-page"))
 );
@@ -317,6 +320,10 @@ export const AppRoutes = () =>
         {
           path: "incident/:id",
           element: <SaleIncidentDetailPage />,
+        },
+        {
+          path: "customer-care",
+          element: <SaleCustomerCarePage />,
         },
       ],
     },
