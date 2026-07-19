@@ -10,6 +10,8 @@ import { DISPATCH_TEMPERATURE_GROUP } from "@/types/enums/dispatch.enum";
 import type { CSSProperties } from "react";
 import {
   Box,
+  ChevronLeft,
+  ChevronRight,
   MapPin,
   PackageCheck,
   Route,
@@ -27,17 +29,29 @@ import {
 type Props = {
   lpns: TDispatchReadyLpn[];
   selectedIds: string[];
+  totalRecords: number;
+  currentPage: number;
+  totalPages: number;
+  hasSchedule: boolean;
   isLoading?: boolean;
+  isChecking?: boolean;
   panelHeight?: number | null;
   onToggle: (lpn: TDispatchReadyLpn) => void;
+  onPageChange: (page: number) => void;
 };
 
 const LpnSelectionPanel = ({
   lpns,
   selectedIds,
+  totalRecords,
+  currentPage,
+  totalPages,
+  hasSchedule,
   isLoading,
+  isChecking,
   panelHeight,
   onToggle,
+  onPageChange,
 }: Props) => {
   const panelStyle = panelHeight
     ? ({
@@ -48,7 +62,7 @@ const LpnSelectionPanel = ({
   return (
     <Card
       style={panelStyle}
-      className="min-h-[620px] gap-0 overflow-hidden rounded-lg py-0 xl:h-[var(--dispatch-lpn-panel-height)] xl:min-h-0"
+      className="flex min-h-[620px] flex-col gap-0 overflow-hidden rounded-lg py-0 xl:h-[var(--dispatch-lpn-panel-height)] xl:min-h-0"
     >
       <CardHeader className="border-b px-5 py-4">
         <div className="flex items-start justify-between gap-3">
@@ -58,17 +72,19 @@ const LpnSelectionPanel = ({
               LPN đã ở trong kho
             </CardTitle>
             <p className="mt-1 text-sm text-muted-foreground">
-              {selectedIds.length}/{lpns.length} LPN đang được chọn
+              {selectedIds.length} LPN đang được chọn
             </p>
           </div>
-          <Badge variant="outline">{lpns.length} kết quả</Badge>
+          <Badge variant="outline">
+            {isChecking ? "Đang kiểm tra..." : `${totalRecords} LPN phù hợp`}
+          </Badge>
         </div>
       </CardHeader>
 
-      <CardContent className="min-h-0 flex-1 p-0">
-        <ScrollArea className="h-full min-h-[520px] xl:min-h-0">
+      <CardContent className="flex min-h-0 flex-1 flex-col p-0">
+        <ScrollArea className="min-h-[520px] flex-1 xl:min-h-0">
           <div className="space-y-2.5 p-3">
-            {isLoading &&
+            {isLoading && lpns.length === 0 &&
               Array.from({ length: 6 }).map((_, index) => (
                 <Skeleton key={index} className="h-28 w-full" />
               ))}
@@ -76,9 +92,13 @@ const LpnSelectionPanel = ({
             {!isLoading && lpns.length === 0 && (
               <div className="flex h-56 flex-col items-center justify-center rounded-lg border border-dashed text-center">
                 <Box className="h-8 w-8 text-muted-foreground" />
-                <p className="mt-3 font-medium">Không có LPN phù hợp</p>
+                <p className="mt-3 font-medium">
+                  {hasSchedule ? "Không có LPN phù hợp" : "Chọn lịch vận chuyển"}
+                </p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Thử đổi bộ lọc hoặc tải lại dữ liệu
+                  {hasSchedule
+                    ? "Không còn LPN nào có thể ghép với tập đang chọn"
+                    : "Danh sách LPN sẽ được tải theo lịch đã chọn"}
                 </p>
               </div>
             )}
@@ -87,12 +107,14 @@ const LpnSelectionPanel = ({
               lpns.map((lpn) => {
                 const checked = selectedIds.includes(lpn.lpnId);
                 const tempGroup = getTemperatureGroup(lpn.tempCondition);
+                const disabled = !checked && Boolean(isChecking);
 
                 return (
                   <Button
                     key={lpn.lpnId}
                     type="button"
                     variant="outline"
+                    disabled={disabled}
                     onClick={() => onToggle(lpn)}
                     className={cn(
                       "h-auto w-full justify-start overflow-hidden rounded-lg border p-0 text-left whitespace-normal shadow-none",
@@ -118,6 +140,9 @@ const LpnSelectionPanel = ({
                             >
                               {lpn.trackingCode}
                             </Badge>
+                          )}
+                          {checked && (
+                            <Badge className="bg-emerald-700 text-white">Đã chọn</Badge>
                           )}
                           {lpn.routeName && (
                             <Badge
@@ -189,9 +214,39 @@ const LpnSelectionPanel = ({
                     </div>
                   </Button>
                 );
-              })}
+            })}
           </div>
         </ScrollArea>
+
+        {hasSchedule && totalPages > 1 && (
+          <div className="flex items-center justify-between gap-3 border-t px-4 py-3">
+            <p className="text-xs text-muted-foreground">
+              Trang {currentPage}/{totalPages}
+            </p>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                disabled={currentPage <= 1 || isChecking}
+                onClick={() => onPageChange(currentPage - 1)}
+                title="Trang trước"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                disabled={currentPage >= totalPages || isChecking}
+                onClick={() => onPageChange(currentPage + 1)}
+                title="Trang sau"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

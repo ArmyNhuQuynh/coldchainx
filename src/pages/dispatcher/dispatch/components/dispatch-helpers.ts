@@ -1,13 +1,8 @@
 import type {
+  TDispatchPackingResult,
   TDispatchReadyLpn,
-  TDispatchVehicleLookup,
 } from "@/schemas/dispatch.schema";
-import {
-  DISPATCH_FILTER_VALUE,
-  DISPATCH_TEMPERATURE_GROUP,
-} from "@/types/enums/dispatch.enum";
-
-export const ALL_FILTER_VALUE = DISPATCH_FILTER_VALUE.ALL;
+import { DISPATCH_TEMPERATURE_GROUP } from "@/types/enums/dispatch.enum";
 
 export const formatNumber = (value?: number | null, maximumFractionDigits = 1) =>
   typeof value === "number" && Number.isFinite(value)
@@ -43,48 +38,6 @@ export const getTemperatureGroupLabel = (group: string) => {
   }
 };
 
-export const parseTempRange = (temp?: string | null) => {
-  const value = (temp || "").toUpperCase().replaceAll("°", "").replaceAll("C", "");
-  const numbers = value.match(/-?\d+(\.\d+)?/g)?.map(Number) ?? [];
-
-  if (numbers.length >= 2) {
-    return { min: Math.min(...numbers), max: Math.max(...numbers) };
-  }
-
-  if (numbers.length === 1) {
-    const only = numbers[0];
-    if (value.includes("FROZEN")) return { min: only, max: -10 };
-    return { min: only, max: only };
-  }
-
-  const group = getTemperatureGroup(temp);
-  if (group === DISPATCH_TEMPERATURE_GROUP.FROZEN) return { min: -25, max: -10 };
-  if (group === DISPATCH_TEMPERATURE_GROUP.CHILLED) return { min: 0, max: 8 };
-  return { min: 15, max: 25 };
-};
-
-export const getSelectedTemperatureRange = (lpns: TDispatchReadyLpn[]) => {
-  if (!lpns.length) return null;
-  const ranges = lpns.map((lpn) => parseTempRange(lpn.tempCondition));
-  return {
-    min: Math.min(...ranges.map((range) => range.min)),
-    max: Math.max(...ranges.map((range) => range.max)),
-  };
-};
-
-export const isVehicleTempCompatible = (
-  vehicle: TDispatchVehicleLookup | undefined,
-  lpns: TDispatchReadyLpn[]
-) => {
-  const range = getSelectedTemperatureRange(lpns);
-  if (!vehicle || !range) return true;
-  if (typeof vehicle.minTemp !== "number" || typeof vehicle.maxTemp !== "number") {
-    return true;
-  }
-
-  return vehicle.minTemp <= range.min && vehicle.maxTemp >= range.max;
-};
-
 export const getDefaultPlanningWindow = () => {
   const start = new Date();
   start.setMinutes(0, 0, 0);
@@ -99,4 +52,40 @@ export const getDefaultPlanningWindow = () => {
   };
 };
 
-export const cnPercent = (value: number) => Math.max(0, Math.min(value, 100));
+const getBlockingReasonCode = (reason: string) =>
+  reason.split(":", 1)[0]?.trim().toUpperCase();
+
+export const getPackingBlockingMessages = (
+  preview: Pick<TDispatchPackingResult, "blockingReasons" | "unplacedLpnIds">
+) => {
+  const unplacedCount = preview.unplacedLpnIds.length;
+
+  const messages = preview.blockingReasons.map((reason) => {
+    switch (getBlockingReasonCode(reason)) {
+      case "PACKING_FAILED":
+        return unplacedCount > 0
+          ? `Còn ${unplacedCount} kiện chưa xếp được vào xe. Vui lòng đổi xe lớn hơn hoặc bỏ bớt LPN.`
+          : "Một số kiện chưa xếp được vào xe. Vui lòng đổi xe hoặc điều chỉnh danh sách LPN.";
+      case "OVERWEIGHT":
+        return "Tổng khối lượng hàng vượt quá tải trọng cho phép của xe.";
+      case "OVERCAPACITY":
+        return "Tổng thể tích hàng vượt quá sức chứa cho phép của xe.";
+      case "INVALID_VEHICLE_STATE":
+        return "Xe đã chọn hiện không khả dụng cho chuyến này.";
+      case "DIFFERENT_SCHEDULE":
+        return "Danh sách LPN không thuộc cùng lịch vận chuyển đã chọn.";
+      case "CATEGORY_MISMATCH":
+      case "PHARMA_ISOLATION":
+      case "STRONG_ODOR":
+        return "Một số loại hàng trong danh sách không được phép ghép chung.";
+      case "TEMPERATURE_MISMATCH":
+      case "TEMPERATURE_OUT_OF_RANGE":
+      case "VEHICLE_TEMPERATURE_MISMATCH":
+        return "Dải nhiệt của xe không phù hợp với yêu cầu bảo quản của hàng hóa.";
+      default:
+        return "Lựa chọn hiện tại chưa đáp ứng điều kiện tạo chuyến. Vui lòng kiểm tra lại lịch, LPN và xe.";
+    }
+  });
+
+  return [...new Set(messages)];
+};

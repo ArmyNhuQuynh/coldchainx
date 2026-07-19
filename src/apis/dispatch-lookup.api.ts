@@ -1,16 +1,20 @@
 import { apiRequest } from "@/lib/http";
 import type {
+  TCompatibleLpnsSearchParams,
+  TCompatibleLpnsSearchRequest,
+  TCompatibleLpnsSearchResult,
+  TDispatchCompatibilityConflict,
   TDispatchDriverLookup,
   TDispatchLookupEnvelope,
   TDispatchReadyLpn,
-  TDispatchReadyLpnQuery,
+  TDispatchScheduleLookup,
   TDispatchVehicleLookup,
 } from "@/schemas/dispatch.schema";
 import {
   DRIVER_STATUS,
   normalizeDriverStatus,
 } from "@/types/enums/driver-status.enum";
-import { read, toNumber, unwrapLookup } from "./dispatch-api.helpers";
+import { read, toNumber, unwrapData, unwrapLookup } from "./dispatch-api.helpers";
 import { API_SUFFIX } from "./util.api";
 
 const normalizeLpn = (
@@ -44,6 +48,37 @@ const normalizeLpn = (
       "DestinationAddress"
     ),
     routeName: read<string | null>(raw, "routeName", "RouteName"),
+    scheduleId: read<string | null>(raw, "scheduleId", "ScheduleId"),
+    scheduleName: read<string | null>(raw, "scheduleName", "ScheduleName"),
+    category: read<string | null>(raw, "category", "Category"),
+    requiredTemperature: read<number | null>(
+      raw,
+      "requiredTemperature",
+      "RequiredTemperature"
+    ),
+    hasStrongOdor: read<boolean | null>(raw, "hasStrongOdor", "HasStrongOdor"),
+    isStackable: read<boolean | null>(raw, "isStackable", "IsStackable"),
+    isCompatible: read<boolean | undefined>(raw, "isCompatible", "IsCompatible"),
+  };
+};
+
+const normalizeSchedule = (
+  item: TDispatchScheduleLookup | Record<string, any>
+): TDispatchScheduleLookup => {
+  const raw = item as Record<string, any>;
+
+  return {
+    scheduleId: read<string>(raw, "scheduleId", "ScheduleId"),
+    routeId: read<string>(raw, "routeId", "RouteId"),
+    routeCode: read<string | null>(raw, "routeCode", "RouteCode"),
+    routeName: read<string | null>(raw, "routeName", "RouteName"),
+    scheduleName: read<string | null>(raw, "scheduleName", "ScheduleName"),
+    departureDate: read<string>(raw, "departureDate", "DepartureDate"),
+    dayOfWeek: read<number | null>(raw, "dayOfWeek", "DayOfWeek"),
+    departureTime: read<string>(raw, "departureTime", "DepartureTime"),
+    cutOffTime: read<string | null>(raw, "cutOffTime", "CutOffTime"),
+    status: read<string | null>(raw, "status", "Status"),
+    label: read<string | null>(raw, "label", "Label"),
   };
 };
 
@@ -85,14 +120,65 @@ const normalizeDriver = (
   };
 };
 
-const getReadyLpns = async (params?: TDispatchReadyLpnQuery) => {
-  const response = await apiRequest.baseApi.get<
-    TDispatchLookupEnvelope<TDispatchReadyLpn[]> | TDispatchReadyLpn[]
-  >(`${API_SUFFIX.DISPATCH_API}/lookup/lpns-ready`, {
-    params,
-  });
+const normalizeConflict = (
+  item: TDispatchCompatibilityConflict | Record<string, any>
+): TDispatchCompatibilityConflict => {
+  const raw = item as Record<string, any>;
 
-  return unwrapLookup<TDispatchReadyLpn>(response.data).map(normalizeLpn);
+  return {
+    reasonCode: read<string | null>(raw, "reasonCode", "ReasonCode"),
+    message: read<string>(raw, "message", "Message"),
+    lpnId: read<string | null>(raw, "lpnId", "LpnId"),
+    lpnCode: read<string | null>(raw, "lpnCode", "LpnCode"),
+    otherLpnId: read<string | null>(raw, "otherLpnId", "OtherLpnId"),
+    otherLpnCode: read<string | null>(raw, "otherLpnCode", "OtherLpnCode"),
+  };
+};
+
+const normalizeCompatibleResult = (
+  item: TCompatibleLpnsSearchResult | Record<string, any>
+): TCompatibleLpnsSearchResult => {
+  const raw = item as Record<string, any>;
+  const conflicts =
+    read<Array<TDispatchCompatibilityConflict | Record<string, any>>>(
+      raw,
+      "conflicts",
+      "Conflicts"
+    ) ?? [];
+  const items =
+    read<Array<TDispatchReadyLpn | Record<string, any>>>(raw, "items", "Items") ?? [];
+
+  return {
+    selectedSetValid:
+      read<boolean | undefined>(raw, "selectedSetValid", "SelectedSetValid") ?? false,
+    conflicts: conflicts.map(normalizeConflict),
+    totalRecords: toNumber(read(raw, "totalRecords", "TotalRecords")),
+    totalPages: toNumber(read(raw, "totalPages", "TotalPages")),
+    currentPage: toNumber(read(raw, "currentPage", "CurrentPage")) || 1,
+    pageSize: toNumber(read(raw, "pageSize", "PageSize")),
+    items: items.map(normalizeLpn),
+  };
+};
+
+const getSchedules = async () => {
+  const response = await apiRequest.baseApi.get<
+    TDispatchLookupEnvelope<TDispatchScheduleLookup[]> | TDispatchScheduleLookup[]
+  >(`${API_SUFFIX.DISPATCH_API}/lookup/Schedule`);
+
+  return unwrapLookup<TDispatchScheduleLookup>(response.data).map(normalizeSchedule);
+};
+
+const searchCompatibleLpns = async (
+  data: TCompatibleLpnsSearchRequest,
+  params: TCompatibleLpnsSearchParams
+) => {
+  const response = await apiRequest.baseApi.post<
+    TDispatchLookupEnvelope<TCompatibleLpnsSearchResult> | TCompatibleLpnsSearchResult
+  >(`${API_SUFFIX.DISPATCH_API}/compatible-lpns/search`, data, { params });
+
+  return normalizeCompatibleResult(
+    unwrapData<TCompatibleLpnsSearchResult>(response.data)
+  );
 };
 
 const getAvailableVehicles = async () => {
@@ -116,7 +202,8 @@ const getAvailableDrivers = async () => {
 };
 
 export const dispatchLookupApi = {
-  getReadyLpns,
+  getSchedules,
+  searchCompatibleLpns,
   getAvailableVehicles,
   getAvailableDrivers,
 };

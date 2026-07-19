@@ -1,13 +1,28 @@
 import { dispatchLookupApi } from "@/apis/dispatch-lookup.api";
-import type { TDispatchReadyLpnQuery } from "@/schemas/dispatch.schema";
+import type {
+  TCompatibleLpnsSearchParams,
+  TCompatibleLpnsSearchRequest,
+} from "@/schemas/dispatch.schema";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 export const useDispatchLookup = () => {
-  const getReadyLpns = (params?: TDispatchReadyLpnQuery) =>
+  const getSchedules = () =>
     useQuery({
-      queryKey: ["dispatch", "ready-lpns", params],
-      queryFn: () => dispatchLookupApi.getReadyLpns(params),
+      queryKey: ["dispatch", "schedules"],
+      queryFn: dispatchLookupApi.getSchedules,
       placeholderData: keepPreviousData,
+      retry: (failureCount, error: any) =>
+        (error?.response?.status ?? 500) >= 500 && failureCount < 2,
+    });
+
+  const searchCompatibleLpns = (
+    data: TCompatibleLpnsSearchRequest | undefined,
+    params: TCompatibleLpnsSearchParams
+  ) =>
+    useQuery({
+      queryKey: ["dispatch", "compatible-lpns", data, params],
+      queryFn: () => dispatchLookupApi.searchCompatibleLpns(data!, params),
+      enabled: Boolean(data?.scheduleId),
     });
 
   const getAvailableVehicles = () =>
@@ -25,7 +40,8 @@ export const useDispatchLookup = () => {
     });
 
   return {
-    getReadyLpns,
+    getSchedules,
+    searchCompatibleLpns,
     getAvailableVehicles,
     getAvailableDrivers,
   };

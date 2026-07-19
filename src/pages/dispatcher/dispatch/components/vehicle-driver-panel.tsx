@@ -7,30 +7,23 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import type {
   TDispatchDriverLookup,
-  TDispatchReadyLpn,
   TDispatchVehicleLookup,
 } from "@/schemas/dispatch.schema";
 import {
   CalendarClock,
   CheckCircle2,
+  Cuboid,
   IdCard,
   Route,
-  Scale,
   Snowflake,
   Truck,
   UserRound,
 } from "lucide-react";
-import CapacityMeter from "./capacity-meter";
-import {
-  formatNumber,
-  getSelectedTemperatureRange,
-  isVehicleTempCompatible,
-} from "./dispatch-helpers";
+import { formatNumber } from "./dispatch-helpers";
 
 type Props = {
   vehicles: TDispatchVehicleLookup[];
   drivers: TDispatchDriverLookup[];
-  selectedLpns: TDispatchReadyLpn[];
   selectedVehicleId: string;
   selectedDriverIds: string[];
   plannedStartTime: string;
@@ -38,19 +31,23 @@ type Props = {
   isLoadingVehicles?: boolean;
   isLoadingDrivers?: boolean;
   isSubmitting?: boolean;
+  isPreviewing?: boolean;
+  isPlanningEnabled: boolean;
+  canPreviewPacking: boolean;
+  hasCurrentPreview: boolean;
   canCreateTrip: boolean;
   validationMessages: string[];
   onVehicleChange: (vehicleId: string) => void;
   onDriverToggle: (driverId: string) => void;
   onPlannedStartTimeChange: (value: string) => void;
   onPlannedEndTimeChange: (value: string) => void;
+  onPreviewPacking: () => void;
   onCreateTrip: () => void;
 };
 
 const VehicleDriverPanel = ({
   vehicles,
   drivers,
-  selectedLpns,
   selectedVehicleId,
   selectedDriverIds,
   plannedStartTime,
@@ -58,26 +55,25 @@ const VehicleDriverPanel = ({
   isLoadingVehicles,
   isLoadingDrivers,
   isSubmitting,
+  isPreviewing,
+  isPlanningEnabled,
+  canPreviewPacking,
+  hasCurrentPreview,
   canCreateTrip,
   validationMessages,
   onVehicleChange,
   onDriverToggle,
   onPlannedStartTimeChange,
   onPlannedEndTimeChange,
+  onPreviewPacking,
   onCreateTrip,
 }: Props) => {
-  const selectedVehicle = vehicles.find((item) => item.vehicleId === selectedVehicleId);
-  const totalWeight = selectedLpns.reduce((sum, item) => sum + (item.actualWeightKg || 0), 0);
-  const totalCbm = selectedLpns.reduce((sum, item) => sum + (item.actualCbm || 0), 0);
-  const tempRange = getSelectedTemperatureRange(selectedLpns);
-  const tempCompatible = isVehicleTempCompatible(selectedVehicle, selectedLpns);
-
   return (
     <Card className="min-h-[620px] gap-0 rounded-lg py-0">
       <CardHeader className="border-b px-5 py-4">
         <CardTitle className="flex items-center gap-2 text-lg">
           <Truck className="h-5 w-5 text-sky-700" />
-          Xe, tài xế & sức chứa
+          Xe và tài xế
         </CardTitle>
       </CardHeader>
 
@@ -91,6 +87,7 @@ const VehicleDriverPanel = ({
             <Input
               type="datetime-local"
               value={plannedStartTime}
+              disabled={!isPlanningEnabled}
               onChange={(event) => onPlannedStartTimeChange(event.target.value)}
             />
           </label>
@@ -102,6 +99,7 @@ const VehicleDriverPanel = ({
             <Input
               type="datetime-local"
               value={plannedEndTime}
+              disabled={!isPlanningEnabled}
               onChange={(event) => onPlannedEndTimeChange(event.target.value)}
             />
           </label>
@@ -134,6 +132,7 @@ const VehicleDriverPanel = ({
                       key={vehicle.vehicleId}
                       type="button"
                       variant="outline"
+                      disabled={!isPlanningEnabled}
                       onClick={() => onVehicleChange(vehicle.vehicleId)}
                       className={cn(
                         "h-auto w-full justify-start rounded-lg p-0 text-left shadow-none",
@@ -188,7 +187,8 @@ const VehicleDriverPanel = ({
               {!isLoadingDrivers &&
                 drivers.map((driver) => {
                   const checked = selectedDriverIds.includes(driver.driverId);
-                  const disabled = !checked && selectedDriverIds.length >= 2;
+                  const disabled =
+                    !isPlanningEnabled || (!checked && selectedDriverIds.length >= 2);
 
                   return (
                     <Button
@@ -227,36 +227,6 @@ const VehicleDriverPanel = ({
           </ScrollArea>
         </section>
 
-        <section className="space-y-4 rounded-lg border bg-muted/20 p-4">
-          <div className="flex items-center justify-between gap-3">
-            <h3 className="flex items-center gap-2 text-sm font-semibold">
-              <Scale className="h-4 w-4" />
-              Sức chứa chuyến
-            </h3>
-            {tempRange && (
-              <Badge
-                variant="outline"
-                className={cn(!tempCompatible && "border-rose-300 bg-rose-50 text-rose-700")}
-              >
-                {tempRange.min}°C → {tempRange.max}°C
-              </Badge>
-            )}
-          </div>
-
-          <CapacityMeter
-            label="Tải trọng"
-            used={totalWeight}
-            capacity={selectedVehicle?.maxWeight}
-            unit="kg"
-          />
-          <CapacityMeter
-            label="Thể tích"
-            used={totalCbm}
-            capacity={selectedVehicle?.maxCbm}
-            unit="m³"
-          />
-        </section>
-
         {validationMessages.length > 0 && (
           <div className="space-y-1 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
             {validationMessages.map((message) => (
@@ -264,6 +234,21 @@ const VehicleDriverPanel = ({
             ))}
           </div>
         )}
+
+        <Button
+          type="button"
+          variant="outline"
+          className="h-11 w-full"
+          disabled={!canPreviewPacking || isPreviewing}
+          onClick={onPreviewPacking}
+        >
+          <Cuboid className="h-4 w-4" />
+          {isPreviewing
+            ? "Đang tạo mô phỏng..."
+            : hasCurrentPreview
+              ? "Xem lại mô phỏng 3D"
+              : "Xem mô phỏng 3D"}
+        </Button>
 
         <Button
           type="button"

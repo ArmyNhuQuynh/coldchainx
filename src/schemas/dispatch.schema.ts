@@ -39,6 +39,20 @@ export type TDispatchDriverLookup = {
   label?: string;
 };
 
+export type TDispatchScheduleLookup = {
+  scheduleId: string;
+  routeId: string;
+  routeCode?: string | null;
+  routeName?: string | null;
+  scheduleName?: string | null;
+  departureDate: string;
+  dayOfWeek?: number | null;
+  departureTime: string;
+  cutOffTime?: string | null;
+  status?: string | null;
+  label?: string | null;
+};
+
 export type TDispatchReadyLpn = {
   lpnId: string;
   label?: string;
@@ -57,16 +71,85 @@ export type TDispatchReadyLpn = {
   customerName?: string | null;
   destinationAddress?: string | null;
   routeName?: string | null;
+  scheduleId?: string | null;
+  scheduleName?: string | null;
+  category?: string | null;
+  requiredTemperature?: number | null;
+  hasStrongOdor?: boolean | null;
+  isStackable?: boolean | null;
+  isCompatible?: boolean;
 };
 
-export type TDispatchReadyLpnQuery = {
-  warehouseId?: string;
-  pageNumber?: number;
-  pageSize?: number;
+export type TCompatibleLpnsSearchRequest = {
+  scheduleId: string;
+  selectedLpnIds: string[];
+};
+
+export type TCompatibleLpnsSearchParams = {
+  pageNumber: number;
+  pageSize: number;
+};
+
+export type TDispatchCompatibilityConflict = {
+  reasonCode?: string | null;
+  message: string;
+  lpnId?: string | null;
+  lpnCode?: string | null;
+  otherLpnId?: string | null;
+  otherLpnCode?: string | null;
+};
+
+export type TCompatibleLpnsSearchResult = {
+  selectedSetValid: boolean;
+  conflicts: TDispatchCompatibilityConflict[];
+  totalRecords: number;
+  totalPages: number;
+  currentPage: number;
+  pageSize: number;
+  items: TDispatchReadyLpn[];
+};
+
+export type TDispatchPackingRequest = {
+  scheduleId: string;
+  vehicleId: string;
+  lpnIds: string[];
+};
+
+export type TDispatchPackingVehicle = {
+  vehicleId: string;
+  truckPlate: string;
+  vehicleType?: string | null;
+  status?: string | null;
+  maxWeight: number;
+  maxCbm: number;
+  minTemp?: number | null;
+  maxTemp?: number | null;
+};
+
+export type TDispatchPackingResult = {
+  selectedSetValid: boolean;
+  canCreateTrip: boolean;
+  blockingReasons: string[];
+  vehicle?: TDispatchPackingVehicle | null;
+  totalWeight: number;
+  maxWeight: number;
+  weightUtilization: number;
+  isOverweight: boolean;
+  totalCbm: number;
+  maxCbm: number;
+  isOverCbm: boolean;
+  placedItems: unknown[];
+  unplacedLpnIds: string[];
+  utilisation: number;
+  vehicleType?: string | null;
+  containerLength?: number | null;
+  containerWidth?: number | null;
+  containerHeight?: number | null;
+  shareableLink?: string | null;
 };
 
 export type TManualDispatchRequest = {
-  warehouseId: string;
+  scheduleId: string;
   lpnIds: string[];
   vehicleId: string;
   driverIds: string[];
@@ -81,12 +164,6 @@ export type TManualDispatchResult = {
   lateLpnCount?: number;
   slaWarning?: string | null;
   suggestedMaxPayloadKg?: number | null;
-};
-
-export type TDispatchFilters = {
-  search: string;
-  warehouseId: string;
-  temperatureGroup: string;
 };
 
 export type TDispatchTripLpn = {
