@@ -5,16 +5,26 @@ import type {
   TVehicleUpdateRequest,
 } from "@/schemas/vehicle.schema";
 import { VEHICLE_FORM_DEFAULTS } from "@/schemas/vehicle.schema";
+import {
+  normalizeVehicleStatus,
+  VEHICLE_STATUS,
+} from "@/types/enums/vehicle-status.enum";
 
 export const getVehicleFormDefaultValues = (
   vehicle?: TVehicle
 ): TVehicleFormValues => ({
   truckPlate: vehicle?.truckPlate ?? "",
   brand: vehicle?.brand ?? null,
+  manufactureYear: vehicle?.manufactureYear ?? null,
+  chassisNumber: vehicle?.chassisNumber ?? null,
+  engineNumber: vehicle?.engineNumber ?? null,
   standardFuelLiters: vehicle?.standardFuelLiters ?? null,
   vehicleType: vehicle?.vehicleType ?? VEHICLE_FORM_DEFAULTS.vehicleType,
   maxWeight: vehicle?.maxWeight ?? null,
   maxCbm: vehicle?.maxCbm ?? null,
+  innerLengthCm: vehicle?.innerLengthCm ?? null,
+  innerWidthCm: vehicle?.innerWidthCm ?? null,
+  innerHeightCm: vehicle?.innerHeightCm ?? null,
   minTemp: vehicle?.minTemp ?? null,
   maxTemp: vehicle?.maxTemp ?? null,
   currentLocation: vehicle?.currentLocation ?? null,
@@ -28,10 +38,16 @@ export const toVehicleCreateRequest = (
 ): TVehicleCreateRequest => ({
   truckPlate: values.truckPlate,
   brand: values.brand,
+  manufactureYear: values.manufactureYear,
+  chassisNumber: values.chassisNumber,
+  engineNumber: values.engineNumber,
   standardFuelLiters: values.standardFuelLiters,
   vehicleType: values.vehicleType,
   maxWeight: values.maxWeight!,
   maxCbm: values.maxCbm!,
+  innerLengthCm: values.innerLengthCm!,
+  innerWidthCm: values.innerWidthCm!,
+  innerHeightCm: values.innerHeightCm!,
   minTemp: values.minTemp!,
   maxTemp: values.maxTemp!,
   currentLocation: values.currentLocation,
@@ -41,14 +57,29 @@ export const toVehicleCreateRequest = (
 
 export const toVehicleUpdateRequest = (
   values: TVehicleFormValues
-): TVehicleUpdateRequest => ({
-  truckPlate: values.truckPlate,
-  brand: values.brand,
-  standardFuelLiters: values.standardFuelLiters,
-  vehicleType: values.vehicleType,
-  maxWeight: values.maxWeight,
-  maxCbm: values.maxCbm,
-  minTemp: values.minTemp,
-  maxTemp: values.maxTemp,
-  status: values.status,
-});
+): TVehicleUpdateRequest => {
+  const normalizedStatus = normalizeVehicleStatus(values.status);
+  const editableStatus =
+    normalizedStatus === VEHICLE_STATUS.ACTIVE ||
+    normalizedStatus === VEHICLE_STATUS.INACTIVE
+      ? normalizedStatus
+      : undefined;
+
+  return {
+    truckPlate: values.truckPlate,
+    brand: values.brand ?? "",
+    manufactureYear: values.manufactureYear,
+    chassisNumber: values.chassisNumber ?? "",
+    engineNumber: values.engineNumber ?? "",
+    standardFuelLiters: values.standardFuelLiters,
+    vehicleType: values.vehicleType,
+    maxWeight: values.maxWeight,
+    maxCbm: values.maxCbm,
+    innerLengthCm: values.innerLengthCm,
+    innerWidthCm: values.innerWidthCm,
+    innerHeightCm: values.innerHeightCm,
+    minTemp: values.minTemp,
+    maxTemp: values.maxTemp,
+    status: editableStatus,
+  };
+};

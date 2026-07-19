@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import type { TVehicle } from "@/schemas/vehicle.schema";
 import { getVehicleTypeLabel } from "@/types/enums/vehicle-type.enum";
 import {
+  CalendarDays,
   Car,
   Fuel,
   Gauge,
@@ -11,7 +12,6 @@ import {
   Snowflake,
   Tag,
   Truck,
-  UserRound,
   Weight,
   type LucideIcon,
 } from "lucide-react";
@@ -93,8 +93,18 @@ const VehicleDetailInfo = ({ vehicle }: Props) => {
     hasValue(vehicle.brand)
       ? { icon: Car, label: "Hãng xe", value: vehicle.brand }
       : null,
-    hasValue(vehicle.driverId)
-      ? { icon: UserRound, label: "Tài xế mặc định", value: vehicle.driverId }
+    hasValue(vehicle.manufactureYear)
+      ? {
+          icon: CalendarDays,
+          label: "Năm sản xuất",
+          value: vehicle.manufactureYear,
+        }
+      : null,
+    hasValue(vehicle.chassisNumber)
+      ? { icon: Hash, label: "Số khung", value: vehicle.chassisNumber }
+      : null,
+    hasValue(vehicle.engineNumber)
+      ? { icon: Hash, label: "Số máy", value: vehicle.engineNumber }
       : null,
   ]);
 

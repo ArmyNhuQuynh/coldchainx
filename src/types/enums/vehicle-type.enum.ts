@@ -19,6 +19,10 @@ export function getVehicleTypeLabel(type: string | null): string {
       return "Xe Van";
     case VEHICLE_TYPE.REFRIGERATED:
       return "Xe lạnh";
+    case "REEFER_TRUCK":
+      return "Xe tải lạnh";
+    case "TRUCK_1T":
+      return "Xe tải 1 tấn";
     case VEHICLE_TYPE.FLATBED:
       return "Xe thùng lửng";
     case VEHICLE_TYPE.CONTAINER:

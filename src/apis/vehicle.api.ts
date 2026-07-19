@@ -168,7 +168,7 @@ const uploadMaintenanceTicketDocument = async (ticketId: string, file: File) => 
   const formData = new FormData();
   formData.append("file", file);
 
-  const response = await apiRequest.baseApi.post<BaseResponse<TMaintenanceTicket>>(
+  const response = await apiRequest.baseApi.post<BaseResponse<string>>(
     `${API_SUFFIX.MAINTENANCE_TICKETS_API}/${ticketId}/documents`,
     formData
   );

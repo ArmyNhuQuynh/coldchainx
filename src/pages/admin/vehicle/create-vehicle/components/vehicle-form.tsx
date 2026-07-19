@@ -3,10 +3,11 @@ import { Form } from "@/components/ui/form";
 import type { TVehicleFormValues } from "@/schemas/vehicle.schema";
 import {
   getVehicleStatusLabel,
+  normalizeVehicleStatus,
   VEHICLE_STATUS,
 } from "@/types/enums/vehicle-status.enum";
 import { getVehicleTypeLabel, VEHICLE_TYPE } from "@/types/enums/vehicle-type.enum";
-import { Gauge, MapPin, Save, Snowflake, Truck } from "lucide-react";
+import { Gauge, MapPin, Ruler, Save, Snowflake, Truck } from "lucide-react";
 import type { BaseSyntheticEvent } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import {
@@ -29,7 +30,10 @@ const vehicleTypeOptions = Object.values(VEHICLE_TYPE).map((value) => ({
   label: getVehicleTypeLabel(value),
 }));
 
-const vehicleStatusOptions = Object.values(VEHICLE_STATUS).map((value) => ({
+const vehicleStatusOptions = [
+  VEHICLE_STATUS.ACTIVE,
+  VEHICLE_STATUS.INACTIVE,
+].map((value) => ({
   value,
   label: getVehicleStatusLabel(value).label,
 }));
@@ -43,6 +47,22 @@ const VehicleForm = ({
 }: Props) => {
   const submitLabel = mode === "create" ? "Tạo xe" : "Lưu thay đổi";
   const submittingLabel = mode === "create" ? "Đang tạo..." : "Đang lưu...";
+  const currentVehicleType = form.watch("vehicleType");
+  const currentStatus = normalizeVehicleStatus(form.watch("status"));
+  const typeOptions = vehicleTypeOptions.some(
+    (option) => option.value === currentVehicleType
+  )
+    ? vehicleTypeOptions
+    : [
+        {
+          value: currentVehicleType,
+          label: getVehicleTypeLabel(currentVehicleType),
+        },
+        ...vehicleTypeOptions,
+      ];
+  const canEditStatus =
+    currentStatus === VEHICLE_STATUS.ACTIVE ||
+    currentStatus === VEHICLE_STATUS.INACTIVE;
 
   return (
     <Form {...form}>
@@ -64,6 +84,26 @@ const VehicleForm = ({
             label="Hãng xe"
             placeholder="VD: Hyundai"
           />
+          <VehicleNumberField
+            control={form.control}
+            name="manufactureYear"
+            label="Năm sản xuất"
+            placeholder="VD: 2024"
+            min={1900}
+            step={1}
+          />
+          <VehicleTextField
+            control={form.control}
+            name="chassisNumber"
+            label="Số khung"
+            placeholder="Nhập số khung"
+          />
+          <VehicleTextField
+            control={form.control}
+            name="engineNumber"
+            label="Số máy"
+            placeholder="Nhập số máy"
+          />
         </VehicleFormSection>
 
         <VehicleFormSection
@@ -76,9 +116,9 @@ const VehicleForm = ({
             name="vehicleType"
             label="Loại xe"
             placeholder="Chọn loại xe"
-            options={vehicleTypeOptions}
+            options={typeOptions}
           />
-          {mode === "edit" && (
+          {mode === "edit" && canEditStatus && (
             <VehicleSelectField
               control={form.control}
               name="status"
@@ -98,21 +138,55 @@ const VehicleForm = ({
           />
           <VehicleNumberField
             control={form.control}
-            name="maxCbm"
-            label="Thể tích tối đa"
-            placeholder="VD: 67"
-            min={0}
-            step={0.01}
-            unit="m³"
-          />
-          <VehicleNumberField
-            control={form.control}
             name="standardFuelLiters"
             label="Định mức nhiên liệu"
             placeholder="VD: 400"
             min={0}
             step={0.01}
             unit="L"
+          />
+        </VehicleFormSection>
+
+        <VehicleFormSection
+          icon={Ruler}
+          title="Kích thước lòng thùng"
+          description="Thông số dùng để kiểm tra sức chứa và dựng mô phỏng xếp hàng 3D."
+        >
+          <VehicleNumberField
+            control={form.control}
+            name="innerLengthCm"
+            label="Chiều dài"
+            placeholder="VD: 300"
+            min={0}
+            step={0.1}
+            unit="cm"
+          />
+          <VehicleNumberField
+            control={form.control}
+            name="innerWidthCm"
+            label="Chiều rộng"
+            placeholder="VD: 180"
+            min={0}
+            step={0.1}
+            unit="cm"
+          />
+          <VehicleNumberField
+            control={form.control}
+            name="innerHeightCm"
+            label="Chiều cao"
+            placeholder="VD: 190"
+            min={0}
+            step={0.1}
+            unit="cm"
+          />
+          <VehicleNumberField
+            control={form.control}
+            name="maxCbm"
+            label="Thể tích khai thác tối đa"
+            placeholder="VD: 8"
+            min={0}
+            step={0.01}
+            unit="m³"
           />
         </VehicleFormSection>
 

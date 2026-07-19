@@ -214,8 +214,8 @@ export const useVehicle = () => {
       file: File;
       vehicleId?: string | null;
     }) => vehicleApi.uploadMaintenanceTicketDocument(ticketId, file),
-    onSuccess: (response, variables) => {
-      invalidateVehicleQueries(response.data?.vehicleId ?? variables.vehicleId);
+    onSuccess: (_, variables) => {
+      invalidateVehicleQueries(variables.vehicleId);
       queryClient.invalidateQueries({
         queryKey: ["maintenance-ticket", variables.ticketId],
       });

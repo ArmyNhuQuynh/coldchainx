@@ -56,12 +56,20 @@ export const InlineVehicleDocumentRequestSchema = z.object({
 
 export const VehicleSchema = z.object({
   vehicleId: z.string().uuid({ message: "ID xe không hợp lệ" }),
-  driverId: z
-    .string()
-    .uuid({ message: "ID tài xế không hợp lệ" })
-    .nullable(),
   truckPlate: z.string({ message: "Biển số xe không hợp lệ" }),
   brand: z.string({ message: "Thương hiệu xe không hợp lệ" }).nullable(),
+  manufactureYear: z
+    .number({ message: "Năm sản xuất không hợp lệ" })
+    .nullable()
+    .optional(),
+  chassisNumber: z
+    .string({ message: "Số khung không hợp lệ" })
+    .nullable()
+    .optional(),
+  engineNumber: z
+    .string({ message: "Số máy không hợp lệ" })
+    .nullable()
+    .optional(),
   standardFuelLiters: z
     .number({ message: "Định mức nhiên liệu không hợp lệ" })
     .nullable(),
@@ -110,13 +118,17 @@ export const VehicleSchema = z.object({
 export const VehicleCreateRequestSchema = z
   .object({
     truckPlate: z.string().trim().min(1, "Biển số xe không được để trống"),
-    driverName: nullableString("Tên tài xế không hợp lệ"),
-    driverId: z.string().uuid("ID tài xế không hợp lệ").nullable().optional(),
     brand: nullableString("Thương hiệu xe không hợp lệ"),
+    manufactureYear: nullableNumber("Năm sản xuất không hợp lệ"),
+    chassisNumber: nullableString("Số khung không hợp lệ"),
+    engineNumber: nullableString("Số máy không hợp lệ"),
     standardFuelLiters: nullableNumber("Định mức nhiên liệu không hợp lệ"),
     vehicleType: z.string().trim().min(1, "Loại xe không được để trống"),
     maxWeight: z.number().positive("Tải trọng tối đa phải lớn hơn 0"),
     maxCbm: z.number().positive("Thể tích tối đa phải lớn hơn 0"),
+    innerLengthCm: z.number().positive("Chiều dài lòng thùng phải lớn hơn 0"),
+    innerWidthCm: z.number().positive("Chiều rộng lòng thùng phải lớn hơn 0"),
+    innerHeightCm: z.number().positive("Chiều cao lòng thùng phải lớn hơn 0"),
     minTemp: z.number({ message: "Nhiệt độ tối thiểu không hợp lệ" }),
     maxTemp: z.number({ message: "Nhiệt độ tối đa không hợp lệ" }),
     currentLocation: nullableString("Vị trí hiện tại không hợp lệ"),
@@ -138,10 +150,16 @@ export const VehicleUpdateRequestSchema = z
   .object({
     truckPlate: nullableString("Biển số xe không hợp lệ"),
     brand: nullableString("Thương hiệu xe không hợp lệ"),
+    manufactureYear: nullableNumber("Năm sản xuất không hợp lệ"),
+    chassisNumber: nullableString("Số khung không hợp lệ"),
+    engineNumber: nullableString("Số máy không hợp lệ"),
     standardFuelLiters: nullableNumber("Định mức nhiên liệu không hợp lệ"),
     vehicleType: nullableString("Loại xe không hợp lệ"),
     maxWeight: nullableNumber("Tải trọng tối đa không hợp lệ"),
     maxCbm: nullableNumber("Thể tích tối đa không hợp lệ"),
+    innerLengthCm: nullableNumber("Chiều dài lòng thùng không hợp lệ"),
+    innerWidthCm: nullableNumber("Chiều rộng lòng thùng không hợp lệ"),
+    innerHeightCm: nullableNumber("Chiều cao lòng thùng không hợp lệ"),
     minTemp: nullableNumber("Nhiệt độ tối thiểu không hợp lệ"),
     maxTemp: nullableNumber("Nhiệt độ tối đa không hợp lệ"),
     status: nullableString("Trạng thái xe không hợp lệ"),
@@ -174,6 +192,14 @@ export const VehicleFormSchema = z
   .object({
     truckPlate: requiredFormText("Biển số xe không được để trống"),
     brand: nullableFormText("Thương hiệu xe không hợp lệ"),
+    manufactureYear: optionalFormNumber("Năm sản xuất không hợp lệ").refine(
+      (value) =>
+        value === null ||
+        (Number.isInteger(value) && value >= 1900 && value <= 2100),
+      { message: "Năm sản xuất phải từ 1900 đến 2100" }
+    ),
+    chassisNumber: nullableFormText("Số khung không hợp lệ"),
+    engineNumber: nullableFormText("Số máy không hợp lệ"),
     standardFuelLiters: optionalFormNumber(
       "Định mức nhiên liệu không hợp lệ"
     ).refine((value) => value === null || value > 0, {
@@ -182,6 +208,15 @@ export const VehicleFormSchema = z
     vehicleType: requiredFormText("Loại xe không được để trống"),
     maxWeight: positiveFormNumber("Tải trọng tối đa phải lớn hơn 0"),
     maxCbm: positiveFormNumber("Thể tích tối đa phải lớn hơn 0"),
+    innerLengthCm: positiveFormNumber(
+      "Chiều dài lòng thùng phải lớn hơn 0"
+    ),
+    innerWidthCm: positiveFormNumber(
+      "Chiều rộng lòng thùng phải lớn hơn 0"
+    ),
+    innerHeightCm: positiveFormNumber(
+      "Chiều cao lòng thùng phải lớn hơn 0"
+    ),
     minTemp: requiredFormNumber("Nhiệt độ tối thiểu không hợp lệ"),
     maxTemp: requiredFormNumber("Nhiệt độ tối đa không hợp lệ"),
     currentLocation: nullableFormText("Vị trí hiện tại không hợp lệ"),
@@ -204,6 +239,27 @@ export const VehicleFormSchema = z
     {
       message: "Nhiệt độ tối thiểu không được lớn hơn nhiệt độ tối đa",
       path: ["minTemp"],
+    }
+  )
+  .refine(
+    (data) => {
+      if (
+        data.maxCbm === null ||
+        data.innerLengthCm === null ||
+        data.innerWidthCm === null ||
+        data.innerHeightCm === null
+      ) {
+        return true;
+      }
+
+      const physicalCbm =
+        (data.innerLengthCm * data.innerWidthCm * data.innerHeightCm) /
+        1_000_000;
+      return data.maxCbm <= physicalCbm;
+    },
+    {
+      message: "Thể tích tối đa không được lớn hơn thể tích lòng thùng",
+      path: ["maxCbm"],
     }
   );
 
@@ -321,10 +377,16 @@ export type TMaintenanceTicketQuery = z.infer<
 export type TVehicleFormValues = {
   truckPlate: string;
   brand: string | null;
+  manufactureYear: number | null;
+  chassisNumber: string | null;
+  engineNumber: string | null;
   standardFuelLiters: number | null;
   vehicleType: string;
   maxWeight: number | null;
   maxCbm: number | null;
+  innerLengthCm: number | null;
+  innerWidthCm: number | null;
+  innerHeightCm: number | null;
   minTemp: number | null;
   maxTemp: number | null;
   currentLocation: string | null;
