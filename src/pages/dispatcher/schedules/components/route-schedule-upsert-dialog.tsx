@@ -180,11 +180,11 @@ const RouteScheduleUpsertDialog = ({
 
           {editingSchedule && (
             <FormSection
-              title="Trạng thái"
-              description="Dùng để tạm ngưng hoặc mở lại lịch đi."
+              title="Trạng thái nhận đơn"
+              description="Đóng nhận đơn chỉ ngăn đơn mới; các đơn đã đặt vẫn tiếp tục được vận hành."
             >
               <label className="space-y-2 text-sm">
-                <span className="font-medium">Trạng thái lịch</span>
+                <span className="font-medium">Nhận đơn cho lịch</span>
                 <Select
                   value={values.status}
                   onValueChange={(value) => onFieldChange("status", value)}

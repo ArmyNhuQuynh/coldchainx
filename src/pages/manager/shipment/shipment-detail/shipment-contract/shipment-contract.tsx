@@ -39,13 +39,14 @@ const ShipmentContract = ({ order }: Props) => {
     isError: isContractError,
   } = getContractByOrderId(order.orderId, open && hasAcceptedQuotation);
   const contract = contractResponse?.data;
+  const hasSignedFile = Boolean(contract?.signedFileUrl?.trim());
 
   const {
     data: previewHtml,
     isLoading: isLoadingPreview,
     isFetching: isFetchingPreview,
     isError: isPreviewError,
-  } = previewContract(order.orderId, open && !!contract);
+  } = previewContract(order.orderId, open && !!contract && !hasSignedFile);
 
   const handleOpenChange = (nextOpen: boolean) => {
     setOpen(nextOpen);
@@ -96,8 +97,9 @@ const ShipmentContract = ({ order }: Props) => {
     }
   };
 
-  const isLoading = isLoadingContract || (!!contract && isLoadingPreview);
-  const isError = isContractError || isPreviewError;
+  const isLoading =
+    isLoadingContract || (!!contract && !hasSignedFile && isLoadingPreview);
+  const isError = isContractError || (!hasSignedFile && isPreviewError);
 
   return (
     <>
@@ -126,7 +128,7 @@ const ShipmentContract = ({ order }: Props) => {
             <div className="py-12 text-center text-sm text-muted-foreground">
               Không tìm thấy hợp đồng của đơn hàng
             </div>
-          ) : !previewHtml ? (
+          ) : !hasSignedFile && !previewHtml ? (
             <div className="py-12 text-center text-sm text-muted-foreground">
               Hợp đồng chưa có nội dung xem trước
             </div>
@@ -135,7 +137,9 @@ const ShipmentContract = ({ order }: Props) => {
               contract={contract}
               html={previewHtml}
               isEditing={isEditing}
-              isRefreshing={isFetchingContract || isFetchingPreview}
+              isRefreshing={
+                isFetchingContract || (!hasSignedFile && isFetchingPreview)
+              }
               isUpdating={updateContractDraft.isPending}
               isSending={sendContract.isPending}
               onEdit={() => setIsEditing(true)}

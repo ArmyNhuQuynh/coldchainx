@@ -50,6 +50,7 @@ export const useRouteSchedule = () => {
     }) => routeScheduleApi.updateRouteSchedule(routeId, scheduleId, data),
     onSuccess: (_, { routeId }) => {
       queryClient.invalidateQueries({ queryKey: ["route-schedules", routeId] });
+      queryClient.invalidateQueries({ queryKey: ["dispatch", "schedules"] });
     },
   });
 

@@ -6,6 +6,7 @@ export interface TGetOrdersQuery {
   pageNumber?: number;
   pageSize?: number;
   status?: string;
+  routeId?: string;
 }
 
 // ===== ENUM =====
@@ -78,6 +79,7 @@ export const OrderSchema = z.object({
   actualCbm:        z.number({ message: "Thể tích thực tế không hợp lệ" }).nullable(),
   cargoValue:       z.number({ message: "Giá trị hàng hóa không hợp lệ" }).nullable().optional(),
   status:           OrderStatusSchema,
+  masterTripId:     z.string().uuid({ message: "ID chuyến không hợp lệ" }).nullable(),
   createdAt:        z.string({ message: "Thời gian tạo không hợp lệ" }).nullable(),
   route:             OrderRouteSchema.nullable(),
   destination:      OrderDestinationSchema.nullable(),

@@ -78,7 +78,7 @@ export const columns: ColumnDef<TOrder>[] = [
             createFormattedHeader("Khách hàng", column, { align: "left" }),
 
         cell: ({ row }) => {
-            const customerName = row.getValue("customerName") as string;
+            const customerName = (row.getValue("customerName") as string | null) ?? "—";
 
             return createFormattedCell(
                 <span className="truncate font-semibold">{customerName}</span>,
@@ -95,14 +95,30 @@ export const columns: ColumnDef<TOrder>[] = [
             createFormattedHeader("Tuyến đường", column, { align: "left" }),
 
         cell: ({ row }) => {
-            const address = row.original.destination?.address ?? "—";
+            const route = row.original.route;
+            const routeLabel = route
+                ? `${route.originCity} → ${route.destCity}`
+                : "—";
+            const routeTooltip = route
+                ? `${route.routeCode} · ${routeLabel}`
+                : "Chưa có thông tin tuyến";
 
-            return createFormattedCell(address, {
-                align: "left",
-                maxWidth: "240px",
-                truncate: true,
-                tooltip: address,
-            });
+            return createFormattedCell(
+                <div className="min-w-0">
+                    <p className="truncate font-medium">{routeLabel}</p>
+                    {route && (
+                        <p className="truncate text-xs text-muted-foreground">
+                            {route.routeCode}
+                        </p>
+                    )}
+                </div>,
+                {
+                    align: "left",
+                    maxWidth: "240px",
+                    truncate: true,
+                    tooltip: routeTooltip,
+                }
+            );
         },
 
         size: 240,
@@ -118,7 +134,10 @@ export const columns: ColumnDef<TOrder>[] = [
             const { label, className } = getOrderCategoryLabel(category);
 
             return createFormattedCell(
-                <Badge className={`${className} max-w-[120px] truncate hover:opacity-90`}>
+                <Badge
+                    variant="outline"
+                    className={`${className} max-w-[120px] truncate hover:bg-transparent`}
+                >
                     {label}
                 </Badge>,
                 { align: "left" }
@@ -131,7 +150,7 @@ export const columns: ColumnDef<TOrder>[] = [
     {
         accessorKey: "createdAt",
         header: ({ column }) =>
-            createFormattedHeader("Lấy hàng", column, { align: "center" }),
+            createFormattedHeader("Ngày tạo", column, { align: "center" }),
 
         cell: ({ row }) => {
             const createdAt = row.getValue("createdAt") as string | null;
@@ -155,7 +174,7 @@ export const columns: ColumnDef<TOrder>[] = [
             const { label, className } = getOrderStatusLabel(status);
 
             return createFormattedCell(
-                <Badge className={`${className} max-w-[140px] truncate hover:opacity-90`}>
+                <Badge variant="outline" className={`${className} max-w-[150px] truncate hover:bg-transparent`}>
                     {label}
                 </Badge>,
                 { align: "center" }

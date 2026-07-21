@@ -1,9 +1,8 @@
 import { useChat, useChatSignalR } from "@/hooks/use-chat";
 import { useCustomer } from "@/hooks/use-customer";
-import { useOrder } from "@/hooks/use-order";
 import type { RootState } from "@/redux/store";
 import type { TChatMessage } from "@/schemas/chat.schema";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
 import ChatComposer from "./components/chat-composer";
@@ -13,22 +12,22 @@ import MessengerChatThread, {
   type CustomerCareTimelineItem,
 } from "./components/messenger-chat-thread";
 import {
-  buildCustomerCareCustomers,
-  filterCustomerCareCustomers,
   isCustomerCareOrderActive,
+  toCustomerCareCustomer,
   toCustomerCareOrder,
   type CustomerCareOrder,
 } from "./components/customer-care-utils";
 
-const MESSAGE_PAGE_SIZE = 100;
-const CUSTOMER_CARE_PAGE_SIZE = 100;
+const CUSTOMER_LIST_PAGE_SIZE = 100;
+const CUSTOMER_ORDER_PAGE_SIZE = 100;
+const MESSAGE_PAGE_SIZE = 30;
 
 const CustomerCarePage = () => {
   const { user } = useSelector((state: RootState) => state.user);
-  const { getAllOrders } = useOrder();
   const { getCustomerOrders } = useCustomer();
   const {
-    getMessagesForOrders,
+    getCustomerConversations,
+    getCustomerMessages,
     getParticipants,
     sendMessage,
     markMessagesAsRead,
@@ -37,176 +36,142 @@ const CustomerCarePage = () => {
   const [search, setSearch] = useState("");
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>();
   const [selectedOrderId, setSelectedOrderId] = useState<string>();
-  const [customerActivityById, setCustomerActivityById] = useState<
-    Record<string, string | null | undefined>
-  >({});
+  const deferredSearch = useDeferredValue(search.trim());
+  const lastReadMarkerRef = useRef<string>();
 
-  const ordersQuery = getAllOrders();
-
-  const baseOrders = ordersQuery.data?.data.data ?? [];
+  const customersQuery = getCustomerConversations({
+    pageNumber: 1,
+    pageSize: CUSTOMER_LIST_PAGE_SIZE,
+    search: deferredSearch || undefined,
+  });
   const customers = useMemo(
-    () => buildCustomerCareCustomers(baseOrders),
-    [baseOrders]
-  );
-
-  const latestActivityByCustomerId = useMemo(() => {
-    const map = new Map<string, string | null | undefined>();
-
-    customers.forEach((customer) => {
-      map.set(
-        customer.customerId,
-        customerActivityById[customer.customerId] ?? customer.latestOrderAt
-      );
-    });
-
-    return map;
-  }, [customerActivityById, customers]);
-
-  const filteredCustomers = useMemo(
     () =>
-      filterCustomerCareCustomers(customers, search).sort((a, b) => {
-        const aTime = latestActivityByCustomerId.get(a.customerId)
-          ? new Date(latestActivityByCustomerId.get(a.customerId)!).getTime()
-          : 0;
-        const bTime = latestActivityByCustomerId.get(b.customerId)
-          ? new Date(latestActivityByCustomerId.get(b.customerId)!).getTime()
-          : 0;
-
-        return bTime - aTime;
-      }),
-    [customers, latestActivityByCustomerId, search]
+      (customersQuery.data?.data.data ?? []).map(toCustomerCareCustomer),
+    [customersQuery.data]
   );
 
   useEffect(() => {
-    if (filteredCustomers.length === 0) {
+    if (customers.length === 0) {
       setSelectedCustomerId(undefined);
+      setSelectedOrderId(undefined);
       return;
     }
 
     if (
       !selectedCustomerId ||
-      !filteredCustomers.some(
-        (customer) => customer.customerId === selectedCustomerId
-      )
+      !customers.some((customer) => customer.customerId === selectedCustomerId)
     ) {
-      setSelectedCustomerId(filteredCustomers[0].customerId);
+      setSelectedCustomerId(customers[0].customerId);
+      setSelectedOrderId(undefined);
     }
-  }, [filteredCustomers, selectedCustomerId]);
+  }, [customers, selectedCustomerId]);
 
   const selectedCustomer = customers.find(
     (customer) => customer.customerId === selectedCustomerId
   );
-
   const customerOrdersQuery = getCustomerOrders(selectedCustomerId, {
     pageNumber: 1,
-    pageSize: CUSTOMER_CARE_PAGE_SIZE,
+    pageSize: CUSTOMER_ORDER_PAGE_SIZE,
   });
 
   const selectedOrders = useMemo<CustomerCareOrder[]>(() => {
-    const apiOrders = customerOrdersQuery.data?.data.data;
+    const apiOrders = customerOrdersQuery.data?.data.data ?? [];
+    if (!selectedCustomer) return [];
 
-    if (apiOrders?.length && selectedCustomer) {
-      return apiOrders
-        .filter((order) => isCustomerCareOrderActive(order.status))
-        .map((order) =>
-          toCustomerCareOrder(order, {
-            customerId: selectedCustomer.customerId,
-            customerName: selectedCustomer.customerName,
-          })
-        );
-    }
-
-    return selectedCustomer?.orders ?? [];
+    return apiOrders
+      .filter((order) => isCustomerCareOrderActive(order.status))
+      .map((order) =>
+        toCustomerCareOrder(order, {
+          customerId: selectedCustomer.customerId,
+          customerName: selectedCustomer.customerName,
+        })
+      );
   }, [customerOrdersQuery.data, selectedCustomer]);
 
-  const orderIds = useMemo(
-    () => selectedOrders.map((order) => order.orderId),
-    [selectedOrders]
+  const customerMessagesQuery = getCustomerMessages(
+    selectedCustomerId,
+    MESSAGE_PAGE_SIZE
   );
-
-  useChatSignalR(orderIds);
-
-  const messageQueries = getMessagesForOrders(orderIds, {
-    pageNumber: 1,
-    pageSize: MESSAGE_PAGE_SIZE,
-  });
   const participantQuery = getParticipants(selectedOrderId);
 
-  useEffect(() => {
-    if (
-      selectedOrderId &&
-      !selectedOrders.some((order) => order.orderId === selectedOrderId)
-    ) {
-      setSelectedOrderId(undefined);
-    }
-  }, [selectedOrders, selectedOrderId]);
+  const messages = useMemo(() => {
+    const byId = new Map<string, TChatMessage>();
 
-  const messagesByOrderId = useMemo(() => {
-    const map = new Map<string, TChatMessage[]>();
-
-    orderIds.forEach((orderId, index) => {
-      const messages = messageQueries[index]?.data?.data.data ?? [];
-      map.set(
-        orderId,
-        [...messages].sort(
-          (a, b) =>
-            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-        )
-      );
+    customerMessagesQuery.data?.pages.forEach((page) => {
+      page.data.data.forEach((message) => byId.set(message.id, message));
     });
 
-    return map;
-  }, [messageQueries, orderIds]);
+    return Array.from(byId.values()).sort(
+      (left, right) =>
+        new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime()
+    );
+  }, [customerMessagesQuery.data]);
 
   const timelineItems = useMemo<CustomerCareTimelineItem[]>(() => {
-    return selectedOrders
-      .flatMap((order) =>
-        (messagesByOrderId.get(order.orderId) ?? []).map((message) => ({
-          order,
-          message,
-        }))
-      )
-      .sort(
-        (a, b) =>
-          new Date(a.message.createdAt).getTime() -
-          new Date(b.message.createdAt).getTime()
-      );
-  }, [messagesByOrderId, selectedOrders]);
+    const ordersById = new Map(
+      selectedOrders.map((order) => [order.orderId, order])
+    );
 
-  const latestTimelineMessageAt = useMemo(
-    () => timelineItems[timelineItems.length - 1]?.message.createdAt,
-    [timelineItems]
-  );
+    return messages.flatMap((message) => {
+      const order = ordersById.get(message.orderId);
+      return order ? [{ order, message }] : [];
+    });
+  }, [messages, selectedOrders]);
 
   useEffect(() => {
-    if (!selectedCustomerId || !latestTimelineMessageAt) return;
+    if (selectedOrders.length === 0) {
+      setSelectedOrderId(undefined);
+      return;
+    }
 
-    setCustomerActivityById((current) => {
-      const currentActivityAt = current[selectedCustomerId];
-      const currentTime = currentActivityAt
-        ? new Date(currentActivityAt).getTime()
-        : 0;
-      const nextTime = new Date(latestTimelineMessageAt).getTime();
+    if (selectedOrderId && selectedOrders.some((order) => order.orderId === selectedOrderId)) {
+      return;
+    }
 
-      if (Number.isNaN(nextTime) || nextTime <= currentTime) return current;
+    const latestMessageOrderId = timelineItems[timelineItems.length - 1]?.order.orderId;
+    const preferredOrderId = latestMessageOrderId ?? selectedCustomer?.lastMessageOrderId;
+    setSelectedOrderId(
+      preferredOrderId && selectedOrders.some((order) => order.orderId === preferredOrderId)
+        ? preferredOrderId
+        : undefined
+    );
+  }, [selectedCustomer, selectedOrderId, selectedOrders, timelineItems]);
 
-      return {
-        ...current,
-        [selectedCustomerId]: latestTimelineMessageAt,
-      };
-    });
-  }, [latestTimelineMessageAt, selectedCustomerId]);
-
-  const isMessagesLoading = messageQueries.some((query) => query.isLoading);
+  const handleRealtimeMessage = useCallback(
+    (message: TChatMessage) => {
+      if (
+        message.customerId === selectedCustomerId &&
+        message.senderId !== user?.userId &&
+        selectedOrders.some((order) => order.orderId === message.orderId)
+      ) {
+        setSelectedOrderId(message.orderId);
+      }
+    },
+    [selectedCustomerId, selectedOrders, user?.userId]
+  );
+  useChatSignalR(handleRealtimeMessage);
 
   const selectedOrder = selectedOrders.find(
     (order) => order.orderId === selectedOrderId
   );
+  const latestSelectedMessageId = useMemo(() => {
+    for (let index = timelineItems.length - 1; index >= 0; index -= 1) {
+      if (timelineItems[index].order.orderId === selectedOrderId) {
+        return timelineItems[index].message.id;
+      }
+    }
+    return undefined;
+  }, [selectedOrderId, timelineItems]);
 
   useEffect(() => {
     if (!selectedOrderId) return;
+
+    const marker = `${selectedOrderId}:${latestSelectedMessageId ?? "empty"}`;
+    if (lastReadMarkerRef.current === marker) return;
+
+    lastReadMarkerRef.current = marker;
     markMessagesAsRead.mutate(selectedOrderId);
-  }, [selectedOrderId]);
+  }, [latestSelectedMessageId, selectedOrderId]);
 
   const handleSelectCustomer = (customerId: string) => {
     setSelectedCustomerId(customerId);
@@ -219,21 +184,13 @@ const CustomerCarePage = () => {
     if (!selectedOrderId || !receiverId) return;
 
     try {
-      const response = await sendMessage.mutateAsync({
+      await sendMessage.mutateAsync({
         orderId: selectedOrderId,
         data: {
           receiverId,
           messageContent,
         },
       });
-      const sentAt = response.data?.createdAt;
-
-      if (sentAt && selectedCustomerId) {
-        setCustomerActivityById((current) => ({
-          ...current,
-          [selectedCustomerId]: sentAt,
-        }));
-      }
     } catch (error: any) {
       const message =
         error?.response?.data?.message ||
@@ -257,11 +214,10 @@ const CustomerCarePage = () => {
     <div className="-m-4 overflow-hidden rounded-xl border bg-background md:-m-6">
       <div className="grid h-[calc(100vh-4rem)] min-h-[640px] xl:grid-cols-[360px_minmax(0,1fr)]">
         <CustomerListPanel
-          customers={filteredCustomers}
+          customers={customers}
           selectedCustomerId={selectedCustomerId}
           search={search}
-          isLoading={ordersQuery.isLoading}
-          latestActivityByCustomerId={latestActivityByCustomerId}
+          isLoading={customersQuery.isLoading}
           onSearchChange={setSearch}
           onSelectCustomer={handleSelectCustomer}
         />
@@ -276,12 +232,16 @@ const CustomerCarePage = () => {
           {selectedCustomer && (
             <>
               <MessengerChatThread
+                conversationKey={selectedCustomer.customerId}
                 items={timelineItems}
                 selectedOrderId={selectedOrderId}
                 hasSelectedOrder={!!selectedOrder}
-                isLoading={isMessagesLoading}
+                isLoading={customerMessagesQuery.isLoading}
+                isLoadingOlder={customerMessagesQuery.isFetchingNextPage}
+                hasOlderMessages={customerMessagesQuery.hasNextPage}
                 currentUserId={user?.userId}
                 onSelectOrder={setSelectedOrderId}
+                onLoadOlder={() => customerMessagesQuery.fetchNextPage()}
               />
 
               <ChatComposer

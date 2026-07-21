@@ -58,6 +58,7 @@ const DispatchPage = () => {
     getAvailableDrivers,
   } = useDispatchLookup();
 
+  const [selectedRouteId, setSelectedRouteId] = useState("");
   const [selectedScheduleId, setSelectedScheduleId] = useState("");
   const [selectedLpns, setSelectedLpns] = useState<TDispatchReadyLpn[]>([]);
   const [selectedVehicleId, setSelectedVehicleId] = useState("");
@@ -159,6 +160,11 @@ const DispatchPage = () => {
     }
   };
 
+  const handleRouteChange = (routeId: string) => {
+    setSelectedRouteId(routeId);
+    handleScheduleChange("");
+  };
+
   const handleToggleLpn = (lpn: TDispatchReadyLpn) => {
     const exists = selectedLpnIds.includes(lpn.lpnId);
     if (!exists && compatibleLpnsQuery.isFetching) return;
@@ -202,7 +208,7 @@ const DispatchPage = () => {
     const start = new Date(plannedStartTime);
     const end = new Date(plannedEndTime);
 
-    if (!selectedScheduleId) messages.push("Chọn lịch vận chuyển trước.");
+    if (!selectedScheduleId) messages.push("Chọn tuyến và giờ khởi hành trước.");
     if (selectedScheduleId && selectedLpns.length === 0) {
       messages.push("Chọn ít nhất 1 LPN.");
     }
@@ -312,16 +318,18 @@ const DispatchPage = () => {
         <div>
           <h1 className="text-3xl font-semibold">Điều phối & Ghép chuyến</h1>
           <p className="mt-1 text-muted-foreground">
-            Chọn lịch, ghép LPN tương thích và kiểm tra xếp hàng trước khi tạo chuyến
+            Chọn tuyến, giờ khởi hành và ghép LPN tương thích trước khi tạo chuyến
           </p>
         </div>
       </div>
 
       <DispatchScheduleSelector
         schedules={schedules}
+        selectedRouteId={selectedRouteId}
         selectedScheduleId={selectedScheduleId}
         isLoading={schedulesQuery.isLoading}
         isError={schedulesQuery.isError}
+        onRouteChange={handleRouteChange}
         onScheduleChange={handleScheduleChange}
         onRetry={() => schedulesQuery.refetch()}
       />

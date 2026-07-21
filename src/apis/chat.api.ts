@@ -1,6 +1,7 @@
 import { apiRequest } from "@/lib/http";
 import type {
   TChatMessage,
+  TChatCustomerSummary,
   TChatParticipant,
   TChatUnreadCount,
   TMarkChatMessagesRead,
@@ -12,6 +13,10 @@ import { API_SUFFIX } from "./util.api";
 type ChatMessageQuery = {
   pageNumber?: number;
   pageSize?: number;
+};
+
+type ChatCustomerQuery = ChatMessageQuery & {
+  search?: string;
 };
 
 const getMessages = async (orderId: string, params?: ChatMessageQuery) => {
@@ -26,6 +31,25 @@ const getParticipants = async (orderId: string) => {
   const response = await apiRequest.baseApi.get<BaseResponse<TChatParticipant>>(
     `${API_SUFFIX.CHAT_API}/${orderId}/participants`
   );
+
+  return response.data;
+};
+
+const getCustomerConversations = async (params?: ChatCustomerQuery) => {
+  const response = await apiRequest.baseApi.get<
+    BaseResponse<PaginationResponse<TChatCustomerSummary>>
+  >(`${API_SUFFIX.CHAT_API}/customers`, { params });
+
+  return response.data;
+};
+
+const getCustomerMessages = async (
+  customerId: string,
+  params?: ChatMessageQuery
+) => {
+  const response = await apiRequest.baseApi.get<
+    BaseResponse<PaginationResponse<TChatMessage>>
+  >(`${API_SUFFIX.CHAT_API}/customers/${customerId}/messages`, { params });
 
   return response.data;
 };
@@ -57,6 +81,8 @@ const getUnreadCount = async (orderId: string) => {
 
 export const chatApi = {
   getMessages,
+  getCustomerConversations,
+  getCustomerMessages,
   getParticipants,
   sendMessage,
   markMessagesAsRead,

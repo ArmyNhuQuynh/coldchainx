@@ -3,6 +3,12 @@ import { z } from "zod";
 export const ChatMessageSchema = z.object({
   id: z.string().uuid({ message: "ID tin nhắn không hợp lệ" }),
   orderId: z.string().uuid({ message: "ID đơn hàng không hợp lệ" }),
+  customerId: z
+    .string()
+    .uuid({ message: "ID khách hàng không hợp lệ" })
+    .nullable()
+    .optional(),
+  trackingCode: z.string().nullable().optional(),
   senderId: z.string().uuid({ message: "ID người gửi không hợp lệ" }),
   senderName: z.string().nullable().optional(),
   senderEmail: z.string().nullable().optional(),
@@ -44,8 +50,24 @@ export const ChatUnreadCountSchema = z.object({
   unreadCount: z.number({ message: "Số tin chưa đọc không hợp lệ" }),
 });
 
+export const ChatCustomerSummarySchema = z.object({
+  customerId: z.string().uuid({ message: "ID khách hàng không hợp lệ" }),
+  customerName: z.string({ message: "Tên khách hàng không hợp lệ" }),
+  activeOrderCount: z.number({ message: "Số order không hợp lệ" }),
+  latestOrderAt: z.string().nullable().optional(),
+  lastMessageAt: z.string().nullable().optional(),
+  lastMessageContent: z.string().nullable().optional(),
+  lastMessageOrderId: z
+    .string()
+    .uuid({ message: "ID order gần nhất không hợp lệ" })
+    .nullable()
+    .optional(),
+  unreadCount: z.number({ message: "Số tin chưa đọc không hợp lệ" }),
+});
+
 export type TChatMessage = z.infer<typeof ChatMessageSchema>;
 export type TSendChatMessage = z.infer<typeof SendChatMessageSchema>;
 export type TChatParticipant = z.infer<typeof ChatParticipantSchema>;
 export type TMarkChatMessagesRead = z.infer<typeof MarkChatMessagesReadSchema>;
 export type TChatUnreadCount = z.infer<typeof ChatUnreadCountSchema>;
+export type TChatCustomerSummary = z.infer<typeof ChatCustomerSummarySchema>;

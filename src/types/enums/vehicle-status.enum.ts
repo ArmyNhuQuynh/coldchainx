@@ -1,10 +1,12 @@
 export const VEHICLE_STATUS = {
   ACTIVE: "ACTIVE",
+  PLANNING: "PLANNING",
   ON_TRIP: "ON_TRIP",
   MAINTENANCE: "MAINTENANCE",
   MAINTENANCE_PENDING: "MAINTENANCE_PENDING",
   SUSPENDED_DOCS: "SUSPENDED_DOCS",
   INACTIVE: "INACTIVE",
+  DELETED: "DELETED",
 } as const;
 
 export type TVehicleStatus =
@@ -26,12 +28,16 @@ export function normalizeVehicleStatus(
     case "READY":
     case "0":
       return VEHICLE_STATUS.ACTIVE;
+    case "PLANNING":
+    case "PLANNED":
+    case "3":
+      return VEHICLE_STATUS.PLANNING;
     case "ONTRIP":
     case "ON_TRIP":
     case "INUSE":
     case "IN_USE":
     case "BUSY":
-    case "1":
+    case "4":
       return VEHICLE_STATUS.ON_TRIP;
     case "UNDERMAINTENANCE":
     case "UNDER_MAINTENANCE":
@@ -47,8 +53,10 @@ export function normalizeVehicleStatus(
       return VEHICLE_STATUS.SUSPENDED_DOCS;
     case "INACTIVE":
     case "DISABLED":
-    case "3":
+    case "1":
       return VEHICLE_STATUS.INACTIVE;
+    case "DELETED":
+      return VEHICLE_STATUS.DELETED;
     default:
       return null;
   }
@@ -62,6 +70,11 @@ export function getVehicleStatusLabel(
       return {
         label: "Sẵn sàng",
         className: "border-green-200 bg-green-50 text-green-700",
+      };
+    case VEHICLE_STATUS.PLANNING:
+      return {
+        label: "Đã xếp lịch",
+        className: "border-cyan-200 bg-cyan-50 text-cyan-700",
       };
     case VEHICLE_STATUS.ON_TRIP:
       return {
@@ -87,6 +100,11 @@ export function getVehicleStatusLabel(
       return {
         label: "Ngừng hoạt động",
         className: "border-slate-200 bg-slate-100 text-slate-700",
+      };
+    case VEHICLE_STATUS.DELETED:
+      return {
+        label: "Đã xóa",
+        className: "border-slate-200 bg-slate-100 text-slate-500",
       };
     default:
       return {

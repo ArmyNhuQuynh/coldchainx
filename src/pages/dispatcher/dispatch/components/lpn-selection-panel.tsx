@@ -93,7 +93,7 @@ const LpnSelectionPanel = ({
               <div className="flex h-56 flex-col items-center justify-center rounded-lg border border-dashed text-center">
                 <Box className="h-8 w-8 text-muted-foreground" />
                 <p className="mt-3 font-medium">
-                  {hasSchedule ? "Không có LPN phù hợp" : "Chọn lịch vận chuyển"}
+                  {hasSchedule ? "Không có LPN phù hợp" : "Chọn tuyến và giờ khởi hành"}
                 </p>
                 <p className="mt-1 text-sm text-muted-foreground">
                   {hasSchedule

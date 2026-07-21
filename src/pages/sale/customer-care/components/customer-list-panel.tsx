@@ -11,7 +11,6 @@ type Props = {
   selectedCustomerId?: string;
   search: string;
   isLoading?: boolean;
-  latestActivityByCustomerId?: Map<string, string | null | undefined>;
   onSearchChange: (value: string) => void;
   onSelectCustomer: (customerId: string) => void;
 };
@@ -21,7 +20,6 @@ const CustomerListPanel = ({
   selectedCustomerId,
   search,
   isLoading,
-  latestActivityByCustomerId,
   onSearchChange,
   onSelectCustomer,
 }: Props) => {
@@ -110,16 +108,24 @@ const CustomerListPanel = ({
                           {customer.customerName}
                         </p>
                         <span className="text-xs text-muted-foreground">
-                          {customer.orders.length} đơn
+                          {customer.activeOrderCount} đơn
                         </span>
                       </div>
-                      <p className="mt-1 truncate text-sm text-muted-foreground">
-                        Cập nhật{" "}
-                        {formatChatDateTime(
-                          latestActivityByCustomerId?.get(customer.customerId) ??
-                            customer.latestOrderAt
+                      <div className="mt-1 flex items-center gap-2">
+                        <p className="min-w-0 flex-1 truncate text-sm text-muted-foreground">
+                          {customer.lastMessageContent || "Chưa có tin nhắn"}
+                        </p>
+                        <span className="shrink-0 text-xs text-muted-foreground">
+                          {formatChatDateTime(
+                            customer.lastMessageAt ?? customer.latestOrderAt
+                          )}
+                        </span>
+                        {customer.unreadCount > 0 && (
+                          <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-blue-600 px-1.5 text-[11px] font-semibold text-white">
+                            {customer.unreadCount}
+                          </span>
                         )}
-                      </p>
+                      </div>
                     </div>
                   </div>
                 </button>

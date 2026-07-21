@@ -38,7 +38,6 @@ export const useCustomer = () => {
       queryKey: customerQueryKeys.orders(customerId ?? "", params),
       queryFn: () => customerApi.getCustomerOrders(customerId!, params),
       enabled: !!customerId,
-      placeholderData: keepPreviousData,
     });
 
   return {

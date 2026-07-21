@@ -1,6 +1,7 @@
 export const ORDER_STATUS = {
   ACTIVE: "ACTIVE",
   PENDING_REVIEW: "PENDING_REVIEW",
+  NEEDS_UPDATE: "NEEDS_UPDATE",
   APPROVED: "APPROVED",
   REJECTED: "REJECTED",
   QUOTING: "QUOTING",
@@ -31,92 +32,110 @@ export function getOrderStatusLabel(status: string): {
     case ORDER_STATUS.PENDING_REVIEW:
       return {
         label: "Chờ xem xét",
-        className: "text-yellow-600 bg-yellow-50 border border-yellow-200",
+        className: "border-yellow-400 text-yellow-700 bg-transparent",
+      };
+    case ORDER_STATUS.NEEDS_UPDATE:
+      return {
+        label: "Cần khách cập nhật",
+        className: "border-amber-400 text-amber-700 bg-transparent",
       };
     case ORDER_STATUS.APPROVED:
       return {
         label: "Đã duyệt",
-        className: "text-blue-600 bg-blue-50 border border-blue-200",
+        className: "border-blue-400 text-blue-700 bg-transparent",
       };
     case ORDER_STATUS.REJECTED:
       return {
         label: "Từ chối",
-        className: "text-red-600 bg-red-50 border border-red-200",
+        className: "border-red-400 text-red-700 bg-transparent",
       };
     case ORDER_STATUS.QUOTING:
       return {
         label: "Đang báo giá",
-        className: "text-indigo-600 bg-indigo-50 border border-indigo-200",
+        className: "border-indigo-400 text-indigo-700 bg-transparent",
       };
     case ORDER_STATUS.CONTRACT_PENDING:
       return {
         label: "Chờ hợp đồng",
-        className: "text-orange-600 bg-orange-50 border border-orange-200",
+        className: "border-orange-400 text-orange-700 bg-transparent",
       };
     case ORDER_STATUS.CONTRACT_SIGNED:
       return {
         label: "Đã ký hợp đồng",
-        className: "text-cyan-600 bg-cyan-50 border border-cyan-200",
+        className: "border-cyan-400 text-cyan-700 bg-transparent",
       };
     case ORDER_STATUS.RECEIVING:
       return {
         label: "Đang nhập kho",
-        className: "text-sky-600 bg-sky-50 border border-sky-200",
+        className: "border-sky-400 text-sky-700 bg-transparent",
       };
     case ORDER_STATUS.IN_WAREHOUSE:
       return {
         label: "Trong kho",
-        className: "text-violet-600 bg-violet-50 border border-violet-200",
+        className: "border-violet-400 text-violet-700 bg-transparent",
       };
     case ORDER_STATUS.IN_STOCK:
       return {
         label: "Đã nhập kho",
-        className: "text-violet-600 bg-violet-50 border border-violet-200",
+        className: "border-violet-400 text-violet-700 bg-transparent",
       };
     case ORDER_STATUS.DISCREPANCY_HOLD:
       return {
         label: "Giữ do sai lệch QC",
-        className: "text-rose-600 bg-rose-50 border border-rose-200",
+        className: "border-rose-400 text-rose-700 bg-transparent",
       };
     case ORDER_STATUS.RETURN_PENDING:
       return {
         label: "Chờ hoàn trả",
-        className: "text-orange-600 bg-orange-50 border border-orange-200",
+        className: "border-orange-400 text-orange-700 bg-transparent",
       };
     case ORDER_STATUS.LOADING:
       return {
         label: "Đang xếp hàng",
-        className: "text-sky-600 bg-sky-50 border border-sky-200",
+        className: "border-sky-400 text-sky-700 bg-transparent",
       };
     case ORDER_STATUS.SEALED:
       return {
         label: "Đã niêm phong",
-        className: "text-blue-600 bg-blue-50 border border-blue-200",
+        className: "border-blue-400 text-blue-700 bg-transparent",
       };
     case ORDER_STATUS.SHIPPING:
       return {
         label: "Đang giao hàng",
-        className: "text-teal-600 bg-teal-50 border border-teal-200",
+        className: "border-teal-400 text-teal-700 bg-transparent",
       };
     case ORDER_STATUS.DELIVERED:
       return {
         label: "Đã giao hàng",
-        className: "text-emerald-600 bg-emerald-50 border border-emerald-200",
+        className: "border-emerald-400 text-emerald-700 bg-transparent",
       };
     case ORDER_STATUS.RETURNED:
       return {
         label: "Đã hoàn trả",
-        className: "text-neutral-600 bg-neutral-50 border border-neutral-200",
+        className: "border-neutral-400 text-neutral-700 bg-transparent",
       };
     case ORDER_STATUS.PARTIALLY_DELIVERED:
       return {
         label: "Giao một phần",
-        className: "text-amber-600 bg-amber-50 border border-amber-200",
+        className: "border-amber-400 text-amber-700 bg-transparent",
+      };
+    case ORDER_STATUS.ACTIVE:
+      return {
+        label: "Đang hoạt động",
+        className: "border-green-400 text-green-700 bg-transparent",
       };
     default:
       return {
         label: "Không xác định",
-        className: "text-neutral-600 bg-neutral-50 border border-neutral-200",
+        className: "border-neutral-400 text-neutral-700 bg-transparent",
       };
   }
 }
+
+export const ORDER_STATUS_FILTER_OPTIONS = [
+  { label: "Tất cả trạng thái", value: "ALL" },
+  ...Object.values(ORDER_STATUS).map((status) => ({
+    label: getOrderStatusLabel(status).label,
+    value: status,
+  })),
+];

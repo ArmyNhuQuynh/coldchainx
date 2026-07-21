@@ -1,5 +1,6 @@
 import type { TCustomerOrderSummary } from "@/schemas/customer.schema";
 import type { TOrder } from "@/schemas/order.schema";
+import type { TChatCustomerSummary } from "@/schemas/chat.schema";
 import { ORDER_STATUS } from "@/types/enums/order-status.enum";
 
 export type CustomerCareOrder = Pick<
@@ -24,6 +25,11 @@ export type CustomerCareCustomer = {
   customerId: string;
   customerName: string;
   latestOrderAt?: string | null;
+  lastMessageAt?: string | null;
+  lastMessageContent?: string | null;
+  lastMessageOrderId?: string | null;
+  activeOrderCount: number;
+  unreadCount: number;
   orders: CustomerCareOrder[];
 };
 
@@ -59,63 +65,19 @@ export const toCustomerCareOrder = (
   customerName: "customerName" in order ? order.customerName : customer?.customerName,
 });
 
-export const buildCustomerCareCustomers = (
-  orders: TOrder[]
-): CustomerCareCustomer[] => {
-  const groups = new Map<string, CustomerCareCustomer>();
-
-  orders
-    .filter((order) => order.customerId && isCustomerCareOrderActive(order.status))
-    .forEach((order) => {
-      const customerId = order.customerId!;
-      const customerName = order.customerName || "Khách hàng chưa xác định";
-      const current = groups.get(customerId);
-      const careOrder = toCustomerCareOrder(order);
-
-      if (!current) {
-        groups.set(customerId, {
-          customerId,
-          customerName,
-          latestOrderAt: order.createdAt,
-          orders: [careOrder],
-        });
-        return;
-      }
-
-      current.orders.push(careOrder);
-      if (
-        order.createdAt &&
-        (!current.latestOrderAt ||
-          new Date(order.createdAt).getTime() >
-            new Date(current.latestOrderAt).getTime())
-      ) {
-        current.latestOrderAt = order.createdAt;
-      }
-    });
-
-  return Array.from(groups.values()).sort((a, b) => {
-    const aTime = a.latestOrderAt ? new Date(a.latestOrderAt).getTime() : 0;
-    const bTime = b.latestOrderAt ? new Date(b.latestOrderAt).getTime() : 0;
-    return bTime - aTime;
-  });
-};
-
-export const filterCustomerCareCustomers = (
-  customers: CustomerCareCustomer[],
-  search: string
-) => {
-  const keyword = search.trim().toLowerCase();
-  if (!keyword) return customers;
-
-  return customers.filter((customer) => {
-    const customerMatch = customer.customerName.toLowerCase().includes(keyword);
-    const orderMatch = customer.orders.some((order) =>
-      `${order.trackingCode} ${order.itemName}`.toLowerCase().includes(keyword)
-    );
-
-    return customerMatch || orderMatch;
-  });
-};
+export const toCustomerCareCustomer = (
+  customer: TChatCustomerSummary
+): CustomerCareCustomer => ({
+  customerId: customer.customerId,
+  customerName: customer.customerName,
+  latestOrderAt: customer.latestOrderAt,
+  lastMessageAt: customer.lastMessageAt,
+  lastMessageContent: customer.lastMessageContent,
+  lastMessageOrderId: customer.lastMessageOrderId,
+  activeOrderCount: customer.activeOrderCount,
+  unreadCount: customer.unreadCount,
+  orders: [],
+});
 
 export const formatChatDateTime = (value?: string | null) => {
   if (!value) return "Chưa có thời gian";
@@ -143,4 +105,3 @@ export const formatMessageTime = (value?: string | null) => {
 
 export const getCustomerInitial = (name: string) =>
   name.trim().charAt(0).toUpperCase() || "K";
-

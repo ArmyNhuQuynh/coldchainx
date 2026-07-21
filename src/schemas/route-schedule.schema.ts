@@ -2,8 +2,8 @@ import { ROUTE_SCHEDULE_STATUS } from "@/types/enums/route-schedule-status.enum"
 import { z } from "zod";
 
 export const RouteScheduleSchema = z.object({
-  scheduleId: z.string().uuid("ID lịch đi không hợp lệ"),
-  routeId: z.string().uuid("ID tuyến không hợp lệ"),
+  scheduleId: z.guid("ID lịch đi không hợp lệ"),
+  routeId: z.guid("ID tuyến không hợp lệ"),
   scheduleName: z.string({ message: "Tên lịch đi không hợp lệ" }),
   departureDate: z.string({ message: "Ngày đi không hợp lệ" }),
   departureTime: z.string({ message: "Giờ đi không hợp lệ" }),
@@ -27,7 +27,7 @@ export const RouteScheduleUpdateRequestSchema =
   });
 
 export const RouteScheduleFormSchema = RouteScheduleUpdateRequestSchema.extend({
-  routeId: z.string().uuid("Chọn tuyến vận chuyển"),
+  routeId: z.guid("Chọn tuyến vận chuyển"),
 });
 
 export type TRouteSchedule = z.infer<typeof RouteScheduleSchema>;

@@ -27,12 +27,12 @@ export const getRouteScheduleStatusLabel = (status?: string | null) => {
   switch (normalizeRouteScheduleStatus(status)) {
     case ROUTE_SCHEDULE_STATUS.ACTIVE:
       return {
-        label: "Hoạt động",
+        label: "Đang nhận đơn",
         className: "border-emerald-200 bg-emerald-50 text-emerald-700",
       };
     case ROUTE_SCHEDULE_STATUS.INACTIVE:
       return {
-        label: "Ngừng hoạt động",
+        label: "Đã đóng nhận đơn",
         className: "border-slate-200 bg-slate-100 text-slate-700",
       };
     default:
