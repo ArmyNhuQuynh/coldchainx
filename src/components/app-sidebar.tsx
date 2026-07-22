@@ -21,6 +21,7 @@ import {
   RouteIcon,
   TruckIcon,
   Users,
+  WalletCards,
   Warehouse,
 } from "lucide-react";
 import {
@@ -31,6 +32,7 @@ import {
 } from "@/routes/path";
 import { ERole } from "@/types/enums/role.enum";
 import { NavMain } from "./nav-main";
+import { useIncident } from "@/hooks/use-incident";
 
 const adminRoutes = {
   dashboard: {
@@ -80,6 +82,11 @@ const adminRoutes = {
         title: "User",
         url: PATH_ADMIN_DASHBOARD.user.root,
         icon: Users,
+      },
+      {
+        title: "Giải ngân",
+        url: PATH_ADMIN_DASHBOARD.reimbursement.root,
+        icon: WalletCards,
       },
     ],
   },
@@ -231,6 +238,11 @@ const dispatcherRoutes = {
         icon: MapPinned,
       },
       {
+        title: "Xử lý sự cố",
+        url: PATH_DISPATCHER_DASHBOARD.incident.root,
+        icon: AlertTriangle,
+      },
+      {
         title: "Lô hàng",
         url: PATH_DISPATCHER_DASHBOARD.shipment.root,
         icon: HomeIcon,
@@ -242,6 +254,17 @@ const dispatcherRoutes = {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { role } = useSelector((state: RootState) => state.user);
   const { toggleSidebar, open } = useSidebar();
+  const { getUnresolvedIncidentCount } = useIncident();
+  const incidentCountQuery = getUnresolvedIncidentCount(role === ERole.Dispatcher);
+  const unresolvedIncidentCount = incidentCountQuery.data ?? 0;
+  const dispatcherOperations = {
+    ...dispatcherRoutes.operations,
+    items: dispatcherRoutes.operations.items.map((item) =>
+      item.url === PATH_DISPATCHER_DASHBOARD.incident.root
+        ? { ...item, badge: unresolvedIncidentCount }
+        : item
+    ),
+  };
 
   return (
     <Sidebar variant="sidebar" collapsible="icon" {...props}>
@@ -295,7 +318,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             return (
               <SidebarContent>
                 <NavMain content={dispatcherRoutes.dashboard} />
-                <NavMain content={dispatcherRoutes.operations} />
+                <NavMain content={dispatcherOperations} />
               </SidebarContent>
             );
 

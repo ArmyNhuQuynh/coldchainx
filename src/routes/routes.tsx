@@ -113,6 +113,9 @@ const UserPage = Loadable(
 const UserDetailPage = Loadable(
   lazy(() => import("@/pages/admin/user/detail-user"))
 );
+const ReimbursementPage = Loadable(
+  lazy(() => import("@/pages/admin/reimbursements"))
+);
 const DispatchPage = Loadable(
   lazy(() => import("@/pages/dispatcher/dispatch"))
 );
@@ -127,6 +130,12 @@ const TrackingTripsPage = Loadable(
 );
 const TrackingTripDetailPage = Loadable(
   lazy(() => import("@/pages/dispatcher/tracking/detail/tracking-detail-page"))
+);
+const DispatcherIncidentPage = Loadable(
+  lazy(() => import("@/pages/dispatcher/incidents/list"))
+);
+const DispatcherIncidentDetailPage = Loadable(
+  lazy(() => import("@/pages/dispatcher/incidents/detail"))
 );
 
 
@@ -268,6 +277,10 @@ export const AppRoutes = () =>
           path: "user/:id",
           element: <UserDetailPage />,
         },
+        {
+          path: "reimbursements",
+          element: <ReimbursementPage />,
+        },
       ],
     },
     {
@@ -358,6 +371,14 @@ export const AppRoutes = () =>
         {
           path: "tracking/:tripId",
           element: <TrackingTripDetailPage />,
+        },
+        {
+          path: "incidents",
+          element: <DispatcherIncidentPage />,
+        },
+        {
+          path: "incidents/:incidentId",
+          element: <DispatcherIncidentDetailPage />,
         },
         {
           path: "shipment",

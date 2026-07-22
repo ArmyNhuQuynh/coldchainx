@@ -19,6 +19,7 @@ export function NavMain ( {
       url: string
       icon?: any
       isActive?: boolean
+      badge?: number
     }[]
   }
 } )
@@ -36,6 +37,11 @@ export function NavMain ( {
               <SidebarMenuButton tooltip={ item.title } isActive={ ( '/' + pathname.replace( /^\//, '' ).split( '/' ).slice( 0, 3 ).join( '/' ) ) === item.url }>
                 { item.icon && <item.icon /> }
                 <span>{ item.title }</span>
+                {typeof item.badge === "number" && item.badge > 0 && (
+                  <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full border border-rose-500 px-1 text-[11px] font-semibold text-rose-700 group-data-[collapsible=icon]:hidden">
+                    {item.badge > 99 ? "99+" : item.badge}
+                  </span>
+                )}
               </SidebarMenuButton>
             </SidebarMenuItem>
           </Link>

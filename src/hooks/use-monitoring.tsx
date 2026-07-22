@@ -17,11 +17,12 @@ export const TRACKING_DEFAULT_STATUSES = [
 export const useMonitoring = () => {
   const queryClient = useQueryClient();
 
-  const getTrackingTrips = (query: TTrackingTripListQuery) =>
+  const getTrackingTrips = (query: TTrackingTripListQuery, enabled = true) =>
     useQuery({
       queryKey: ["monitoring", "tracking-trips", query],
       queryFn: () => monitoringApi.getTrackingTrips(query),
       placeholderData: keepPreviousData,
+      enabled,
     });
 
   const getTrackingDetail = (tripId?: string, enabled = true) =>

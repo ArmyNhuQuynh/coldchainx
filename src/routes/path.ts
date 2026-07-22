@@ -87,6 +87,9 @@ export const PATH_ADMIN_DASHBOARD = {
     root: path(ROOTS_ADMIN_DASHBOARD, "/user"),
     detail: (id: string) => path(ROOTS_ADMIN_DASHBOARD, `/user/${id}`),
   },
+  reimbursement: {
+    root: path(ROOTS_ADMIN_DASHBOARD, "/reimbursements"),
+  },
 };
 
 export const PATH_SALE_DASHBOARD = {
@@ -126,6 +129,10 @@ export const PATH_DISPATCHER_DASHBOARD = {
   tracking: {
     root: path(ROOTS_DISPATCHER_DASHBOARD, "/tracking"),
     detail: (id: string) => path(ROOTS_DISPATCHER_DASHBOARD, `/tracking/${id}`),
+  },
+  incident: {
+    root: path(ROOTS_DISPATCHER_DASHBOARD, "/incidents"),
+    detail: (id: string) => path(ROOTS_DISPATCHER_DASHBOARD, `/incidents/${id}`),
   },
   shipment: {
     root: path(ROOTS_DISPATCHER_DASHBOARD, '/shipment'),
