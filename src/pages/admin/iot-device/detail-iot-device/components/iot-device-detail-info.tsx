@@ -4,8 +4,6 @@ import {
   Battery,
   CalendarClock,
   Cpu,
-  Hash,
-  Link2,
   Truck,
   type LucideIcon,
 } from "lucide-react";
@@ -68,13 +66,8 @@ const InfoSection = ({
 const IotDeviceDetailInfo = ({ device }: Props) => {
   const identityRows: InfoRowData[] = [
     {
-      icon: Hash,
-      label: "Device ID",
-      value: device.deviceId,
-    },
-    {
       icon: Cpu,
-      label: "Device Code",
+      label: "Mã thiết bị",
       value: device.deviceCode || "—",
     },
     {
@@ -92,13 +85,8 @@ const IotDeviceDetailInfo = ({ device }: Props) => {
       icon: Truck,
       label: "Xe đang gắn",
       value: device.vehicleId
-        ? device.truckPlate || device.vehicleId
+        ? device.truckPlate || "Đã gắn xe"
         : "Chưa gắn xe",
-    },
-    {
-      icon: Link2,
-      label: "Vehicle ID",
-      value: device.vehicleId || "—",
     },
   ];
 
@@ -122,8 +110,8 @@ const IotDeviceDetailInfo = ({ device }: Props) => {
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 gap-x-8 gap-y-6 md:grid-cols-3">
-          <InfoSection title="Nhận diện" icon={Cpu} rows={identityRows} />
-          <InfoSection title="Gắn xe" icon={Truck} rows={assignmentRows} />
+          <InfoSection title="Thiết bị" icon={Cpu} rows={identityRows} />
+          <InfoSection title="Phương tiện" icon={Truck} rows={assignmentRows} />
           <InfoSection title="Thời gian" icon={CalendarClock} rows={timeRows} />
         </div>
       </CardContent>

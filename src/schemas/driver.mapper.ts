@@ -7,6 +7,7 @@ import type {
   TDriverUpdateRequest,
 } from "@/schemas/driver.schema";
 import { DRIVER_FORM_DEFAULTS } from "@/schemas/driver.schema";
+import { normalizeDriverStatus } from "@/types/enums/driver-status.enum";
 
 export type DriverFormMode = "create" | "edit";
 
@@ -27,7 +28,10 @@ export const getDriverFormDefaultValues = (
   phoneNumber: driver?.phoneNumber ?? "",
   dateOfBirth: toDateInputValue(driver?.dateOfBirth),
   joinDate: toDateInputValue(driver?.joinDate) || todayInputValue(),
-  status: mode === "edit" ? driver?.status ?? DRIVER_FORM_DEFAULTS.status : null,
+  status:
+    mode === "edit"
+      ? normalizeDriverStatus(driver?.status)
+      : null,
   includeLicense: mode === "create" ? DRIVER_FORM_DEFAULTS.includeLicense : false,
   licenseNumber: "",
   licenseClass: "",
@@ -55,7 +59,8 @@ export const toDriverCreateRequest = (
 });
 
 export const toDriverUpdateRequest = (
-  values: TDriverFormValues
+  values: TDriverFormValues,
+  originalStatus?: string | number | null
 ): TDriverUpdateRequest => ({
   fullName: values.fullName.trim(),
   email: values.email.trim(),
@@ -63,7 +68,10 @@ export const toDriverUpdateRequest = (
   phoneNumber: values.phoneNumber.trim(),
   dateOfBirth: values.dateOfBirth,
   joinDate: values.joinDate,
-  status: values.status ?? undefined,
+  status:
+    normalizeDriverStatus(values.status) !== normalizeDriverStatus(originalStatus)
+      ? values.status ?? undefined
+      : undefined,
 });
 
 export const getDriverLicenseFormDefaultValues = (

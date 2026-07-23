@@ -1,8 +1,82 @@
 import { z } from "zod";
 import { DRIVER_STATUS } from "@/types/enums/driver-status.enum";
 
-const nullableString = (message: string) =>
-  z.string({ message }).nullable().optional();
+const VIETNAMESE_PHONE_PATTERN = /^(?:\+84|0)(?:3|5|7|8|9)\d{8}$/;
+const IDENTITY_NUMBER_PATTERN = /^\d{12}$/;
+const PERSON_NAME_PATTERN = /^[\p{L}]+(?:[\s'.-][\p{L}]+)*$/u;
+const LICENSE_NUMBER_PATTERN = /^[A-Za-z0-9][A-Za-z0-9./-]{3,29}$/;
+const LICENSE_CLASS_PATTERN = /^[A-Za-z0-9]{1,5}$/;
+const DATE_INPUT_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
+const toDateInputValue = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const isValidDateInput = (value: string) => {
+  if (!DATE_INPUT_PATTERN.test(value)) return false;
+  const parsed = new Date(`${value}T00:00:00`);
+  return !Number.isNaN(parsed.getTime()) && toDateInputValue(parsed) === value;
+};
+
+const todayInputValue = () => toDateInputValue(new Date());
+
+const yearsAgoInputValue = (years: number) => {
+  const date = new Date();
+  date.setFullYear(date.getFullYear() - years);
+  return toDateInputValue(date);
+};
+
+const requiredName = z
+  .string({ message: "Họ tên không hợp lệ" })
+  .trim()
+  .min(2, "Họ tên phải có ít nhất 2 ký tự")
+  .max(100, "Họ tên không được vượt quá 100 ký tự")
+  .regex(PERSON_NAME_PATTERN, "Họ tên chỉ được chứa chữ cái và dấu phân cách hợp lệ");
+
+const requiredEmail = z
+  .string({ message: "Email không hợp lệ" })
+  .trim()
+  .min(1, "Email không được để trống")
+  .max(254, "Email không được vượt quá 254 ký tự")
+  .email("Email không đúng định dạng, ví dụ: driver@example.com");
+
+const requiredIdentityNumber = z
+  .string({ message: "Số CCCD không hợp lệ" })
+  .trim()
+  .regex(IDENTITY_NUMBER_PATTERN, "CCCD phải gồm đúng 12 chữ số");
+
+const requiredPhoneNumber = z
+  .string({ message: "Số điện thoại không hợp lệ" })
+  .trim()
+  .regex(
+    VIETNAMESE_PHONE_PATTERN,
+    "Số điện thoại phải là số Việt Nam hợp lệ, bắt đầu bằng 0 hoặc +84"
+  );
+
+const requiredDate = (emptyMessage: string) =>
+  z
+    .string({ message: emptyMessage })
+    .trim()
+    .min(1, emptyMessage)
+    .refine((value) => !value || isValidDateInput(value), "Ngày không hợp lệ");
+
+const licenseNumberSchema = z
+  .string({ message: "Số GPLX không hợp lệ" })
+  .trim()
+  .min(1, "Số GPLX không được để trống")
+  .regex(
+    LICENSE_NUMBER_PATTERN,
+    "Số GPLX phải có 4-30 ký tự, chỉ gồm chữ, số, dấu chấm, gạch chéo hoặc gạch nối"
+  );
+
+const licenseClassSchema = z
+  .string({ message: "Hạng GPLX không hợp lệ" })
+  .trim()
+  .min(1, "Hạng GPLX không được để trống")
+  .regex(LICENSE_CLASS_PATTERN, "Hạng GPLX chỉ gồm 1-5 chữ hoặc số, ví dụ B2, C, FC");
 
 export const DriverLicenseSchema = z.object({
   licenseId: z.string().uuid({ message: "ID giấy phép không hợp lệ" }),
@@ -34,95 +108,79 @@ export const DriverSchema = z.object({
 });
 
 export const InlineDriverLicenseRequestSchema = z.object({
-  licenseNumber: z.string().min(1, "Số GPLX không được để trống"),
-  licenseClass: z.string().min(1, "Hạng GPLX không được để trống"),
-  issueDate: z.string().min(1, "Ngày cấp không được để trống"),
-  expiryDate: z.string().min(1, "Ngày hết hạn không được để trống"),
+  licenseNumber: licenseNumberSchema,
+  licenseClass: licenseClassSchema,
+  issueDate: requiredDate("Ngày cấp không được để trống"),
+  expiryDate: requiredDate("Ngày hết hạn không được để trống"),
+}).superRefine((values, context) => {
+  if (isValidDateInput(values.issueDate) && values.issueDate > todayInputValue()) {
+    context.addIssue({
+      code: "custom",
+      path: ["issueDate"],
+      message: "Ngày cấp không được nằm trong tương lai",
+    });
+  }
+
+  if (
+    isValidDateInput(values.issueDate) &&
+    isValidDateInput(values.expiryDate) &&
+    values.expiryDate <= values.issueDate
+  ) {
+    context.addIssue({
+      code: "custom",
+      path: ["expiryDate"],
+      message: "Ngày hết hạn phải sau ngày cấp",
+    });
+  }
 });
 
 export const DriverCreateRequestSchema = z
   .object({
-    fullName: z.string().min(1, "Họ tên không được để trống"),
-    email: z.string().email("Email không hợp lệ"),
-    identityNumber: z.string().min(1, "Số CCCD không được để trống"),
-    phoneNumber: z.string().min(1, "Số điện thoại không được để trống"),
-    dateOfBirth: z.string().min(1, "Ngày sinh không được để trống"),
-    joinDate: z.string().min(1, "Ngày vào làm không được để trống"),
+    fullName: requiredName,
+    email: requiredEmail,
+    identityNumber: requiredIdentityNumber,
+    phoneNumber: requiredPhoneNumber,
+    dateOfBirth: requiredDate("Ngày sinh không được để trống"),
+    joinDate: requiredDate("Ngày vào làm không được để trống"),
     license: InlineDriverLicenseRequestSchema.nullable().optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((values, context) => {
+    validateDriverDates(values, context);
+  });
 
 export const DriverUpdateRequestSchema = z
   .object({
-    fullName: nullableString("Họ tên không hợp lệ"),
-    email: nullableString("Email không hợp lệ"),
-    identityNumber: nullableString("Số CCCD không hợp lệ"),
-    phoneNumber: nullableString("Số điện thoại không hợp lệ"),
-    dateOfBirth: nullableString("Ngày sinh không hợp lệ"),
-    joinDate: nullableString("Ngày vào làm không hợp lệ"),
-    status: nullableString("Trạng thái không hợp lệ"),
+    fullName: requiredName.nullable().optional(),
+    email: requiredEmail.nullable().optional(),
+    identityNumber: requiredIdentityNumber.nullable().optional(),
+    phoneNumber: requiredPhoneNumber.nullable().optional(),
+    dateOfBirth: requiredDate("Ngày sinh không được để trống").nullable().optional(),
+    joinDate: requiredDate("Ngày vào làm không được để trống").nullable().optional(),
+    status: z.string({ message: "Trạng thái không hợp lệ" }).nullable().optional(),
   })
   .strict();
 
 export const DriverLicenseRequestSchema = z
   .object({
-    licenseNumber: z.string().min(1, "Số GPLX không được để trống"),
-    licenseClass: z.string().min(1, "Hạng GPLX không được để trống"),
-    issueDate: z.string().min(1, "Ngày cấp không được để trống"),
-    expiryDate: z.string().min(1, "Ngày hết hạn không được để trống"),
+    licenseNumber: licenseNumberSchema,
+    licenseClass: licenseClassSchema,
+    issueDate: requiredDate("Ngày cấp không được để trống"),
+    expiryDate: requiredDate("Ngày hết hạn không được để trống"),
   })
   .strict()
   .superRefine((values, context) => {
-    if (values.issueDate && values.expiryDate && values.expiryDate <= values.issueDate) {
+    if (isValidDateInput(values.issueDate) && values.issueDate > todayInputValue()) {
       context.addIssue({
         code: "custom",
-        path: ["expiryDate"],
-        message: "Ngày hết hạn phải sau ngày cấp",
+        path: ["issueDate"],
+        message: "Ngày cấp không được nằm trong tương lai",
       });
     }
-  });
-
-const requiredFormText = (message: string) =>
-  z.string({ message }).trim().min(1, message);
-
-export const DriverFormSchema = z
-  .object({
-    fullName: requiredFormText("Họ tên không được để trống"),
-    email: z.string({ message: "Email không hợp lệ" }).trim().email("Email không hợp lệ"),
-    identityNumber: requiredFormText("Số CCCD không được để trống"),
-    phoneNumber: requiredFormText("Số điện thoại không được để trống"),
-    dateOfBirth: requiredFormText("Ngày sinh không được để trống"),
-    joinDate: requiredFormText("Ngày vào làm không được để trống"),
-    status: z.string().nullable(),
-    includeLicense: z.boolean(),
-    licenseNumber: z.string().optional(),
-    licenseClass: z.string().optional(),
-    issueDate: z.string().optional(),
-    expiryDate: z.string().optional(),
-  })
-  .superRefine((values, context) => {
-    if (!values.includeLicense) return;
-
-    const requiredLicenseFields = [
-      ["licenseNumber", "Số GPLX không được để trống"],
-      ["licenseClass", "Hạng GPLX không được để trống"],
-      ["issueDate", "Ngày cấp không được để trống"],
-      ["expiryDate", "Ngày hết hạn không được để trống"],
-    ] as const;
-
-    requiredLicenseFields.forEach(([fieldName, message]) => {
-      if (!values[fieldName]?.trim()) {
-        context.addIssue({
-          code: "custom",
-          path: [fieldName],
-          message,
-        });
-      }
-    });
 
     if (
-      values.issueDate &&
-      values.expiryDate &&
+      isValidDateInput(values.issueDate) &&
+      isValidDateInput(values.expiryDate) &&
       values.expiryDate <= values.issueDate
     ) {
       context.addIssue({
@@ -132,6 +190,92 @@ export const DriverFormSchema = z
       });
     }
   });
+
+export const DriverFormSchema = z
+  .object({
+    fullName: requiredName,
+    email: requiredEmail,
+    identityNumber: requiredIdentityNumber,
+    phoneNumber: requiredPhoneNumber,
+    dateOfBirth: requiredDate("Ngày sinh không được để trống"),
+    joinDate: requiredDate("Ngày vào làm không được để trống"),
+    status: z.string().nullable(),
+    includeLicense: z.boolean(),
+    licenseNumber: z.string().trim().optional(),
+    licenseClass: z.string().trim().optional(),
+    issueDate: z.string().trim().optional(),
+    expiryDate: z.string().trim().optional(),
+  })
+  .superRefine((values, context) => {
+    validateDriverDates(values, context);
+
+    if (!values.includeLicense) return;
+
+    const licenseResult = InlineDriverLicenseRequestSchema.safeParse({
+      licenseNumber: values.licenseNumber,
+      licenseClass: values.licenseClass,
+      issueDate: values.issueDate,
+      expiryDate: values.expiryDate,
+    });
+
+    if (!licenseResult.success) {
+      licenseResult.error.issues.forEach((issue) => {
+        context.addIssue({
+          code: "custom",
+          path: issue.path,
+          message: issue.message,
+        });
+      });
+    }
+  });
+
+function validateDriverDates(
+  values: { dateOfBirth?: string | null; joinDate?: string | null },
+  context: z.RefinementCtx
+) {
+  if (
+    !values.dateOfBirth ||
+    !values.joinDate ||
+    !isValidDateInput(values.dateOfBirth) ||
+    !isValidDateInput(values.joinDate)
+  ) {
+    return;
+  }
+
+  if (values.dateOfBirth > yearsAgoInputValue(18)) {
+    context.addIssue({
+      code: "custom",
+      path: ["dateOfBirth"],
+      message: "Tài xế phải đủ 18 tuổi",
+    });
+  }
+
+  if (values.dateOfBirth < yearsAgoInputValue(70)) {
+    context.addIssue({
+      code: "custom",
+      path: ["dateOfBirth"],
+      message: "Ngày sinh không hợp lệ, tuổi tài xế không được vượt quá 70",
+    });
+  }
+
+  if (values.joinDate > todayInputValue()) {
+    context.addIssue({
+      code: "custom",
+      path: ["joinDate"],
+      message: "Ngày vào làm không được nằm trong tương lai",
+    });
+  }
+
+  const eighteenthBirthday = new Date(`${values.dateOfBirth}T00:00:00`);
+  eighteenthBirthday.setFullYear(eighteenthBirthday.getFullYear() + 18);
+  if (values.joinDate < toDateInputValue(eighteenthBirthday)) {
+    context.addIssue({
+      code: "custom",
+      path: ["joinDate"],
+      message: "Ngày vào làm phải sau khi tài xế đủ 18 tuổi",
+    });
+  }
+}
 
 export const DriverImportResultSchema = z.object({
   inserted: z.number(),

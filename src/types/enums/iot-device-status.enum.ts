@@ -15,6 +15,12 @@ type TIotDeviceStatusSource = {
   status?: string | number | null;
 };
 
+type TIotDeviceConnectionSource = {
+  isOnline?: boolean | null;
+  lastPingTime?: string | null;
+  status?: string | number | null;
+};
+
 export const normalizeIotDeviceStatus = (
   status?: string | number | null
 ): TIotDeviceStatus | null => {
@@ -118,11 +124,41 @@ export const getIotDeviceAssignmentLabel = (vehicleId?: string | null) =>
         className: "border-sky-200 bg-sky-50 text-sky-700",
       };
 
+export const getIotDeviceConnectionLabel = ({
+  isOnline,
+  lastPingTime,
+  status,
+}: TIotDeviceConnectionSource) => {
+  const normalizedStatus = normalizeIotDeviceStatus(status);
+  const isConnected =
+    isOnline === true || normalizedStatus === IOT_DEVICE_STATUS.ONLINE;
+  const isDisconnected =
+    normalizedStatus === IOT_DEVICE_STATUS.OFFLINE ||
+    (isOnline === false && Boolean(lastPingTime));
+
+  if (isConnected) {
+    return {
+      label: "Đang online",
+      className: "border-emerald-200 bg-emerald-50 text-emerald-700",
+    };
+  }
+
+  if (isDisconnected) {
+    return {
+      label: "Mất kết nối",
+      className: "border-red-200 bg-red-50 text-red-700",
+    };
+  }
+
+  return {
+    label: "Chưa có dữ liệu",
+    className: "border-slate-200 bg-slate-100 text-slate-700",
+  };
+};
+
 export const IOT_DEVICE_STATUS_OPTIONS = [
   IOT_DEVICE_STATUS.AVAILABLE,
   IOT_DEVICE_STATUS.ASSIGNED,
-  IOT_DEVICE_STATUS.ONLINE,
-  IOT_DEVICE_STATUS.OFFLINE,
   IOT_DEVICE_STATUS.INACTIVE,
 ].map((value) => ({
     value,

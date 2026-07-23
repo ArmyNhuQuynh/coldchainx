@@ -26,7 +26,7 @@ const IotDeviceDetailHeader = ({ device }: Props) => {
 
   const handleDelete = async () => {
     const confirmed = window.confirm(
-      `Xóa thiết bị ${device.deviceCode || device.deviceId}?`
+      `Xóa ${device.deviceCode ? `thiết bị ${device.deviceCode}` : "thiết bị này"}?`
     );
     if (!confirmed) return;
 
@@ -46,13 +46,13 @@ const IotDeviceDetailHeader = ({ device }: Props) => {
           <div className="flex flex-wrap items-center gap-3">
             <h1 className="text-2xl font-semibold">Chi tiết thiết bị IoT</h1>
             <span className="text-2xl font-bold text-primary">
-              {device.deviceCode || device.deviceId}
+              {device.deviceCode || "Chưa có mã thiết bị"}
             </span>
             <Badge className={status.className}>{status.label}</Badge>
           </div>
           <p className="text-muted-foreground">
             {device.vehicleId
-              ? `Đang gắn với xe ${device.truckPlate || device.vehicleId}`
+              ? `Đang gắn với xe ${device.truckPlate || "chưa có biển số"}`
               : "Thiết bị chưa gắn với xe nào"}
           </p>
         </div>

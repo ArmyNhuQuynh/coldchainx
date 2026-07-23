@@ -1,6 +1,8 @@
 export const DRIVER_STATUS = {
   ACTIVE: "ACTIVE",
+  PLANNING: "PLANNING",
   ON_TRIP: "ON_TRIP",
+  RELAX: "RELAX",
   SUSPENDED_DOCS: "SUSPENDED_DOCS",
   INACTIVE: "INACTIVE",
 } as const;
@@ -23,16 +25,22 @@ export function normalizeDriverStatus(
     case "AVAILABLE":
     case "0":
       return DRIVER_STATUS.ACTIVE;
+    case "PLANNING":
+    case "1":
+      return DRIVER_STATUS.PLANNING;
     case "ON_TRIP":
     case "ONTRIP":
-    case "1":
+    case "2":
       return DRIVER_STATUS.ON_TRIP;
+    case "RELAX":
+    case "5":
+      return DRIVER_STATUS.RELAX;
     case "SUSPENDED_DOCS":
       return DRIVER_STATUS.SUSPENDED_DOCS;
     case "INACTIVE":
     case "OFFLINE":
-    case "2":
     case "3":
+    case "4":
       return DRIVER_STATUS.INACTIVE;
     default:
       return null;
@@ -48,10 +56,20 @@ export function getDriverStatusLabel(
         label: "Sẵn sàng",
         className: "border-green-200 bg-green-50 text-green-700",
       };
+    case DRIVER_STATUS.PLANNING:
+      return {
+        label: "Đã xếp lịch",
+        className: "border-amber-200 bg-amber-50 text-amber-700",
+      };
     case DRIVER_STATUS.ON_TRIP:
       return {
         label: "Đang vận chuyển",
         className: "border-blue-200 bg-blue-50 text-blue-700",
+      };
+    case DRIVER_STATUS.RELAX:
+      return {
+        label: "Đang nghỉ",
+        className: "border-violet-200 bg-violet-50 text-violet-700",
       };
     case DRIVER_STATUS.SUSPENDED_DOCS:
       return {
@@ -71,7 +89,20 @@ export function getDriverStatusLabel(
   }
 }
 
-export const DRIVER_STATUS_OPTIONS = Object.values(DRIVER_STATUS).map((value) => ({
+export const DRIVER_MANUAL_STATUS_OPTIONS = [
+  DRIVER_STATUS.ACTIVE,
+  DRIVER_STATUS.INACTIVE,
+].map((value) => ({
   value,
   label: getDriverStatusLabel(value).label,
 }));
+
+export const isDriverStatusManuallyEditable = (
+  status: string | number | null | undefined
+) => {
+  const normalized = normalizeDriverStatus(status);
+  return (
+    normalized === DRIVER_STATUS.ACTIVE ||
+    normalized === DRIVER_STATUS.INACTIVE
+  );
+};

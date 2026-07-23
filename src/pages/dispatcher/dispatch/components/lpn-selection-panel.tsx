@@ -110,22 +110,27 @@ const LpnSelectionPanel = ({
                 const disabled = !checked && Boolean(isChecking);
 
                 return (
-                  <Button
+                  <div
                     key={lpn.lpnId}
-                    type="button"
-                    variant="outline"
-                    disabled={disabled}
+                    aria-disabled={disabled}
                     onClick={() => onToggle(lpn)}
                     className={cn(
-                      "h-auto w-full justify-start overflow-hidden rounded-lg border p-0 text-left whitespace-normal shadow-none",
+                      "h-auto w-full cursor-pointer overflow-hidden rounded-lg border p-0 text-left whitespace-normal shadow-none transition-colors",
                       checked
                         ? "border-emerald-600 bg-emerald-50/70 text-foreground"
-                        : "bg-background hover:bg-muted/50"
+                        : "bg-background hover:bg-muted/50",
+                      disabled && "pointer-events-none opacity-50"
                     )}
                   >
                     <div className="flex min-w-0 w-full gap-3 p-3.5">
                       <div className="shrink-0 pt-1">
-                        <Checkbox checked={checked} />
+                        <Checkbox
+                          checked={checked}
+                          disabled={disabled}
+                          aria-label={`${checked ? "Bỏ chọn" : "Chọn"} LPN ${lpn.lpnCode}`}
+                          onClick={(event) => event.stopPropagation()}
+                          onCheckedChange={() => onToggle(lpn)}
+                        />
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex min-w-0 flex-wrap items-center gap-2">
@@ -212,7 +217,7 @@ const LpnSelectionPanel = ({
                         )}
                       </div>
                     </div>
-                  </Button>
+                  </div>
                 );
             })}
           </div>

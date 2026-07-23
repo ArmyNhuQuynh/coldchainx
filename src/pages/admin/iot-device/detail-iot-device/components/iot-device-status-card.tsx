@@ -3,12 +3,11 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import type { TIotDevice } from "@/schemas/iot-device.schema";
 import {
   getIotDeviceAssignmentLabel,
+  getIotDeviceConnectionLabel,
   getIotDeviceDisplayStatus,
   getIotDeviceStatusLabel,
-  IOT_DEVICE_STATUS,
-  normalizeIotDeviceStatus,
 } from "@/types/enums/iot-device-status.enum";
-import { Activity, Battery, RadioTower, Truck, type LucideIcon } from "lucide-react";
+import { Activity, RadioTower, Truck, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
 type Props = {
@@ -31,21 +30,10 @@ const StatusRow = ({ icon: Icon, label, value }: StatusRowData) => (
   </div>
 );
 
-const getConnectionStatus = (device: TIotDevice) => {
-  if (device.isOnline === true) return "ONLINE";
-  if (device.isOnline === false) return "OFFLINE";
-
-  const normalizedStatus = normalizeIotDeviceStatus(device.status);
-  if (normalizedStatus === IOT_DEVICE_STATUS.ONLINE) return "ONLINE";
-  if (normalizedStatus === IOT_DEVICE_STATUS.OFFLINE) return "OFFLINE";
-
-  return "UNKNOWN";
-};
-
 const IotDeviceStatusCard = ({ device }: Props) => {
   const status = getIotDeviceStatusLabel(getIotDeviceDisplayStatus(device));
   const assignment = getIotDeviceAssignmentLabel(device.vehicleId);
-  const connection = getConnectionStatus(device);
+  const connection = getIotDeviceConnectionLabel(device);
   const rows: StatusRowData[] = [
     {
       icon: Activity,
@@ -56,21 +44,7 @@ const IotDeviceStatusCard = ({ device }: Props) => {
       icon: RadioTower,
       label: "Kết nối",
       value: (
-        <Badge
-          className={
-            connection === "ONLINE"
-              ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-              : connection === "OFFLINE"
-                ? "border-red-200 bg-red-50 text-red-700"
-                : "border-slate-200 bg-slate-100 text-slate-700"
-          }
-        >
-          {connection === "ONLINE"
-            ? "Online"
-            : connection === "OFFLINE"
-              ? "Mất kết nối"
-              : "Chưa có dữ liệu"}
-        </Badge>
+        <Badge className={connection.className}>{connection.label}</Badge>
       ),
     },
     {
@@ -79,14 +53,6 @@ const IotDeviceStatusCard = ({ device }: Props) => {
       value: (
         <Badge className={assignment.className}>{assignment.label}</Badge>
       ),
-    },
-    {
-      icon: Battery,
-      label: "Mức pin",
-      value:
-        device.batteryLevel === null || device.batteryLevel === undefined
-          ? "—"
-          : `${device.batteryLevel}%`,
     },
   ];
 

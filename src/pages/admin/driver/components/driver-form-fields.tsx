@@ -24,6 +24,18 @@ type FieldProps<TValues extends FieldValues> = {
   description?: string;
 };
 
+type TextFieldProps<TValues extends FieldValues> = FieldProps<TValues> & {
+  type?: "text" | "email" | "tel";
+  inputMode?: "text" | "email" | "tel" | "numeric";
+  maxLength?: number;
+  autoComplete?: string;
+};
+
+type DateFieldProps<TValues extends FieldValues> = FieldProps<TValues> & {
+  min?: string;
+  max?: string;
+};
+
 type SelectOption = {
   label: string;
   value: string;
@@ -42,7 +54,11 @@ export const DriverTextField = <TValues extends FieldValues>({
   label,
   placeholder,
   description,
-}: FieldProps<TValues>) => (
+  type = "text",
+  inputMode,
+  maxLength,
+  autoComplete,
+}: TextFieldProps<TValues>) => (
   <FormField
     control={control}
     name={name}
@@ -51,6 +67,10 @@ export const DriverTextField = <TValues extends FieldValues>({
         <FormLabel>{label}</FormLabel>
         <FormControl>
           <Input
+            type={type}
+            inputMode={inputMode}
+            maxLength={maxLength}
+            autoComplete={autoComplete}
             className="h-11 rounded-xl bg-background/60"
             placeholder={placeholder}
             value={typeof field.value === "string" ? field.value : ""}
@@ -72,7 +92,9 @@ export const DriverDateField = <TValues extends FieldValues>({
   name,
   label,
   description,
-}: FieldProps<TValues>) => (
+  min,
+  max,
+}: DateFieldProps<TValues>) => (
   <FormField
     control={control}
     name={name}
@@ -82,6 +104,8 @@ export const DriverDateField = <TValues extends FieldValues>({
         <FormControl>
           <Input
             type="date"
+            min={min}
+            max={max}
             className="h-11 rounded-xl bg-background/60"
             value={typeof field.value === "string" ? field.value : ""}
             onChange={field.onChange}

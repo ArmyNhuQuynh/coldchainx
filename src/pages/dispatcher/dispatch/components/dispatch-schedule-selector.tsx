@@ -97,7 +97,7 @@ const DispatchScheduleSelector = ({
               <Skeleton className="h-10 w-full" />
             ) : (
               <Select
-                value={selectedRouteId || undefined}
+                value={selectedRouteId}
                 onValueChange={onRouteChange}
                 disabled={routes.length === 0}
               >
@@ -121,7 +121,7 @@ const DispatchScheduleSelector = ({
               <Skeleton className="h-10 w-full" />
             ) : (
               <Select
-                value={selectedScheduleId || undefined}
+                value={selectedScheduleId}
                 onValueChange={onScheduleChange}
                 disabled={!selectedRouteId || routeSchedules.length === 0}
               >

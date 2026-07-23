@@ -1,80 +1,80 @@
-import type { BaseResponse } from "@/types/response.type";
 import { toast } from "sonner";
 
-export const handleApiError = ( error: any ): BaseResponse<any> | null =>
-{
-    let handledError: BaseResponse<any> | null = null;
-    if ( error.response )
-    {
-        const { status, data } = error.response;
-        if ( status === 401 )
-        {
-            handledError = {
-                status: status,
-                message: "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
-                data: "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
-            };
-        } else
-            if ( status === 403 )
-            {
-                handledError = {
-                    status: status,
-                    message: "Bạn không có quyền truy cập vào tài nguyên này.",
-                    data: "Bạn không có quyền truy cập vào tài nguyên này.",
-                };
-            } else
-                if ( status === 400 )
-                {
-                    handledError = {
-                        status: status,
-                        message: "Dữ liệu không hợp lệ.",
-                        data: data.data[ 0 ].errorMessage || data.data,
-                    };
-                } else
+type HandledApiError = {
+  status: number;
+  message: string;
+  detail: string;
+};
 
-                    if ( data && data.status && data.message && data.data )
-                    {
-                        handledError = {
-                            status: data.status,
-                            message: data.message,
-                            data: data.data,
-                        };
-                    } else
-                    {
-                        handledError = {
-                            status: status,
-                            message: data?.message || "Một lỗi không xác định đã xảy ra.",
-                            data: data?.message || "Một lỗi không xác định đã xảy ra.",
-                        };
-                    }
-    } else if ( error.request )
-    {
-        handledError = {
-            status: 0,
-            message: "Không nhận được phản hồi từ máy chủ.",
-            data: "Không nhận được phản hồi từ máy chủ.",
-        };
-    } else
-    {
-        handledError = {
-            status: 0,
-            message: "Lỗi không xác định: " + error.message,
-            data: "Lỗi không xác định: " + error.message,
-        };
+const getValidationMessage = (data: any) => {
+  const directMessage = data?.message ?? data?.Message;
+  if (typeof directMessage === "string" && directMessage.trim()) {
+    return directMessage;
+  }
+
+  const itemMessage = data?.data?.[0]?.errorMessage;
+  if (typeof itemMessage === "string" && itemMessage.trim()) {
+    return itemMessage;
+  }
+
+  const validationMessages = Object.values(data?.errors ?? {})
+    .flat()
+    .filter((value): value is string => typeof value === "string");
+
+  return validationMessages[0] || null;
+};
+
+export const handleApiError = (error: any): HandledApiError => {
+  let handledError: HandledApiError;
+
+  if (error.response) {
+    const { status, data } = error.response;
+
+    if (status === 401) {
+      handledError = {
+        status,
+        message: "Phiên đăng nhập đã hết hạn.",
+        detail: "Vui lòng đăng nhập lại.",
+      };
+    } else if (status === 403) {
+      handledError = {
+        status,
+        message: "Bạn không có quyền truy cập.",
+        detail: "Bạn không có quyền thực hiện thao tác này.",
+      };
+    } else {
+      const apiMessage =
+        getValidationMessage(data) || "Một lỗi không xác định đã xảy ra.";
+      handledError = {
+        status,
+        message: status === 400 ? "Dữ liệu không hợp lệ." : apiMessage,
+        detail: apiMessage,
+      };
     }
+  } else if (error.request) {
+    handledError = {
+      status: 0,
+      message: "Không nhận được phản hồi từ máy chủ.",
+      detail: "Vui lòng kiểm tra kết nối và thử lại.",
+    };
+  } else {
+    const message = error?.message || "Một lỗi không xác định đã xảy ra.";
+    handledError = {
+      status: 0,
+      message: "Không thể thực hiện thao tác.",
+      detail: message,
+    };
+  }
 
-    // Show toast notification with the error message
-    toast.error(
-        handledError.message || "Đã xảy ra lỗi không xác định.",
-        {
-            duration: 5000,
-            description:
-                <span className="text-xs font-medium text-red-500">
-                    { handledError.data ? handledError.data : "Vui lòng thử lại sau." }
-                </span>,
-            position: "top-right",
-        }
-    )
+  toast.error(handledError.message, {
+    duration: 5000,
+    description: (
+      <span className="text-xs font-medium text-red-500">
+        {handledError.detail}
+      </span>
+    ),
+    position: "top-right",
+  });
 
-    return handledError;
+  return handledError;
 };

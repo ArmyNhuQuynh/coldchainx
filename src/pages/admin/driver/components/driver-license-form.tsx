@@ -22,9 +22,13 @@ const DriverLicenseForm = ({
   isSubmitting = false,
   onCancel,
   onSubmit,
-}: Props) => (
-  <Form {...form}>
-    <form className="space-y-5" onSubmit={onSubmit} noValidate>
+}: Props) => {
+  const issueDate = form.watch("issueDate");
+  const today = new Date().toISOString().slice(0, 10);
+
+  return (
+    <Form {...form}>
+      <form className="space-y-5" onSubmit={onSubmit} noValidate>
       <DriverFormSection
         icon={IdCard}
         title="Thông tin bằng lái"
@@ -35,22 +39,28 @@ const DriverLicenseForm = ({
           name="licenseNumber"
           label="Số GPLX"
           placeholder="GPLX-123456"
+          maxLength={30}
+          autoComplete="off"
         />
         <DriverTextField
           control={form.control}
           name="licenseClass"
           label="Hạng GPLX"
           placeholder="C"
+          maxLength={5}
+          autoComplete="off"
         />
         <DriverDateField
           control={form.control}
           name="issueDate"
           label="Ngày cấp"
+          max={today}
         />
         <DriverDateField
           control={form.control}
           name="expiryDate"
           label="Ngày hết hạn"
+          min={issueDate || undefined}
         />
       </DriverFormSection>
 
@@ -69,8 +79,9 @@ const DriverLicenseForm = ({
           {isSubmitting ? "Đang lưu..." : "Lưu GPLX"}
         </Button>
       </div>
-    </form>
-  </Form>
-);
+      </form>
+    </Form>
+  );
+};
 
 export default DriverLicenseForm;

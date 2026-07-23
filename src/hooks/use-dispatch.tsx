@@ -17,6 +17,8 @@ export const useDispatchPlanning = () => {
     mutationFn: (data: TManualDispatchRequest) => dispatchApi.manualDispatch(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["dispatch"] });
+      queryClient.invalidateQueries({ queryKey: ["drivers"] });
+      queryClient.invalidateQueries({ queryKey: ["driver"] });
     },
   });
 

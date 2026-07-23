@@ -9,6 +9,7 @@ import { handleApiError } from "@/lib/error";
 import { PATH_ADMIN_DASHBOARD } from "@/routes/path";
 import type { TIotDevice } from "@/schemas/iot-device.schema";
 import {
+  getIotDeviceConnectionLabel,
   getIotDeviceDisplayStatus,
   getIotDeviceStatusLabel,
 } from "@/types/enums/iot-device-status.enum";
@@ -34,6 +35,11 @@ const getStatusBadge = (device: TIotDevice) => {
   return <Badge className={statusLabel.className}>{statusLabel.label}</Badge>;
 };
 
+const getConnectionBadge = (device: TIotDevice) => {
+  const connection = getIotDeviceConnectionLabel(device);
+  return <Badge className={connection.className}>{connection.label}</Badge>;
+};
+
 const ActionCell = ({ device }: { device: TIotDevice }) => {
   const navigate = useNavigate();
   const { deleteIotDevice } = useIotDevice();
@@ -50,7 +56,7 @@ const ActionCell = ({ device }: { device: TIotDevice }) => {
     event.stopPropagation();
 
     const confirmed = window.confirm(
-      `Xóa thiết bị ${device.deviceCode || device.deviceId}?`
+      `Xóa ${device.deviceCode ? `thiết bị ${device.deviceCode}` : "thiết bị này"}?`
     );
     if (!confirmed) return;
 
@@ -125,23 +131,27 @@ export const columns: ColumnDef<TIotDevice>[] = [
       createFormattedHeader("Xe đang gắn", column, { align: "left" }),
     cell: ({ row }) =>
       createFormattedCell(
-        <div className="flex flex-col">
-          <span className="font-medium">
-            {row.original.vehicleId
-              ? row.original.truckPlate || row.original.vehicleId
-              : "Chưa gắn xe"}
-          </span>
-          <span className="text-xs text-muted-foreground">
-            {row.original.vehicleId || "—"}
-          </span>
-        </div>,
+        <span className="font-medium">
+          {row.original.vehicleId
+            ? row.original.truckPlate || "Đã gắn xe"
+            : "Chưa gắn xe"}
+        </span>,
         {
           align: "left",
-          tooltip:
-            row.original.truckPlate || row.original.vehicleId || undefined,
+          tooltip: row.original.truckPlate || undefined,
         }
       ),
-    size: 250,
+    size: 190,
+  },
+  {
+    id: "connection",
+    header: ({ column }) =>
+      createFormattedHeader("Kết nối", column, { align: "center" }),
+    cell: ({ row }) =>
+      createFormattedCell(getConnectionBadge(row.original), {
+        align: "center",
+      }),
+    size: 150,
   },
   {
     accessorKey: "batteryLevel",

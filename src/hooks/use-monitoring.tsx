@@ -80,6 +80,8 @@ export const useMonitoring = () => {
       queryClient.invalidateQueries({
         queryKey: ["monitoring", "tracking-trips"],
       });
+      queryClient.invalidateQueries({ queryKey: ["drivers"] });
+      queryClient.invalidateQueries({ queryKey: ["driver"] });
     },
   });
 
@@ -102,6 +104,8 @@ export const useMonitoring = () => {
       queryClient.invalidateQueries({
         queryKey: ["monitoring", "tracking-trips"],
       });
+      queryClient.invalidateQueries({ queryKey: ["drivers"] });
+      queryClient.invalidateQueries({ queryKey: ["driver"] });
     },
   });
 

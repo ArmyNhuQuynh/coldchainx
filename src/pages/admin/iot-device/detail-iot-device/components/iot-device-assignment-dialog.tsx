@@ -118,8 +118,8 @@ const IotDeviceAssignmentDialog = ({
           </DialogTitle>
           <DialogDescription>
             {isRemoving
-              ? `Thiết bị ${device.deviceCode || device.deviceId} đang gắn với xe ${
-                  device.truckPlate || device.vehicleId
+              ? `${device.deviceCode ? `Thiết bị ${device.deviceCode}` : "Thiết bị này"} đang gắn với xe ${
+                  device.truckPlate || "chưa có biển số"
                 }.`
               : "Chỉ những xe chưa được gắn với thiết bị IoT khác mới xuất hiện trong danh sách."}
           </DialogDescription>
@@ -155,7 +155,7 @@ const IotDeviceAssignmentDialog = ({
                     key={vehicle.vehicleId}
                     value={vehicle.vehicleId}
                   >
-                    {vehicle.truckPlate || vehicle.vehicleId}
+                    {vehicle.truckPlate || "Xe chưa có biển số"}
                     {vehicle.brand ? ` - ${vehicle.brand}` : ""}
                   </SelectItem>
                 ))}

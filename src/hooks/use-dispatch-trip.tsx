@@ -42,6 +42,8 @@ export const useDispatchTrips = () => {
     mutationFn: (tripId: string) => dispatchTripApi.cancelTrip(tripId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["dispatch"] });
+      queryClient.invalidateQueries({ queryKey: ["drivers"] });
+      queryClient.invalidateQueries({ queryKey: ["driver"] });
     },
   });
 
@@ -57,6 +59,8 @@ export const useDispatchTrips = () => {
       dispatchTripApi.sealAndDispatch(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["dispatch"] });
+      queryClient.invalidateQueries({ queryKey: ["drivers"] });
+      queryClient.invalidateQueries({ queryKey: ["driver"] });
     },
   });
 

@@ -34,7 +34,7 @@ const matchesSearch = (device: TIotDevice, query: string) => {
   if (!query.trim()) return true;
 
   const normalized = query.trim().toLowerCase();
-  return [device.deviceCode, device.truckPlate, device.vehicleId]
+  return [device.deviceCode, device.truckPlate]
     .filter(Boolean)
     .some((value) => String(value).toLowerCase().includes(normalized));
 };

@@ -57,7 +57,7 @@ const EditIotDevicePage = () => {
           <div>
             <h1 className="text-3xl font-semibold">Chỉnh sửa thiết bị IoT</h1>
             <p className="text-muted-foreground">
-              {device.deviceCode || device.deviceId}
+              {device.deviceCode || "Chưa có mã thiết bị"}
             </p>
           </div>
         </div>

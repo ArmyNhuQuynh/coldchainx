@@ -45,7 +45,7 @@ const DriverUpsertDialog = ({
     } else if (driver) {
       await updateDriver.mutateAsync({
         id: driver.driverId,
-        data: toDriverUpdateRequest(values),
+        data: toDriverUpdateRequest(values, driver.status),
       });
       toast.success("Cập nhật tài xế thành công");
     }
@@ -74,6 +74,7 @@ const DriverUpsertDialog = ({
         <DriverForm
           mode={mode}
           form={driverForm.form}
+          driverStatus={driver?.status}
           isSubmitting={isSubmitting}
           onCancel={() => onOpenChange(false)}
           onSubmit={driverForm.handleSubmit}
