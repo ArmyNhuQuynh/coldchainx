@@ -94,8 +94,25 @@ const normalizeVehicle = (
     vehicleType: read<string | undefined>(raw, "vehicleType", "VehicleType"),
     maxWeight: toNumber(read(raw, "maxWeight", "MaxWeight")),
     maxCbm: toNumber(read(raw, "maxCbm", "MaxCbm")),
+    innerLengthCm: read<number | null>(
+      raw,
+      "innerLengthCm",
+      "InnerLengthCm"
+    ),
+    innerWidthCm: read<number | null>(raw, "innerWidthCm", "InnerWidthCm"),
+    innerHeightCm: read<number | null>(
+      raw,
+      "innerHeightCm",
+      "InnerHeightCm"
+    ),
+    usableCbm: read<number | null>(raw, "usableCbm", "UsableCbm"),
     minTemp: read<number | null>(raw, "minTemp", "MinTemp"),
     maxTemp: read<number | null>(raw, "maxTemp", "MaxTemp"),
+    currentLocation: read<string | null>(
+      raw,
+      "currentLocation",
+      "CurrentLocation"
+    ),
   };
 };
 
@@ -107,16 +124,23 @@ const normalizeDriver = (
   return {
     driverId: read<string>(raw, "driverId", "DriverId"),
     fullName: read<string>(raw, "fullName", "FullName"),
-    phoneNumber: read<string | null>(raw, "phoneNumber", "PhoneNumber"),
+    phoneNumber:
+      read<string | null>(raw, "phoneNumber", "PhoneNumber") ??
+      read<string | null>(raw, "phone", "Phone"),
     status: read<string | null>(raw, "status", "Status"),
     licenseClass: read<string | null>(raw, "licenseClass", "LicenseClass"),
-    licenseExpiry: read<string | null>(raw, "licenseExpiry", "LicenseExpiry"),
-    hasValidLicense: read<boolean | undefined>(
-      raw,
-      "hasValidLicense",
-      "HasValidLicense"
-    ),
+    licenseExpiry:
+      read<string | null>(raw, "licenseExpiry", "LicenseExpiry") ??
+      read<string | null>(raw, "licenseExpiryDate", "LicenseExpiryDate"),
+    hasValidLicense:
+      read<boolean | undefined>(raw, "hasValidLicense", "HasValidLicense") ??
+      read<boolean | undefined>(raw, "isLicenseValid", "IsLicenseValid"),
     label: read<string | undefined>(raw, "label", "Label"),
+    currentLocation: read<string | null>(
+      raw,
+      "currentLocation",
+      "CurrentLocation"
+    ),
   };
 };
 
@@ -181,23 +205,29 @@ const searchCompatibleLpns = async (
   );
 };
 
-const getAvailableVehicles = async () => {
+const getAvailableVehicles = async (warehouseId: string) => {
   const response = await apiRequest.baseApi.get<
     TDispatchLookupEnvelope<TDispatchVehicleLookup[]> | TDispatchVehicleLookup[]
-  >(`${API_SUFFIX.DISPATCH_API}/lookup/vehicles`);
+  >(
+    `${API_SUFFIX.DISPATCH_API}/lookup/vehicles/by-warehouse/${warehouseId}`
+  );
 
   return unwrapLookup<TDispatchVehicleLookup>(response.data).map(normalizeVehicle);
 };
 
-const getAvailableDrivers = async () => {
+const getAvailableDrivers = async (warehouseId: string) => {
   const response = await apiRequest.baseApi.get<
     TDispatchLookupEnvelope<TDispatchDriverLookup[]> | TDispatchDriverLookup[]
-  >(`${API_SUFFIX.DISPATCH_API}/lookup/drivers`);
+  >(
+    `${API_SUFFIX.DISPATCH_API}/lookup/drivers/by-warehouse/${warehouseId}`
+  );
 
   return unwrapLookup<TDispatchDriverLookup>(response.data)
     .map(normalizeDriver)
     .filter(
-      (driver) => normalizeDriverStatus(driver.status) === DRIVER_STATUS.ACTIVE
+      (driver) =>
+        normalizeDriverStatus(driver.status) === DRIVER_STATUS.ACTIVE &&
+        driver.hasValidLicense === true
     );
 };
 

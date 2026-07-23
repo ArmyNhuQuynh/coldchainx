@@ -1,4 +1,5 @@
 import { apiRequest } from "@/lib/http";
+import type { TIotDeviceAssignRequest } from "@/schemas/iot-device.schema";
 import type { TTrackingTripListQuery } from "@/schemas/monitoring.schema";
 import { unwrapData } from "./dispatch-api.helpers";
 import {
@@ -65,6 +66,15 @@ const checkVehicleIoT = async (tripId: string, vehicleId: string) => {
   return normalizeVehicleIoTStatus(unwrapData(response.data));
 };
 
+const assignDevice = async (data: TIotDeviceAssignRequest) => {
+  const response = await apiRequest.baseApi.post<Record<string, any>>(
+    "/fleet/assign-device",
+    data
+  );
+
+  return response.data;
+};
+
 export const monitoringApi = {
   getTrackingTrips,
   getTrackingDetail,
@@ -72,4 +82,5 @@ export const monitoringApi = {
   getTripRouteGoong,
   getTripAlerts,
   checkVehicleIoT,
+  assignDevice,
 };

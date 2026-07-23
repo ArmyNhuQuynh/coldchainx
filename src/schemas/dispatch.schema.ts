@@ -24,8 +24,13 @@ export type TDispatchVehicleLookup = {
   vehicleType?: string;
   maxWeight: number;
   maxCbm: number;
+  innerLengthCm?: number | null;
+  innerWidthCm?: number | null;
+  innerHeightCm?: number | null;
+  usableCbm?: number | null;
   minTemp?: number | null;
   maxTemp?: number | null;
+  currentLocation?: string | null;
 };
 
 export type TDispatchDriverLookup = {
@@ -37,6 +42,7 @@ export type TDispatchDriverLookup = {
   licenseExpiry?: string | null;
   hasValidLicense?: boolean;
   label?: string;
+  currentLocation?: string | null;
 };
 
 export type TDispatchScheduleLookup = {

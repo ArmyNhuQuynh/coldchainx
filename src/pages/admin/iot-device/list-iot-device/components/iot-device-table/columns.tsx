@@ -8,7 +8,10 @@ import { useIotDevice } from "@/hooks/use-iot-device";
 import { handleApiError } from "@/lib/error";
 import { PATH_ADMIN_DASHBOARD } from "@/routes/path";
 import type { TIotDevice } from "@/schemas/iot-device.schema";
-import { getIotDeviceStatusLabel } from "@/types/enums/iot-device-status.enum";
+import {
+  getIotDeviceDisplayStatus,
+  getIotDeviceStatusLabel,
+} from "@/types/enums/iot-device-status.enum";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Eye, Pencil, Trash2 } from "lucide-react";
 import type { MouseEvent } from "react";
@@ -24,8 +27,10 @@ const formatDate = (value?: string | null) => {
   return date.toLocaleString("vi-VN");
 };
 
-const getStatusBadge = (status?: string | null) => {
-  const statusLabel = getIotDeviceStatusLabel(status);
+const getStatusBadge = (device: TIotDevice) => {
+  const statusLabel = getIotDeviceStatusLabel(
+    getIotDeviceDisplayStatus(device)
+  );
   return <Badge className={statusLabel.className}>{statusLabel.label}</Badge>;
 };
 
@@ -122,13 +127,19 @@ export const columns: ColumnDef<TIotDevice>[] = [
       createFormattedCell(
         <div className="flex flex-col">
           <span className="font-medium">
-            {row.original.truckPlate || "Chưa gắn xe"}
+            {row.original.vehicleId
+              ? row.original.truckPlate || row.original.vehicleId
+              : "Chưa gắn xe"}
           </span>
           <span className="text-xs text-muted-foreground">
             {row.original.vehicleId || "—"}
           </span>
         </div>,
-        { align: "left", tooltip: row.original.truckPlate ?? undefined }
+        {
+          align: "left",
+          tooltip:
+            row.original.truckPlate || row.original.vehicleId || undefined,
+        }
       ),
     size: 250,
   },
@@ -153,7 +164,7 @@ export const columns: ColumnDef<TIotDevice>[] = [
     header: ({ column }) =>
       createFormattedHeader("Trạng thái", column, { align: "center" }),
     cell: ({ row }) =>
-      createFormattedCell(getStatusBadge(row.original.status), {
+      createFormattedCell(getStatusBadge(row.original), {
         align: "center",
       }),
     size: 160,

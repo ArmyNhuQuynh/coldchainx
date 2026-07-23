@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { TIncident } from "@/schemas/incident.schema";
 import type { TTrackingTrip } from "@/schemas/monitoring.schema";
 import { INCIDENT_STATUS } from "@/types/enums/incident-status.enum";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Clock3 } from "lucide-react";
 import RescueDispatchForm from "./rescue-dispatch-form";
 import RescueProgressPanel from "./rescue-progress-panel";
 
@@ -13,24 +13,6 @@ type Props = {
 };
 
 const RescueOperationPanel = ({ incident, trip }: Props) => {
-  if (!incident.requiresRescue) {
-    return (
-      <Card className="gap-0 rounded-lg py-0">
-        <CardHeader className="border-b px-5 py-4">
-          <CardTitle className="text-lg">Phương án xử lý</CardTitle>
-        </CardHeader>
-        <CardContent className="p-5">
-          <div className="rounded-lg border border-dashed p-6 text-center">
-            <p className="font-medium">Tài xế không yêu cầu điều xe cứu hộ</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Dispatcher tiếp tục theo dõi chuyến; Admin sẽ đóng sự cố sau khi xử lý xong.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   if (incident.status === INCIDENT_STATUS.RESOLVED) {
     return (
       <Card className="gap-0 rounded-lg py-0">
@@ -45,7 +27,67 @@ const RescueOperationPanel = ({ incident, trip }: Props) => {
           <p className="text-sm text-muted-foreground">
             {incident.resolutionNote || "Không có ghi chú kết thúc."}
           </p>
-          <p className="text-sm">Hoàn tất lúc {formatIncidentDate(incident.resolvedAt)}</p>
+          <p className="text-sm">
+            Hoàn tất lúc {formatIncidentDate(incident.resolvedAt)}
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const operationCompleted =
+    incident.status === INCIDENT_STATUS.CONTINUED ||
+    incident.status === INCIDENT_STATUS.TRANSLOAD_COMPLETED;
+
+  if (operationCompleted) {
+    return (
+      <Card className="gap-0 rounded-lg py-0">
+        <CardHeader className="border-b px-5 py-4">
+          <CardTitle className="text-lg">Đã hoàn tất xử lý vận hành</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 p-5">
+          <div className="flex items-center gap-2 text-emerald-700">
+            <CheckCircle2 className="h-5 w-5" />
+            <span className="font-semibold">
+              {incident.status === INCIDENT_STATUS.CONTINUED
+                ? "Xe hiện tại đã tiếp tục chuyến"
+                : "Hàng đã sang xe thay thế và chuyến đã tiếp tục"}
+            </span>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            {incident.transloadNote ||
+              incident.handlingNote ||
+              "Đang chờ Admin kiểm tra và đóng sự cố."}
+          </p>
+          <p className="text-sm">
+            Xác nhận lúc{" "}
+            {formatIncidentDate(
+              incident.transloadConfirmedAt ?? incident.handledAt
+            )}
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!incident.requiresRescue) {
+    return (
+      <Card className="gap-0 rounded-lg py-0">
+        <CardHeader className="border-b px-5 py-4">
+          <CardTitle className="text-lg">Đang xử lý tại hiện trường</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 p-5">
+          <div className="flex items-center gap-2 text-amber-700">
+            <Clock3 className="h-5 w-5" />
+            <span className="font-semibold">
+              Chờ tài xế xác nhận tiếp tục chuyến
+            </span>
+          </div>
+          <p className="text-sm leading-6 text-muted-foreground">
+            Sự cố không yêu cầu xe cứu hộ. Tài xế sẽ tự ghi nhận cách xử lý
+            trên ứng dụng và tiếp tục hành trình; điều phối viên chỉ cần theo
+            dõi trạng thái tại đây.
+          </p>
         </CardContent>
       </Card>
     );

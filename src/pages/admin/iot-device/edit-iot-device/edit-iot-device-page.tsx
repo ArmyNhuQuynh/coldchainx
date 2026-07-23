@@ -1,6 +1,5 @@
 import { useIotDevice } from "@/hooks/use-iot-device";
 import { useIotDeviceForm } from "@/hooks/use-iot-device-form";
-import { useVehicle } from "@/hooks/use-vehicle";
 import { PATH_ADMIN_DASHBOARD } from "@/routes/path";
 import { toIotDeviceUpdateRequest } from "@/schemas/iot-device.mapper";
 import type { TIotDeviceFormValues } from "@/schemas/iot-device.schema";
@@ -12,12 +11,8 @@ import IotDeviceForm from "../create-iot-device/components/iot-device-form";
 const EditIotDevicePage = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const { getIotDeviceById, getIotDevices, updateIotDevice } = useIotDevice();
-  const { getVehicles } = useVehicle();
-  const { data: vehicleResponse, isLoading: isLoadingVehicles } = getVehicles();
-  const { data: assignedDevices = [] } = getIotDevices();
+  const { getIotDeviceById, updateIotDevice } = useIotDevice();
   const { data: device, isLoading } = getIotDeviceById(id);
-  const vehicles = vehicleResponse?.data ?? [];
 
   const handleSubmit = async (values: TIotDeviceFormValues) => {
     if (!id) return;
@@ -80,10 +75,8 @@ const EditIotDevicePage = () => {
       <IotDeviceForm
         mode="edit"
         form={iotDeviceForm.form}
-        vehicles={vehicles}
-        assignedDevices={assignedDevices}
-        currentDeviceId={id}
-        isLoadingVehicles={isLoadingVehicles}
+        currentStatus={device.status}
+        isAssigned={Boolean(device.vehicleId)}
         isSubmitting={updateIotDevice.isPending}
         onCancel={() => navigate(PATH_ADMIN_DASHBOARD.iotDevice.detail(id))}
         onSubmit={iotDeviceForm.handleSubmit}

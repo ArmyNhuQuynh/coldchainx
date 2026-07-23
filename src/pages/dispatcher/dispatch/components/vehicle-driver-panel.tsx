@@ -24,12 +24,16 @@ import { formatNumber } from "./dispatch-helpers";
 type Props = {
   vehicles: TDispatchVehicleLookup[];
   drivers: TDispatchDriverLookup[];
+  warehouseName?: string;
+  hasWarehouse: boolean;
   selectedVehicleId: string;
   selectedDriverIds: string[];
   plannedStartTime: string;
   plannedEndTime: string;
   isLoadingVehicles?: boolean;
   isLoadingDrivers?: boolean;
+  isVehiclesError?: boolean;
+  isDriversError?: boolean;
   isSubmitting?: boolean;
   isPreviewing?: boolean;
   isPlanningEnabled: boolean;
@@ -43,17 +47,23 @@ type Props = {
   onPlannedEndTimeChange: (value: string) => void;
   onPreviewPacking: () => void;
   onCreateTrip: () => void;
+  onRetryVehicles: () => void;
+  onRetryDrivers: () => void;
 };
 
 const VehicleDriverPanel = ({
   vehicles,
   drivers,
+  warehouseName,
+  hasWarehouse,
   selectedVehicleId,
   selectedDriverIds,
   plannedStartTime,
   plannedEndTime,
   isLoadingVehicles,
   isLoadingDrivers,
+  isVehiclesError,
+  isDriversError,
   isSubmitting,
   isPreviewing,
   isPlanningEnabled,
@@ -67,14 +77,19 @@ const VehicleDriverPanel = ({
   onPlannedEndTimeChange,
   onPreviewPacking,
   onCreateTrip,
+  onRetryVehicles,
+  onRetryDrivers,
 }: Props) => {
   return (
     <Card className="min-h-[620px] gap-0 rounded-lg py-0">
-      <CardHeader className="border-b px-5 py-4">
+      <CardHeader className="flex flex-row items-center justify-between gap-3 border-b px-5 py-4">
         <CardTitle className="flex items-center gap-2 text-lg">
           <Truck className="h-5 w-5 text-sky-700" />
           Xe và tài xế
         </CardTitle>
+        <Badge variant="outline" className="max-w-[220px] truncate">
+          {warehouseName || "Chưa xác định kho"}
+        </Badge>
       </CardHeader>
 
       <CardContent className="space-y-5 p-5">
@@ -112,27 +127,50 @@ const VehicleDriverPanel = ({
           </div>
           <ScrollArea className="h-[392px] rounded-lg border">
             <div className="space-y-2 p-3">
-              {isLoadingVehicles &&
+              {!hasWarehouse && (
+                <div className="flex h-28 items-center justify-center px-4 text-center text-sm text-muted-foreground">
+                  Chọn LPN đầu tiên để xác định kho xuất phát
+                </div>
+              )}
+
+              {hasWarehouse &&
+                isLoadingVehicles &&
                 Array.from({ length: 3 }).map((_, index) => (
                   <Skeleton key={index} className="h-20 w-full" />
                 ))}
 
-              {!isLoadingVehicles && vehicles.length === 0 && (
-                <div className="flex h-28 items-center justify-center text-sm text-muted-foreground">
-                  Không có xe phù hợp
+              {hasWarehouse && !isLoadingVehicles && isVehiclesError && (
+                <div className="flex h-28 flex-col items-center justify-center gap-2 px-4 text-center text-sm text-muted-foreground">
+                  <span>Không tải được xe tại kho này</span>
+                  <Button type="button" variant="outline" size="sm" onClick={onRetryVehicles}>
+                    Thử lại
+                  </Button>
                 </div>
               )}
 
-              {!isLoadingVehicles &&
+              {hasWarehouse &&
+                !isLoadingVehicles &&
+                !isVehiclesError &&
+                vehicles.length === 0 && (
+                  <div className="flex h-28 items-center justify-center px-4 text-center text-sm text-muted-foreground">
+                    Không có xe hợp lệ tại kho này
+                  </div>
+                )}
+
+              {hasWarehouse &&
+                !isLoadingVehicles &&
+                !isVehiclesError &&
                 vehicles.map((vehicle) => {
                   const checked = vehicle.vehicleId === selectedVehicleId;
+                  const hasTemperatureRange =
+                    vehicle.minTemp != null && vehicle.maxTemp != null;
 
                   return (
                     <Button
                       key={vehicle.vehicleId}
                       type="button"
                       variant="outline"
-                      disabled={!isPlanningEnabled}
+                      disabled={!isPlanningEnabled || !hasWarehouse}
                       onClick={() => onVehicleChange(vehicle.vehicleId)}
                       className={cn(
                         "h-auto w-full justify-start rounded-lg p-0 text-left shadow-none",
@@ -155,7 +193,9 @@ const VehicleDriverPanel = ({
                           </span>
                           <span className="flex items-center gap-1.5">
                             <Snowflake className="h-3.5 w-3.5" />
-                            {formatNumber(vehicle.minTemp)}°C → {formatNumber(vehicle.maxTemp)}°C
+                            {hasTemperatureRange
+                              ? `${formatNumber(vehicle.minTemp)}°C → ${formatNumber(vehicle.maxTemp)}°C`
+                              : "Dải nhiệt được kiểm tra khi mô phỏng"}
                           </span>
                         </div>
                       </div>
@@ -173,18 +213,39 @@ const VehicleDriverPanel = ({
           </div>
           <ScrollArea className="h-[340px] rounded-lg border">
             <div className="space-y-2 p-3">
-              {isLoadingDrivers &&
+              {!hasWarehouse && (
+                <div className="flex h-24 items-center justify-center px-4 text-center text-sm text-muted-foreground">
+                  Chọn LPN đầu tiên để xác định kho xuất phát
+                </div>
+              )}
+
+              {hasWarehouse &&
+                isLoadingDrivers &&
                 Array.from({ length: 3 }).map((_, index) => (
                   <Skeleton key={index} className="h-16 w-full" />
                 ))}
 
-              {!isLoadingDrivers && drivers.length === 0 && (
-                <div className="flex h-24 items-center justify-center text-sm text-muted-foreground">
-                  Không có tài xế phù hợp
+              {hasWarehouse && !isLoadingDrivers && isDriversError && (
+                <div className="flex h-24 flex-col items-center justify-center gap-2 px-4 text-center text-sm text-muted-foreground">
+                  <span>Không tải được tài xế tại kho này</span>
+                  <Button type="button" variant="outline" size="sm" onClick={onRetryDrivers}>
+                    Thử lại
+                  </Button>
                 </div>
               )}
 
-              {!isLoadingDrivers &&
+              {hasWarehouse &&
+                !isLoadingDrivers &&
+                !isDriversError &&
+                drivers.length === 0 && (
+                  <div className="flex h-24 items-center justify-center px-4 text-center text-sm text-muted-foreground">
+                    Không có tài xế hợp lệ tại kho này
+                  </div>
+                )}
+
+              {hasWarehouse &&
+                !isLoadingDrivers &&
+                !isDriversError &&
                 drivers.map((driver) => {
                   const checked = selectedDriverIds.includes(driver.driverId);
                   const disabled =

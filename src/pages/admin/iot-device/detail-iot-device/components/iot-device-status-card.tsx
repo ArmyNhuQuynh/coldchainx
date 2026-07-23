@@ -2,6 +2,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import type { TIotDevice } from "@/schemas/iot-device.schema";
 import {
+  getIotDeviceAssignmentLabel,
+  getIotDeviceDisplayStatus,
   getIotDeviceStatusLabel,
   IOT_DEVICE_STATUS,
   normalizeIotDeviceStatus,
@@ -29,13 +31,21 @@ const StatusRow = ({ icon: Icon, label, value }: StatusRowData) => (
   </div>
 );
 
-const isOnlineStatus = (device: TIotDevice) =>
-  device.isOnline === true ||
-  normalizeIotDeviceStatus(device.status) === IOT_DEVICE_STATUS.ONLINE;
+const getConnectionStatus = (device: TIotDevice) => {
+  if (device.isOnline === true) return "ONLINE";
+  if (device.isOnline === false) return "OFFLINE";
+
+  const normalizedStatus = normalizeIotDeviceStatus(device.status);
+  if (normalizedStatus === IOT_DEVICE_STATUS.ONLINE) return "ONLINE";
+  if (normalizedStatus === IOT_DEVICE_STATUS.OFFLINE) return "OFFLINE";
+
+  return "UNKNOWN";
+};
 
 const IotDeviceStatusCard = ({ device }: Props) => {
-  const status = getIotDeviceStatusLabel(device.status);
-  const online = isOnlineStatus(device);
+  const status = getIotDeviceStatusLabel(getIotDeviceDisplayStatus(device));
+  const assignment = getIotDeviceAssignmentLabel(device.vehicleId);
+  const connection = getConnectionStatus(device);
   const rows: StatusRowData[] = [
     {
       icon: Activity,
@@ -48,19 +58,27 @@ const IotDeviceStatusCard = ({ device }: Props) => {
       value: (
         <Badge
           className={
-            online
+            connection === "ONLINE"
               ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-              : "border-slate-200 bg-slate-100 text-slate-700"
+              : connection === "OFFLINE"
+                ? "border-red-200 bg-red-50 text-red-700"
+                : "border-slate-200 bg-slate-100 text-slate-700"
           }
         >
-          {online ? "Online" : "Chưa online"}
+          {connection === "ONLINE"
+            ? "Online"
+            : connection === "OFFLINE"
+              ? "Mất kết nối"
+              : "Chưa có dữ liệu"}
         </Badge>
       ),
     },
     {
       icon: Truck,
       label: "Gắn xe",
-      value: device.vehicleId ? "Đã gắn" : "Chưa gắn",
+      value: (
+        <Badge className={assignment.className}>{assignment.label}</Badge>
+      ),
     },
     {
       icon: Battery,

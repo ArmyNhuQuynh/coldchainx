@@ -29,11 +29,9 @@ const ExpenseDetailDialog = ({ incident, onOpenChange }: Props) => (
               <div className="rounded-lg border p-3"><p className="text-xs text-muted-foreground">Đã hoàn</p><p className="mt-2 font-semibold">{formatIncidentMoney(incident.reimbursedAmount)}</p></div>
               <div className="rounded-lg border p-3"><p className="text-xs text-muted-foreground">Ngày báo cáo</p><p className="mt-2 font-semibold">{formatIncidentDate(incident.reportedAt)}</p></div>
             </div>
-            {(incident.approvalNote || incident.expenseRejectionReason || incident.reimbursementNote) && (
+            {incident.expenseApprovalNote && (
               <div className="space-y-2 rounded-lg border p-4 text-sm">
-                {incident.approvalNote && <p><span className="text-muted-foreground">Ghi chú duyệt:</span> {incident.approvalNote}</p>}
-                {incident.expenseRejectionReason && <p><span className="text-muted-foreground">Lý do từ chối:</span> {incident.expenseRejectionReason}</p>}
-                {incident.reimbursementNote && <p><span className="text-muted-foreground">Nội dung hoàn tiền:</span> {incident.reimbursementNote}</p>}
+                <p><span className="text-muted-foreground">Ghi chú xử lý chi phí:</span> {incident.expenseApprovalNote}</p>
               </div>
             )}
             <div>

@@ -1,6 +1,5 @@
 import { useIotDevice } from "@/hooks/use-iot-device";
 import { useIotDeviceForm } from "@/hooks/use-iot-device-form";
-import { useVehicle } from "@/hooks/use-vehicle";
 import { PATH_ADMIN_DASHBOARD } from "@/routes/path";
 import { toIotDeviceCreateRequest } from "@/schemas/iot-device.mapper";
 import type { TIotDeviceFormValues } from "@/schemas/iot-device.schema";
@@ -11,11 +10,7 @@ import IotDeviceForm from "./components/iot-device-form";
 
 const CreateIotDevicePage = () => {
   const navigate = useNavigate();
-  const { createIotDevice, getIotDevices } = useIotDevice();
-  const { getVehicles } = useVehicle();
-  const { data: vehicleResponse, isLoading: isLoadingVehicles } = getVehicles();
-  const { data: assignedDevices = [] } = getIotDevices();
-  const vehicles = vehicleResponse?.data ?? [];
+  const { createIotDevice } = useIotDevice();
 
   const handleSubmit = async (values: TIotDeviceFormValues) => {
     const createdId = await createIotDevice.mutateAsync(
@@ -42,7 +37,7 @@ const CreateIotDevicePage = () => {
           <div>
             <h1 className="text-3xl font-semibold">Thêm thiết bị IoT</h1>
             <p className="text-muted-foreground">
-              Khai báo thiết bị và gắn thiết bị với xe nếu đã sẵn sàng vận hành.
+              Khai báo mã thiết bị trước khi gắn thiết bị vào xe.
             </p>
           </div>
         </div>
@@ -60,9 +55,6 @@ const CreateIotDevicePage = () => {
       <IotDeviceForm
         mode="create"
         form={iotDeviceForm.form}
-        vehicles={vehicles}
-        assignedDevices={assignedDevices}
-        isLoadingVehicles={isLoadingVehicles}
         isSubmitting={createIotDevice.isPending}
         onCancel={() => navigate(PATH_ADMIN_DASHBOARD.iotDevice.root)}
         onSubmit={iotDeviceForm.handleSubmit}

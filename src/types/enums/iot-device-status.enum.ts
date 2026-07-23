@@ -1,5 +1,5 @@
 export const IOT_DEVICE_STATUS = {
-  AVAILABLE: "Available",
+  AVAILABLE: "AVAILABLE",
   ASSIGNED: "ASSIGNED",
   ONLINE: "ONLINE",
   OFFLINE: "OFFLINE",
@@ -9,6 +9,11 @@ export const IOT_DEVICE_STATUS = {
 
 export type TIotDeviceStatus =
   (typeof IOT_DEVICE_STATUS)[keyof typeof IOT_DEVICE_STATUS];
+
+type TIotDeviceStatusSource = {
+  vehicleId?: string | null;
+  status?: string | number | null;
+};
 
 export const normalizeIotDeviceStatus = (
   status?: string | number | null
@@ -64,7 +69,7 @@ export const getIotDeviceStatusLabel = (status?: string | number | null) => {
       };
     case IOT_DEVICE_STATUS.ACTIVE:
       return {
-        label: "Hoạt động",
+        label: "Hoạt động (dữ liệu cũ)",
         className: "border-emerald-200 bg-emerald-50 text-emerald-700",
       };
     case IOT_DEVICE_STATUS.INACTIVE:
@@ -80,9 +85,69 @@ export const getIotDeviceStatusLabel = (status?: string | number | null) => {
   }
 };
 
-export const IOT_DEVICE_STATUS_OPTIONS = Object.values(IOT_DEVICE_STATUS).map(
-  (value) => ({
+export const getIotDeviceDisplayStatus = ({
+  vehicleId,
+  status,
+}: TIotDeviceStatusSource): TIotDeviceStatus => {
+  const normalized = normalizeIotDeviceStatus(status);
+
+  if (normalized === IOT_DEVICE_STATUS.INACTIVE) {
+    return IOT_DEVICE_STATUS.INACTIVE;
+  }
+
+  if (
+    normalized === IOT_DEVICE_STATUS.ONLINE ||
+    normalized === IOT_DEVICE_STATUS.OFFLINE
+  ) {
+    return normalized;
+  }
+
+  return vehicleId
+    ? IOT_DEVICE_STATUS.ASSIGNED
+    : IOT_DEVICE_STATUS.AVAILABLE;
+};
+
+export const getIotDeviceAssignmentLabel = (vehicleId?: string | null) =>
+  vehicleId
+    ? {
+        label: "Đã gắn xe",
+        className: "border-indigo-200 bg-indigo-50 text-indigo-700",
+      }
+    : {
+        label: "Chưa gắn xe",
+        className: "border-sky-200 bg-sky-50 text-sky-700",
+      };
+
+export const IOT_DEVICE_STATUS_OPTIONS = [
+  IOT_DEVICE_STATUS.AVAILABLE,
+  IOT_DEVICE_STATUS.ASSIGNED,
+  IOT_DEVICE_STATUS.ONLINE,
+  IOT_DEVICE_STATUS.OFFLINE,
+  IOT_DEVICE_STATUS.INACTIVE,
+].map((value) => ({
     value,
     label: getIotDeviceStatusLabel(value).label,
-  })
-);
+  }));
+
+export const getIotDeviceEditableStatusOptions = (
+  currentStatus?: string | number | null,
+  isAssigned = false
+) => {
+  const normalizedCurrent = normalizeIotDeviceStatus(currentStatus);
+  const canonicalStatus = isAssigned
+    ? IOT_DEVICE_STATUS.ASSIGNED
+    : IOT_DEVICE_STATUS.AVAILABLE;
+  const statuses = [
+    normalizedCurrent,
+    canonicalStatus,
+    IOT_DEVICE_STATUS.INACTIVE,
+  ].filter(
+    (status, index, values): status is TIotDeviceStatus =>
+      Boolean(status) && values.indexOf(status) === index
+  );
+
+  return statuses.map((value) => ({
+    value,
+    label: getIotDeviceStatusLabel(value).label,
+  }));
+};

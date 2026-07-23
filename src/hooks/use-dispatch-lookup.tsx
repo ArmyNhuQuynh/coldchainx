@@ -25,18 +25,18 @@ export const useDispatchLookup = () => {
       enabled: Boolean(data?.scheduleId),
     });
 
-  const getAvailableVehicles = () =>
+  const getAvailableVehicles = (warehouseId?: string | null) =>
     useQuery({
-      queryKey: ["dispatch", "vehicles"],
-      queryFn: dispatchLookupApi.getAvailableVehicles,
-      placeholderData: keepPreviousData,
+      queryKey: ["dispatch", "vehicles", "warehouse", warehouseId],
+      queryFn: () => dispatchLookupApi.getAvailableVehicles(warehouseId!),
+      enabled: Boolean(warehouseId),
     });
 
-  const getAvailableDrivers = () =>
+  const getAvailableDrivers = (warehouseId?: string | null) =>
     useQuery({
-      queryKey: ["dispatch", "drivers"],
-      queryFn: dispatchLookupApi.getAvailableDrivers,
-      placeholderData: keepPreviousData,
+      queryKey: ["dispatch", "drivers", "warehouse", warehouseId],
+      queryFn: () => dispatchLookupApi.getAvailableDrivers(warehouseId!),
+      enabled: Boolean(warehouseId),
     });
 
   return {

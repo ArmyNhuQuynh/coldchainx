@@ -8,8 +8,9 @@ import { IncidentExpenseBadge } from "@/components/incidents/incident-badges";
 import { formatIncidentDate, formatIncidentId, formatIncidentMoney } from "@/components/incidents/incident-formatters";
 import type { TIncident } from "@/schemas/incident.schema";
 import { INCIDENT_EXPENSE_STATUS } from "@/types/enums/incident-expense-status.enum";
+import { INCIDENT_STATUS } from "@/types/enums/incident-status.enum";
 import { getIncidentTypeLabel } from "@/types/enums/incident-type.enum";
-import { Eye, ReceiptText, WalletCards } from "lucide-react";
+import { CheckCircle2, Eye, ReceiptText, WalletCards } from "lucide-react";
 
 type Props = {
   incidents: TIncident[];
@@ -17,15 +18,27 @@ type Props = {
   onView: (incident: TIncident) => void;
   onReview: (incident: TIncident) => void;
   onReimburse: (incident: TIncident) => void;
+  onResolve: (incident: TIncident) => void;
+  title?: string;
+  description?: string;
 };
 
-const ExpenseTable = ({ incidents, isLoading, onView, onReview, onReimburse }: Props) => (
+const ExpenseTable = ({
+  incidents,
+  isLoading,
+  onView,
+  onReview,
+  onReimburse,
+  onResolve,
+  title = "Đề nghị hoàn chi phí",
+  description = "Đối chiếu hóa đơn trước khi duyệt và tải chứng từ sau khi hoàn tiền",
+}: Props) => (
   <Card className="gap-0 rounded-lg py-0">
     <CardHeader className="border-b px-5 py-4">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <CardTitle className="text-lg">Đề nghị hoàn chi phí</CardTitle>
-          <p className="mt-1 text-sm text-muted-foreground">Đối chiếu hóa đơn trước khi duyệt và tải chứng từ sau khi hoàn tiền</p>
+          <CardTitle className="text-lg">{title}</CardTitle>
+          <p className="mt-1 text-sm text-muted-foreground">{description}</p>
         </div>
         <Badge variant="outline" className="rounded-md bg-transparent">{incidents.length} hồ sơ</Badge>
       </div>
@@ -57,7 +70,14 @@ const ExpenseTable = ({ incidents, isLoading, onView, onReview, onReimburse }: P
                 </TableCell>
               </TableRow>
             )}
-            {!isLoading && incidents.map((incident) => (
+            {!isLoading && incidents.map((incident) => {
+              const readyToResolve =
+                (incident.status === INCIDENT_STATUS.CONTINUED ||
+                  incident.status === INCIDENT_STATUS.TRANSLOAD_COMPLETED) &&
+                (incident.expenseStatus === INCIDENT_EXPENSE_STATUS.NOT_REQUIRED ||
+                  incident.expenseStatus === INCIDENT_EXPENSE_STATUS.REIMBURSED);
+
+              return (
               <TableRow key={incident.incidentId} className="cursor-pointer" onClick={() => onView(incident)}>
                 <TableCell className="pl-5">
                   <p className="font-semibold">SC-{formatIncidentId(incident.incidentId)}</p>
@@ -75,13 +95,19 @@ const ExpenseTable = ({ incidents, isLoading, onView, onReview, onReimburse }: P
                 </TableCell>
                 <TableCell><IncidentExpenseBadge status={incident.expenseStatus} /></TableCell>
                 <TableCell className="pr-5 text-right">
-                  {incident.expenseStatus === INCIDENT_EXPENSE_STATUS.PENDING_REVIEW && (
+                  {readyToResolve && (
+                    <Button type="button" size="sm" className="gap-1.5" onClick={(event) => { event.stopPropagation(); onResolve(incident); }}>
+                      <CheckCircle2 className="h-3.5 w-3.5" /> Đóng sự cố
+                    </Button>
+                  )}
+                  {!readyToResolve && incident.expenseStatus === INCIDENT_EXPENSE_STATUS.PENDING_APPROVAL && (
                     <Button type="button" size="sm" onClick={(event) => { event.stopPropagation(); onReview(incident); }}>Duyệt chi phí</Button>
                   )}
-                  {incident.expenseStatus === INCIDENT_EXPENSE_STATUS.APPROVED && (
+                  {!readyToResolve && incident.expenseStatus === INCIDENT_EXPENSE_STATUS.APPROVED && (
                     <Button type="button" size="sm" onClick={(event) => { event.stopPropagation(); onReimburse(incident); }}>Hoàn tiền</Button>
                   )}
-                  {incident.expenseStatus !== INCIDENT_EXPENSE_STATUS.PENDING_REVIEW &&
+                  {!readyToResolve &&
+                    incident.expenseStatus !== INCIDENT_EXPENSE_STATUS.PENDING_APPROVAL &&
                     incident.expenseStatus !== INCIDENT_EXPENSE_STATUS.APPROVED && (
                     <Button type="button" variant="outline" size="sm" className="gap-1.5" onClick={(event) => { event.stopPropagation(); onView(incident); }}>
                       <Eye className="h-3.5 w-3.5" /> Chi tiết
@@ -89,7 +115,8 @@ const ExpenseTable = ({ incidents, isLoading, onView, onReview, onReimburse }: P
                   )}
                 </TableCell>
               </TableRow>
-            ))}
+              );
+            })}
           </TableBody>
         </Table>
       </ScrollArea>

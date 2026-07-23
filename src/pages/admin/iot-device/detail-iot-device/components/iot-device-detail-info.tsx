@@ -91,7 +91,9 @@ const IotDeviceDetailInfo = ({ device }: Props) => {
     {
       icon: Truck,
       label: "Xe đang gắn",
-      value: device.truckPlate || "Chưa gắn xe",
+      value: device.vehicleId
+        ? device.truckPlate || device.vehicleId
+        : "Chưa gắn xe",
     },
     {
       icon: Link2,

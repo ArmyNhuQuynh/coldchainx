@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useIncident } from "@/hooks/use-incident";
@@ -18,31 +17,29 @@ type Props = {
 
 const TransloadConfirmDialog = ({ open, incident, onOpenChange }: Props) => {
   const { confirmTransload } = useIncident();
-  const [temperature, setTemperature] = useState("");
-  const [note, setNote] = useState("");
-  const [photos, setPhotos] = useState<File[]>([]);
+  const [confirmationNote, setConfirmationNote] = useState("");
 
   useEffect(() => {
     if (!open) {
-      setTemperature("");
-      setNote("");
-      setPhotos([]);
+      setConfirmationNote("");
     }
   }, [open]);
 
   const handleSubmit = async () => {
-    const parsedTemperature = temperature.trim() ? Number(temperature) : undefined;
-    if (parsedTemperature !== undefined && !Number.isFinite(parsedTemperature)) {
-      toast.warning("Nhiệt độ bàn giao không hợp lệ.");
+    const note = confirmationNote.trim();
+    if (!note) {
+      toast.warning("Nhập ghi chú xác nhận sang hàng.");
       return;
     }
 
     try {
       const result = await confirmTransload.mutateAsync({
         incidentId: incident.incidentId,
-        data: { handoverTemperature: parsedTemperature, note, photos },
+        data: { confirmationNote: note },
       });
-      toast.success(`Đã xác nhận sang ${result.transferredLpnCount} LPN sang xe ${result.truckPlate}.`);
+      toast.success(
+        result.message || `Đã xác nhận sang hàng sang xe ${result.vehiclePlate}.`
+      );
       onOpenChange(false);
     } catch (error: unknown) {
       toast.error(getIncidentErrorMessage(error, "Không thể xác nhận sang hàng."));
@@ -64,24 +61,20 @@ const TransloadConfirmDialog = ({ open, incident, onOpenChange }: Props) => {
           Thiết bị IoT của xe thay thế phải online. BE sẽ gửi lệnh START_STREAMING ngay sau khi xác nhận.
         </div>
 
-        <div className="grid gap-4 py-2 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="transload-temperature">Nhiệt độ bàn giao (°C)</Label>
-            <Input id="transload-temperature" type="number" step="0.1" value={temperature} placeholder="VD: -18" onChange={(event) => setTemperature(event.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="transload-photos">Ảnh sang hàng</Label>
-            <Input id="transload-photos" type="file" multiple accept="image/*" onChange={(event) => setPhotos(Array.from(event.target.files ?? []))} />
-          </div>
-          <div className="space-y-2 sm:col-span-2">
-            <Label htmlFor="transload-note">Ghi chú hiện trường</Label>
-            <Textarea id="transload-note" value={note} rows={4} placeholder="Tình trạng hàng, niêm phong và ghi chú bàn giao..." onChange={(event) => setNote(event.target.value)} />
-          </div>
+        <div className="space-y-2 py-2">
+          <Label htmlFor="transload-confirmation-note">Ghi chú xác nhận</Label>
+          <Textarea
+            id="transload-confirmation-note"
+            value={confirmationNote}
+            rows={4}
+            placeholder="Xác nhận toàn bộ hàng đã sang xe thay thế và sẵn sàng tiếp tục chuyến..."
+            onChange={(event) => setConfirmationNote(event.target.value)}
+          />
         </div>
 
         <DialogFooter>
           <Button type="button" variant="outline" disabled={confirmTransload.isPending} onClick={() => onOpenChange(false)}>Hủy</Button>
-          <Button type="button" disabled={confirmTransload.isPending} onClick={handleSubmit}>
+          <Button type="button" disabled={confirmTransload.isPending || !confirmationNote.trim()} onClick={handleSubmit}>
             {confirmTransload.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
             Xác nhận sang hàng
           </Button>

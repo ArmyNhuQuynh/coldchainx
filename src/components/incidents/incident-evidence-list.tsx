@@ -3,7 +3,6 @@ import { Badge } from "@/components/ui/badge";
 import type { TIncidentEvidence } from "@/schemas/incident.schema";
 import { getIncidentEvidenceTypeLabel } from "@/types/enums/incident-evidence-type.enum";
 import { FileText } from "lucide-react";
-import { formatIncidentDate } from "./incident-formatters";
 
 type Props = {
   evidences: TIncidentEvidence[];
@@ -39,12 +38,6 @@ const IncidentEvidenceList = ({
               <Badge variant="outline" className="rounded-md bg-transparent">
                 {evidenceLabel}
               </Badge>
-              {evidence.description && (
-                <p className="line-clamp-2 text-sm">{evidence.description}</p>
-              )}
-              <p className="text-xs text-muted-foreground">
-                {formatIncidentDate(evidence.uploadedAt)}
-              </p>
             </div>
           </div>
         );

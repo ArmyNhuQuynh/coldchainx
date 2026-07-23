@@ -1,7 +1,7 @@
 import type { TIncident } from "@/schemas/incident.schema";
 import { INCIDENT_SEVERITY } from "@/types/enums/incident-severity.enum";
 import { INCIDENT_STATUS } from "@/types/enums/incident-status.enum";
-import { AlertTriangle, CircleDot, Siren, Truck } from "lucide-react";
+import { AlertTriangle, CheckCircle2, CircleDot, Truck } from "lucide-react";
 
 const IncidentSummaryStrip = ({ incidents }: { incidents: TIncident[] }) => {
   const unresolved = incidents.filter(
@@ -25,10 +25,14 @@ const IncidentSummaryStrip = ({ incidents }: { incidents: TIncident[] }) => {
       className: "text-blue-700",
     },
     {
-      label: "Cần cứu hộ",
-      value: unresolved.filter((incident) => incident.requiresRescue).length,
-      icon: Siren,
-      className: "text-rose-700",
+      label: "Chờ Admin đóng",
+      value: unresolved.filter(
+        (incident) =>
+          incident.status === INCIDENT_STATUS.CONTINUED ||
+          incident.status === INCIDENT_STATUS.TRANSLOAD_COMPLETED
+      ).length,
+      icon: CheckCircle2,
+      className: "text-emerald-700",
     },
     {
       label: "Mức nghiêm trọng",
@@ -61,4 +65,3 @@ const IncidentSummaryStrip = ({ incidents }: { incidents: TIncident[] }) => {
 };
 
 export default IncidentSummaryStrip;
-

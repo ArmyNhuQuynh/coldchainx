@@ -28,10 +28,9 @@ const RescueProgressPanel = ({ incident }: { incident: TIncident }) => {
           </div>
         </CardHeader>
         <CardContent className="space-y-4 p-5">
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-3 sm:grid-cols-3">
             <div className="rounded-lg border p-3"><p className="text-xs text-muted-foreground">Xe thay thế</p><p className="mt-2 font-semibold">{formatIncidentId(incident.replacementVehicleId)}</p></div>
             <div className="rounded-lg border p-3"><p className="text-xs text-muted-foreground">Điều động lúc</p><p className="mt-2 font-semibold">{formatIncidentDate(incident.rescueDispatchedAt)}</p></div>
-            <div className="rounded-lg border p-3"><p className="text-xs text-muted-foreground">Nhiệt độ bàn giao</p><p className="mt-2 font-semibold">{incident.transloadTemperature != null ? `${incident.transloadTemperature}°C` : "—"}</p></div>
             <div className="rounded-lg border p-3"><p className="text-xs text-muted-foreground">Xác nhận lúc</p><p className="mt-2 font-semibold">{formatIncidentDate(incident.transloadConfirmedAt)}</p></div>
           </div>
 

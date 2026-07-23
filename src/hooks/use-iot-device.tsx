@@ -1,5 +1,7 @@
 import { iotDeviceApi } from "@/apis/iot-device.api";
+import { monitoringApi } from "@/apis/monitoring.api";
 import type {
+  TIotDeviceAssignRequest,
   TIotDeviceCreateRequest,
   TIotDeviceUpdateRequest,
 } from "@/schemas/iot-device.schema";
@@ -46,6 +48,23 @@ export const useIotDevice = () => {
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: ["iot-devices"] });
       queryClient.invalidateQueries({ queryKey: ["iot-device", id] });
+      queryClient.invalidateQueries({ queryKey: ["vehicles"] });
+    },
+  });
+
+  const assignIotDevice = useMutation({
+    mutationFn: ({
+      data,
+    }: {
+      deviceId: string;
+      data: TIotDeviceAssignRequest;
+    }) => monitoringApi.assignDevice(data),
+    onSuccess: (_, { deviceId }) => {
+      queryClient.invalidateQueries({ queryKey: ["iot-devices"] });
+      queryClient.invalidateQueries({
+        queryKey: ["iot-device", deviceId],
+      });
+      queryClient.invalidateQueries({ queryKey: ["vehicles"] });
     },
   });
 
@@ -62,6 +81,7 @@ export const useIotDevice = () => {
     getIotDeviceById,
     createIotDevice,
     updateIotDevice,
+    assignIotDevice,
     deleteIotDevice,
   };
 };

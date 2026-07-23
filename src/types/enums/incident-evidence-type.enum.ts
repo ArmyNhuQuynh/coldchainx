@@ -1,4 +1,5 @@
 export const INCIDENT_EVIDENCE_TYPE = {
+  INCIDENT_ATTACHMENT: "INCIDENT_ATTACHMENT",
   SCENE_PHOTO: "SCENE_PHOTO",
   DRIVER_RECEIPT: "DRIVER_RECEIPT",
   TRANSLOAD_PHOTO: "TRANSLOAD_PHOTO",
@@ -17,6 +18,8 @@ export const normalizeIncidentEvidenceType = (
   const normalized = type.trim().toUpperCase().replace(/[\s-]/g, "_");
 
   switch (normalized) {
+    case INCIDENT_EVIDENCE_TYPE.INCIDENT_ATTACHMENT:
+      return INCIDENT_EVIDENCE_TYPE.INCIDENT_ATTACHMENT;
     case INCIDENT_EVIDENCE_TYPE.SCENE_PHOTO:
       return INCIDENT_EVIDENCE_TYPE.SCENE_PHOTO;
     case INCIDENT_EVIDENCE_TYPE.DRIVER_RECEIPT:
@@ -34,6 +37,8 @@ export const normalizeIncidentEvidenceType = (
 
 export const getIncidentEvidenceTypeLabel = (type?: string | null) => {
   switch (normalizeIncidentEvidenceType(type)) {
+    case INCIDENT_EVIDENCE_TYPE.INCIDENT_ATTACHMENT:
+      return "Tệp đính kèm sự cố";
     case INCIDENT_EVIDENCE_TYPE.SCENE_PHOTO:
       return "Ảnh hiện trường";
     case INCIDENT_EVIDENCE_TYPE.DRIVER_RECEIPT:

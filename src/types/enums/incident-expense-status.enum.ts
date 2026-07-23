@@ -1,8 +1,7 @@
 export const INCIDENT_EXPENSE_STATUS = {
-  NOT_REQUESTED: "NOT_REQUESTED",
-  PENDING_REVIEW: "PENDING_REVIEW",
+  NOT_REQUIRED: "NOT_REQUIRED",
+  PENDING_APPROVAL: "PENDING_APPROVAL",
   APPROVED: "APPROVED",
-  REJECTED: "REJECTED",
   REIMBURSED: "REIMBURSED",
 } as const;
 
@@ -17,14 +16,12 @@ export const normalizeIncidentExpenseStatus = (
   const normalized = status.trim().toUpperCase().replace(/[\s-]/g, "_");
 
   switch (normalized) {
-    case INCIDENT_EXPENSE_STATUS.NOT_REQUESTED:
-      return INCIDENT_EXPENSE_STATUS.NOT_REQUESTED;
-    case INCIDENT_EXPENSE_STATUS.PENDING_REVIEW:
-      return INCIDENT_EXPENSE_STATUS.PENDING_REVIEW;
+    case INCIDENT_EXPENSE_STATUS.NOT_REQUIRED:
+      return INCIDENT_EXPENSE_STATUS.NOT_REQUIRED;
+    case INCIDENT_EXPENSE_STATUS.PENDING_APPROVAL:
+      return INCIDENT_EXPENSE_STATUS.PENDING_APPROVAL;
     case INCIDENT_EXPENSE_STATUS.APPROVED:
       return INCIDENT_EXPENSE_STATUS.APPROVED;
-    case INCIDENT_EXPENSE_STATUS.REJECTED:
-      return INCIDENT_EXPENSE_STATUS.REJECTED;
     case INCIDENT_EXPENSE_STATUS.REIMBURSED:
       return INCIDENT_EXPENSE_STATUS.REIMBURSED;
     default:
@@ -34,12 +31,12 @@ export const normalizeIncidentExpenseStatus = (
 
 export const getIncidentExpenseStatusLabel = (status?: string | null) => {
   switch (normalizeIncidentExpenseStatus(status)) {
-    case INCIDENT_EXPENSE_STATUS.NOT_REQUESTED:
+    case INCIDENT_EXPENSE_STATUS.NOT_REQUIRED:
       return {
         label: "Không yêu cầu",
         className: "border-muted-foreground/40 bg-transparent text-muted-foreground",
       };
-    case INCIDENT_EXPENSE_STATUS.PENDING_REVIEW:
+    case INCIDENT_EXPENSE_STATUS.PENDING_APPROVAL:
       return {
         label: "Chờ duyệt",
         className: "border-amber-500 bg-transparent text-amber-700",
@@ -48,11 +45,6 @@ export const getIncidentExpenseStatusLabel = (status?: string | null) => {
       return {
         label: "Đã duyệt",
         className: "border-blue-500 bg-transparent text-blue-700",
-      };
-    case INCIDENT_EXPENSE_STATUS.REJECTED:
-      return {
-        label: "Đã từ chối",
-        className: "border-rose-500 bg-transparent text-rose-700",
       };
     case INCIDENT_EXPENSE_STATUS.REIMBURSED:
       return {

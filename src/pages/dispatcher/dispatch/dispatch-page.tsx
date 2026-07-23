@@ -75,9 +75,12 @@ const DispatchPage = () => {
     number | null
   >(null);
 
+  const selectedWarehouseId = selectedLpns[0]?.warehouseId ?? "";
+  const selectedWarehouseName = selectedLpns[0]?.warehouseName ?? "";
+
   const schedulesQuery = getSchedules();
-  const vehiclesQuery = getAvailableVehicles();
-  const driversQuery = getAvailableDrivers();
+  const vehiclesQuery = getAvailableVehicles(selectedWarehouseId);
+  const driversQuery = getAvailableDrivers(selectedWarehouseId);
 
   const selectedLpnIds = useMemo(
     () => selectedLpns.map((lpn) => lpn.lpnId),
@@ -96,8 +99,27 @@ const DispatchPage = () => {
   });
 
   const schedules = schedulesQuery.data ?? [];
-  const vehicles = vehiclesQuery.data ?? [];
-  const drivers = driversQuery.data ?? [];
+  const vehicles = useMemo(
+    () =>
+      (vehiclesQuery.data ?? []).filter(
+        (vehicle) =>
+          !selectedWarehouseName ||
+          vehicle.currentLocation?.trim().toLocaleLowerCase("vi-VN") ===
+            selectedWarehouseName.trim().toLocaleLowerCase("vi-VN")
+      ),
+    [selectedWarehouseName, vehiclesQuery.data]
+  );
+  const drivers = useMemo(
+    () =>
+      (driversQuery.data ?? []).filter(
+        (driver) =>
+          driver.hasValidLicense === true &&
+          (!selectedWarehouseName ||
+            driver.currentLocation?.trim().toLocaleLowerCase("vi-VN") ===
+              selectedWarehouseName.trim().toLocaleLowerCase("vi-VN"))
+      ),
+    [driversQuery.data, selectedWarehouseName]
+  );
   const compatibility = compatibleLpnsQuery.data;
   const candidateLpns = compatibility?.items ?? [];
 
@@ -137,6 +159,14 @@ const DispatchPage = () => {
       setCandidatePage(totalPages);
     }
   }, [candidatePage, compatibility?.totalPages]);
+
+  useEffect(() => {
+    setSelectedVehicleId("");
+    setSelectedDriverIds([]);
+    setPackingPreview(null);
+    setPackingPreviewKey(null);
+    setIsPreviewOpen(false);
+  }, [selectedWarehouseId]);
 
   const resetPackingPreview = () => {
     setPackingPreview(null);
@@ -201,6 +231,7 @@ const DispatchPage = () => {
   const canPreviewPacking =
     compatibilityValid &&
     selectedLpnIds.length > 0 &&
+    Boolean(selectedWarehouseId) &&
     Boolean(selectedVehicleId);
 
   const validationMessages = useMemo(() => {
@@ -211,6 +242,9 @@ const DispatchPage = () => {
     if (!selectedScheduleId) messages.push("Chọn tuyến và giờ khởi hành trước.");
     if (selectedScheduleId && selectedLpns.length === 0) {
       messages.push("Chọn ít nhất 1 LPN.");
+    }
+    if (selectedLpns.length > 0 && !selectedWarehouseId) {
+      messages.push("LPN đã chọn chưa có thông tin kho xuất phát.");
     }
     if (compatibleLpnsQuery.isFetching && selectedLpns.length > 0) {
       messages.push("Đang kiểm tra tính tương thích của tập LPN.");
@@ -224,6 +258,12 @@ const DispatchPage = () => {
     }
     if (compatibleLpnsQuery.isError) {
       messages.push("Không tải được danh sách LPN tương thích từ BE.");
+    }
+    if (selectedWarehouseId && vehiclesQuery.isError) {
+      messages.push("Không tải được xe tại kho xuất phát.");
+    }
+    if (selectedWarehouseId && driversQuery.isError) {
+      messages.push("Không tải được tài xế tại kho xuất phát.");
     }
     if (!selectedVehicleId) messages.push("Chọn 1 xe để ghép chuyến.");
     if (selectedDriverIds.length < 1) messages.push("Chọn 1 hoặc 2 tài xế.");
@@ -256,6 +296,9 @@ const DispatchPage = () => {
     selectedLpns.length,
     selectedScheduleId,
     selectedVehicleId,
+    selectedWarehouseId,
+    driversQuery.isError,
+    vehiclesQuery.isError,
   ]);
 
   const canCreateTrip =
@@ -353,12 +396,16 @@ const DispatchPage = () => {
           <VehicleDriverPanel
             vehicles={vehicles}
             drivers={drivers}
+            warehouseName={selectedWarehouseName}
+            hasWarehouse={Boolean(selectedWarehouseId)}
             selectedVehicleId={selectedVehicleId}
             selectedDriverIds={selectedDriverIds}
             plannedStartTime={plannedStartTime}
             plannedEndTime={plannedEndTime}
             isLoadingVehicles={vehiclesQuery.isLoading}
             isLoadingDrivers={driversQuery.isLoading}
+            isVehiclesError={vehiclesQuery.isError}
+            isDriversError={driversQuery.isError}
             isSubmitting={manualDispatch.isPending}
             isPreviewing={simulatePacking.isPending}
             isPlanningEnabled={Boolean(selectedScheduleId)}
@@ -372,6 +419,8 @@ const DispatchPage = () => {
             onPlannedEndTimeChange={setPlannedEndTime}
             onPreviewPacking={handlePreviewPacking}
             onCreateTrip={handleCreateTrip}
+            onRetryVehicles={() => vehiclesQuery.refetch()}
+            onRetryDrivers={() => driversQuery.refetch()}
           />
         </div>
       </div>

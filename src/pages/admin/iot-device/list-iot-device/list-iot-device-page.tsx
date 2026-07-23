@@ -4,6 +4,7 @@ import { useIotDevice } from "@/hooks/use-iot-device";
 import { PATH_ADMIN_DASHBOARD } from "@/routes/path";
 import type { TIotDevice } from "@/schemas/iot-device.schema";
 import {
+  getIotDeviceDisplayStatus,
   IOT_DEVICE_STATUS,
   normalizeIotDeviceStatus,
 } from "@/types/enums/iot-device-status.enum";
@@ -40,7 +41,9 @@ const matchesSearch = (device: TIotDevice, query: string) => {
 
 const matchesStatus = (device: TIotDevice, status: string) => {
   if (status === IOT_DEVICE_FILTER_ALL) return true;
-  return normalizeIotDeviceStatus(device.status) === normalizeIotDeviceStatus(status);
+  return (
+    getIotDeviceDisplayStatus(device) === normalizeIotDeviceStatus(status)
+  );
 };
 
 const matchesAssignment = (device: TIotDevice, assignment: string) => {

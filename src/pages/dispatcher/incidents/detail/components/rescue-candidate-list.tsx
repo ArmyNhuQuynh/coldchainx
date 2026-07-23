@@ -38,8 +38,11 @@ const RescueCandidateList = ({
           Array.from({ length: 3 }).map((_, index) => (
             <Skeleton key={index} className="h-24 w-full" />
           ))}
-        {!isLoading && error && (
-          <div className="p-5 text-center text-sm text-rose-700">
+        {!isLoading && Boolean(error) && (
+          <div
+            className="p-5 text-center text-sm text-rose-700"
+            role="alert"
+          >
             {getIncidentErrorMessage(error, "Không tải được xe cứu hộ phù hợp.")}
           </div>
         )}
@@ -50,6 +53,9 @@ const RescueCandidateList = ({
         )}
         {candidates.map((vehicle) => {
           const selected = vehicle.vehicleId === selectedVehicleId;
+          const allIotOnline =
+            vehicle.iotDeviceCount > 0 &&
+            vehicle.onlineIotDeviceCount === vehicle.iotDeviceCount;
           return (
             <button
               key={vehicle.vehicleId}
@@ -69,12 +75,12 @@ const RescueCandidateList = ({
                   variant="outline"
                   className={cn(
                     "rounded-md bg-transparent",
-                    vehicle.isIotOnline
+                    allIotOnline
                       ? "border-emerald-500 text-emerald-700"
                       : "border-amber-500 text-amber-700"
                   )}
                 >
-                  IoT {vehicle.isIotOnline ? "online" : "offline"}
+                  IoT {vehicle.onlineIotDeviceCount}/{vehicle.iotDeviceCount} online
                 </Badge>
               </div>
               <p className="mt-2 text-sm text-muted-foreground">
@@ -83,7 +89,7 @@ const RescueCandidateList = ({
               </p>
               <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Snowflake className="h-3.5 w-3.5" />
-                {vehicle.minTemp}°C → {vehicle.maxTemp}°C · {vehicle.deviceCode}
+                {vehicle.minTemp}°C → {vehicle.maxTemp}°C
               </p>
             </button>
           );

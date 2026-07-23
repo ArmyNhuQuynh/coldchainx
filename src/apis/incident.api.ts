@@ -1,15 +1,16 @@
 import { apiRequest } from "@/lib/http";
 import type {
+  TApproveIncidentExpenseRequest,
   TConfirmTransloadRequest,
-  TConfirmTransloadResult,
   TDispatchRescueRequest,
   TDispatchRescueResult,
   TIncident,
   TIncidentListParams,
   TIncidentPage,
+  TIncidentWorkflowResult,
   TReimburseIncidentExpenseRequest,
+  TResolveIncidentRequest,
   TRescueCandidate,
-  TReviewIncidentExpenseRequest,
 } from "@/schemas/incident.schema";
 import type { BaseResponse } from "@/types/response.type";
 
@@ -69,26 +70,19 @@ const dispatchRescue = async (
 const confirmTransload = async (
   incidentId: string,
   data: TConfirmTransloadRequest
-): Promise<TConfirmTransloadResult> => {
-  const formData = new FormData();
-  if (data.handoverTemperature !== undefined) {
-    formData.append("HandoverTemperature", String(data.handoverTemperature));
-  }
-  if (data.note?.trim()) formData.append("Note", data.note.trim());
-  data.photos.forEach((photo) => formData.append("Photos", photo));
-
+): Promise<TIncidentWorkflowResult> => {
   const response = await apiRequest.baseApi.post<
-    BaseResponse<TConfirmTransloadResult>
-  >(`${INCIDENTS_URL}/${incidentId}/transload/confirm`, formData);
+    BaseResponse<TIncidentWorkflowResult>
+  >(`${INCIDENTS_URL}/${incidentId}/confirm-transload`, data);
   return response.data.data;
 };
 
-const reviewExpense = async (
+const approveExpense = async (
   incidentId: string,
-  data: TReviewIncidentExpenseRequest
+  data: TApproveIncidentExpenseRequest
 ): Promise<TIncident> => {
   const response = await apiRequest.baseApi.post<BaseResponse<TIncident>>(
-    `${INCIDENTS_URL}/${incidentId}/expense-review`,
+    `${INCIDENTS_URL}/${incidentId}/expenses/approve`,
     data
   );
   return response.data.data;
@@ -104,8 +98,19 @@ const reimburseExpense = async (
   formData.append("ReceiptFile", data.receiptFile);
 
   const response = await apiRequest.baseApi.post<BaseResponse<TIncident>>(
-    `${INCIDENTS_URL}/${incidentId}/reimburse`,
+    `${INCIDENTS_URL}/${incidentId}/expenses/reimburse`,
     formData
+  );
+  return response.data.data;
+};
+
+const resolveIncident = async (
+  incidentId: string,
+  data: TResolveIncidentRequest
+): Promise<boolean> => {
+  const response = await apiRequest.baseApi.post<BaseResponse<boolean>>(
+    `${INCIDENTS_URL}/${incidentId}/resolve`,
+    data
   );
   return response.data.data;
 };
@@ -117,7 +122,7 @@ export const incidentApi = {
   getRescueCandidates,
   dispatchRescue,
   confirmTransload,
-  reviewExpense,
+  approveExpense,
   reimburseExpense,
+  resolveIncident,
 };
-

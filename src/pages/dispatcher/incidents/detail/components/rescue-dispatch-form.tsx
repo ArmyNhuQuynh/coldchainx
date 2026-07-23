@@ -107,10 +107,11 @@ const RescueDispatchForm = ({ incident, trip }: Props) => {
           </div>
         </div>
 
-        {selectedVehicle && !selectedVehicle.isIotOnline && (
+        {selectedVehicle &&
+          selectedVehicle.onlineIotDeviceCount < selectedVehicle.iotDeviceCount && (
           <div className="flex gap-2 rounded-lg border border-amber-300 p-3 text-sm text-amber-800">
             <RadioTower className="mt-0.5 h-4 w-4 shrink-0" />
-            Có thể điều xe này, nhưng phải bật và kết nối IoT trước khi xác nhận sang hàng.
+            Có thể điều xe này, nhưng phải kết nối tất cả thiết bị IoT trước khi xác nhận sang hàng.
           </div>
         )}
 

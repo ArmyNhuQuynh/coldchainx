@@ -1,9 +1,10 @@
 import { incidentApi } from "@/apis/incident.api";
 import type {
+  TApproveIncidentExpenseRequest,
   TConfirmTransloadRequest,
   TDispatchRescueRequest,
   TReimburseIncidentExpenseRequest,
-  TReviewIncidentExpenseRequest,
+  TResolveIncidentRequest,
 } from "@/schemas/incident.schema";
 import { INCIDENT_STATUS } from "@/types/enums/incident-status.enum";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -56,6 +57,8 @@ export const useIncident = () => {
       queryKey: incidentQueryKeys.detail(incidentId ?? ""),
       queryFn: () => incidentApi.getIncident(incidentId!),
       enabled: Boolean(incidentId),
+      refetchInterval: (query) =>
+        query.state.data?.status === INCIDENT_STATUS.RESOLVED ? false : 15_000,
     });
 
   const getRescueCandidates = (incidentId?: string, enabled = true) =>
@@ -88,14 +91,14 @@ export const useIncident = () => {
     onSuccess: (_, variables) => invalidateIncidentData(variables.incidentId),
   });
 
-  const reviewExpense = useMutation({
+  const approveExpense = useMutation({
     mutationFn: ({
       incidentId,
       data,
     }: {
       incidentId: string;
-      data: TReviewIncidentExpenseRequest;
-    }) => incidentApi.reviewExpense(incidentId, data),
+      data: TApproveIncidentExpenseRequest;
+    }) => incidentApi.approveExpense(incidentId, data),
     onSuccess: (_, variables) => invalidateIncidentData(variables.incidentId),
   });
 
@@ -110,6 +113,17 @@ export const useIncident = () => {
     onSuccess: (_, variables) => invalidateIncidentData(variables.incidentId),
   });
 
+  const resolveIncident = useMutation({
+    mutationFn: ({
+      incidentId,
+      data,
+    }: {
+      incidentId: string;
+      data: TResolveIncidentRequest;
+    }) => incidentApi.resolveIncident(incidentId, data),
+    onSuccess: (_, variables) => invalidateIncidentData(variables.incidentId),
+  });
+
   return {
     getAllIncidents,
     getUnresolvedIncidentCount,
@@ -117,7 +131,8 @@ export const useIncident = () => {
     getRescueCandidates,
     dispatchRescue,
     confirmTransload,
-    reviewExpense,
+    approveExpense,
     reimburseExpense,
+    resolveIncident,
   };
 };

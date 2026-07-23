@@ -8,9 +8,6 @@ export type TIncidentEvidence = {
   evidenceId: string;
   evidenceType: TIncidentEvidenceType;
   fileUrl: string;
-  description?: string | null;
-  uploadedBy?: string | null;
-  uploadedAt?: string | null;
 };
 
 export type TIncident = {
@@ -23,29 +20,30 @@ export type TIncident = {
   currentLatitude?: number | null;
   currentLongitude?: number | null;
   driverPaidAmount: number;
-  reimbursedAmount?: number | null;
   requiresRescue: boolean;
-  expenseStatus: TIncidentExpenseStatus;
   approvedAmount?: number | null;
-  approvalNote?: string | null;
-  expenseRejectionReason?: string | null;
-  approvedBy?: string | null;
-  approvedAt?: string | null;
-  reimbursedBy?: string | null;
-  reimbursedAt?: string | null;
-  reimbursementNote?: string | null;
-  brokenVehicleId?: string | null;
-  replacementVehicleId?: string | null;
-  rescueDispatchedBy?: string | null;
-  rescueDispatchedAt?: string | null;
-  transloadConfirmedBy?: string | null;
-  transloadConfirmedAt?: string | null;
-  transloadTemperature?: number | null;
-  transloadNote?: string | null;
+  reimbursedAmount?: number | null;
+  expenseStatus?: TIncidentExpenseStatus | null;
   status: TIncidentStatus;
   reportedBy: string;
   reportedByUsername: string;
   reportedAt?: string | null;
+  handledBy?: string | null;
+  handledAt?: string | null;
+  handlingNote?: string | null;
+  brokenVehicleId?: string | null;
+  replacementVehicleId?: string | null;
+  maintenanceTicketId?: string | null;
+  rescueDispatchedAt?: string | null;
+  transloadConfirmedBy?: string | null;
+  transloadConfirmedAt?: string | null;
+  transloadNote?: string | null;
+  expenseApprovedBy?: string | null;
+  expenseApprovedAt?: string | null;
+  expenseApprovalNote?: string | null;
+  reimbursedBy?: string | null;
+  reimbursedAt?: string | null;
+  resolvedBy?: string | null;
   resolvedAt?: string | null;
   resolutionNote?: string | null;
   evidences: TIncidentEvidence[];
@@ -73,10 +71,9 @@ export type TRescueCandidate = {
   maxCbm: number;
   minTemp: number;
   maxTemp: number;
-  deviceId: string;
-  deviceCode: string;
-  isIotOnline: boolean;
-  lastPingTime?: string | null;
+  iotDeviceCount: number;
+  onlineIotDeviceCount: number;
+  hasOnlineIot: boolean;
   label: string;
 };
 
@@ -114,38 +111,31 @@ export type TDispatchRescueResult = {
 };
 
 export type TConfirmTransloadRequest = {
-  handoverTemperature?: number;
-  note?: string;
-  photos: File[];
+  confirmationNote: string;
 };
 
-export type TConfirmTransloadResult = {
+export type TIncidentWorkflowResult = {
   incidentId: string;
+  incidentStatus: string;
   tripId: string;
   tripStatus: string;
   vehicleId: string;
-  truckPlate: string;
-  deviceCode: string;
-  transferredLpnCount: number;
+  vehiclePlate: string;
   confirmedAt: string;
-  handoverTemperature?: number | null;
-  evidences: TIncidentEvidence[];
+  message: string;
 };
 
-export type TReviewIncidentExpenseRequest =
-  | {
-      action: 1;
-      approvedAmount: number;
-      note?: string;
-    }
-  | {
-      action: 2;
-      rejectionReason: string;
-      note?: string;
-    };
+export type TApproveIncidentExpenseRequest = {
+  approvedAmount: number;
+  approvalNote?: string;
+};
 
 export type TReimburseIncidentExpenseRequest = {
   reimbursedAmount: number;
   note?: string;
   receiptFile: File;
+};
+
+export type TResolveIncidentRequest = {
+  resolutionNote: string;
 };

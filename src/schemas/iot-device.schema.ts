@@ -15,21 +15,23 @@ export const IotDeviceSchema = z.object({
 
 export const IotDeviceCreateRequestSchema = z.object({
   deviceCode: z.string().trim().min(1, "Mã thiết bị không được để trống"),
-  vehicleId: z.string().uuid("ID xe không hợp lệ").nullable().optional(),
 });
 
 export const IotDeviceUpdateRequestSchema = z
   .object({
     deviceCode: z.string().trim().min(1, "Mã thiết bị không được để trống").optional(),
-    vehicleId: z.string().uuid("ID xe không hợp lệ").nullable().optional(),
     removeVehicle: z.boolean().optional(),
     status: z.string().trim().min(1, "Trạng thái không được để trống").optional(),
   })
   .strict();
 
+export const IotDeviceAssignRequestSchema = z.object({
+  vehicleId: z.string().uuid("ID xe không hợp lệ"),
+  deviceCode: z.string().trim().min(1, "Mã thiết bị không được để trống"),
+});
+
 export const IotDeviceFormSchema = z.object({
   deviceCode: z.string().trim().min(1, "Mã thiết bị không được để trống"),
-  vehicleId: z.string().uuid("ID xe không hợp lệ").nullable(),
   status: z.string().trim().min(1, "Trạng thái không được để trống"),
 });
 
@@ -40,10 +42,12 @@ export type TIotDeviceCreateRequest = z.infer<
 export type TIotDeviceUpdateRequest = z.infer<
   typeof IotDeviceUpdateRequestSchema
 >;
+export type TIotDeviceAssignRequest = z.infer<
+  typeof IotDeviceAssignRequestSchema
+>;
 export type TIotDeviceFormValues = z.infer<typeof IotDeviceFormSchema>;
 
 export const IOT_DEVICE_FORM_DEFAULTS: TIotDeviceFormValues = {
   deviceCode: "",
-  vehicleId: null,
   status: IOT_DEVICE_STATUS.AVAILABLE,
 };
