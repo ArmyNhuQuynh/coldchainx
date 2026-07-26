@@ -1,28 +1,15 @@
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useDispatchTrips } from "@/hooks/use-dispatch-trip";
-import { useMonitoring } from "@/hooks/use-monitoring";
-import { PATH_DISPATCHER_DASHBOARD } from "@/routes/path";
 import type { TDispatchTrip } from "@/schemas/dispatch.schema";
-import { ClipboardList, Loader2, Route, Send } from "lucide-react";
+import { ClipboardList, Route } from "lucide-react";
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import TripCancelDialog from "./components/trip-cancel-dialog";
 import TripDetailDialog from "./components/trip-detail-dialog";
 import TripFilterBar from "./components/trip-filter-bar";
 import TripSummaryCards from "./components/trip-summary-cards";
 import TripTable from "./components/trip-table";
-import { ALL_TRIP_STATUS, formatShortTripId } from "./components/trip-helpers";
+import { ALL_TRIP_STATUS } from "./components/trip-helpers";
 
 const matchTripSearch = (trip: TDispatchTrip, search: string) => {
   const keyword = search.trim().toLowerCase();
@@ -44,20 +31,13 @@ const matchTripSearch = (trip: TDispatchTrip, search: string) => {
 };
 
 const TripListPage = () => {
-  const navigate = useNavigate();
-  const { getCreatedTrips, cancelTrip, startPicking, sealAndDispatch } =
-    useDispatchTrips();
-  const { checkTripVehicleIoT } = useMonitoring();
+  const { getCreatedTrips, cancelTrip, startPicking } = useDispatchTrips();
   const tripsQuery = getCreatedTrips();
   const trips = tripsQuery.data ?? [];
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState(ALL_TRIP_STATUS);
   const [selectedTrip, setSelectedTrip] = useState<TDispatchTrip | null>(null);
   const [tripToCancel, setTripToCancel] = useState<TDispatchTrip | null>(null);
-  const [tripToDepart, setTripToDepart] = useState<TDispatchTrip | null>(null);
-  const [sealCode, setSealCode] = useState("");
-  const isDepartSubmitting =
-    sealAndDispatch.isPending || checkTripVehicleIoT.isPending;
 
   const filteredTrips = useMemo(() => {
     return trips.filter(
@@ -121,69 +101,6 @@ const TripListPage = () => {
     }
   };
 
-  const handleRequestDepart = (trip: TDispatchTrip) => {
-    setSelectedTrip(null);
-    setTripToDepart(trip);
-    setSealCode(trip.sealNumber ?? "");
-  };
-
-  const handleCloseDepartDialog = () => {
-    setTripToDepart(null);
-    setSealCode("");
-  };
-
-  const handleConfirmDepart = async () => {
-    if (!tripToDepart) return;
-
-    const trimmedSealCode = sealCode.trim();
-    if (!trimmedSealCode) {
-      toast.warning("Nhập mã kẹp chì trước khi xuất phát.");
-      return;
-    }
-
-    try {
-      const departingTripId = tripToDepart.tripId;
-      const result = await sealAndDispatch.mutateAsync({
-        tripId: departingTripId,
-        sealCode: trimmedSealCode,
-      });
-      const trackingTripId = result.tripId || departingTripId;
-      const nextStatus = result.tripStatus ? ` (${result.tripStatus})` : "";
-      toast.success(
-        `Đã xuất phát trip ${formatShortTripId(departingTripId)}${nextStatus}.`
-      );
-
-      try {
-        const trackingCheck = await checkTripVehicleIoT.mutateAsync(trackingTripId);
-        const iotStatus = trackingCheck.iotStatus?.overallStatus?.toUpperCase();
-
-        if (!trackingCheck.iotStatus) {
-          toast.warning("Chưa lấy được xe để kiểm tra thiết bị IoT cho chuyến này.");
-        } else if (iotStatus === "ONLINE") {
-          toast.success("Thiết bị IoT của xe đang online.");
-        } else if (iotStatus === "NO_DEVICE") {
-          toast.warning("Xe chưa gắn thiết bị IoT, bản đồ sẽ chờ dữ liệu telemetry.");
-        } else if (iotStatus === "OFFLINE" || iotStatus === "PARTIAL") {
-          toast.warning("Có thiết bị IoT đang offline, cần kiểm tra trước khi theo dõi.");
-        }
-      } catch {
-        toast.warning("Đã xuất phát, nhưng chưa kiểm tra được trạng thái IoT.");
-      }
-
-      handleCloseDepartDialog();
-      navigate(PATH_DISPATCHER_DASHBOARD.tracking.detail(trackingTripId));
-    } catch (error: any) {
-      const message =
-        error?.response?.data?.error ||
-        error?.response?.data?.Error ||
-        error?.response?.data?.message ||
-        error?.response?.data?.Message ||
-        error?.message ||
-        "Không thể xuất phát chuyến.";
-      toast.error(message);
-    }
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -227,11 +144,9 @@ const TripListPage = () => {
         trips={filteredTrips}
         isLoading={tripsQuery.isLoading}
         isStartingPicking={startPicking.isPending}
-        isDeparting={isDepartSubmitting}
         onSelect={setSelectedTrip}
         onCancel={setTripToCancel}
         onStartPicking={handleStartPicking}
-        onDepart={handleRequestDepart}
       />
 
       <TripDetailDialog
@@ -242,9 +157,7 @@ const TripListPage = () => {
         }}
         onCancel={setTripToCancel}
         onStartPicking={handleStartPicking}
-        onDepart={handleRequestDepart}
         isStartingPicking={startPicking.isPending}
-        isDeparting={isDepartSubmitting}
       />
 
       <TripCancelDialog
@@ -255,68 +168,6 @@ const TripListPage = () => {
         }}
         onConfirm={handleConfirmCancel}
       />
-
-      <Dialog
-        open={Boolean(tripToDepart)}
-        onOpenChange={(open) => {
-          if (!open) handleCloseDepartDialog();
-        }}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Xuất Phát</DialogTitle>
-            <DialogDescription>
-              {tripToDepart
-                ? `Nhập mã kẹp chì cho trip ${formatShortTripId(
-                    tripToDepart.tripId
-                  )} để hoàn tất bước điều phối cuối.`
-                : "Nhập mã kẹp chì để xuất phát chuyến."}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-2">
-            <Label htmlFor="seal-code">Mã kẹp chì</Label>
-            <Input
-              id="seal-code"
-              value={sealCode}
-              placeholder="VD: SEAL-001"
-              autoFocus
-              disabled={isDepartSubmitting}
-              onChange={(event) => setSealCode(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  event.preventDefault();
-                  handleConfirmDepart();
-                }
-              }}
-            />
-          </div>
-
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              disabled={isDepartSubmitting}
-              onClick={handleCloseDepartDialog}
-            >
-              Hủy
-            </Button>
-            <Button
-              type="button"
-              className="gap-2"
-              disabled={isDepartSubmitting || !sealCode.trim()}
-              onClick={handleConfirmDepart}
-            >
-              {isDepartSubmitting ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Send className="h-4 w-4" />
-              )}
-              Xuất Phát
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

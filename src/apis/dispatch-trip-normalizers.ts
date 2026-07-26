@@ -7,7 +7,6 @@ import type {
   TDispatchTripRouteLeg,
   TDispatchTripRoutePoint,
   TDispatchTripRouteStep,
-  TSealAndDispatchResult,
 } from "@/schemas/dispatch.schema";
 import { read, toNumber } from "./dispatch-api.helpers";
 
@@ -263,28 +262,6 @@ export const normalizeTrip = (
     label: read<string | undefined>(raw, "label", "Label"),
     source,
     lpns: Array.isArray(lpns) ? lpns.map(normalizeTripLpn) : undefined,
-  };
-};
-
-export const normalizeSealAndDispatchResult = (
-  item: TSealAndDispatchResult | Record<string, any>
-): TSealAndDispatchResult => {
-  const raw = item as Record<string, any>;
-
-  return {
-    tripId: read<string>(raw, "tripId", "TripId"),
-    sealCode: read<string | null>(raw, "sealCode", "SealCode"),
-    allOrdersLoaded: read<boolean | null>(
-      raw,
-      "allOrdersLoaded",
-      "AllOrdersLoaded"
-    ),
-    totalOrders: read<number | null>(raw, "totalOrders", "TotalOrders"),
-    loadedOrders: read<number | null>(raw, "loadedOrders", "LoadedOrders"),
-    sealedAt: read<string | null>(raw, "sealedAt", "SealedAt"),
-    sealedBy: read<string | null>(raw, "sealedBy", "SealedBy"),
-    tripStatus: read<string | null>(raw, "tripStatus", "TripStatus"),
-    waybillUrl: read<string | null>(raw, "waybillUrl", "WaybillUrl"),
   };
 };
 

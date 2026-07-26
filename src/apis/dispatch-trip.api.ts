@@ -6,14 +6,11 @@ import type {
   TDispatchTripDocuments,
   TDispatchTripLpn,
   TDispatchTripRoute,
-  TSealAndDispatchRequest,
-  TSealAndDispatchResult,
   TStartPickingResult,
 } from "@/schemas/dispatch.schema";
 import { unwrapData, unwrapLookup } from "./dispatch-api.helpers";
 import {
   mergeTrips,
-  normalizeSealAndDispatchResult,
   normalizeTrip,
   normalizeTripDocuments,
   normalizeTripLpn,
@@ -86,26 +83,6 @@ const startPicking = async (tripId: string) => {
   return unwrapData<TStartPickingResult>(response.data);
 };
 
-const sealAndDispatch = async ({
-  tripId,
-  sealCode,
-}: TSealAndDispatchRequest) => {
-  const formData = new FormData();
-  formData.append("SealCode", sealCode);
-
-  const response = await apiRequest.baseApi.post<
-    TDispatchLookupEnvelope<TSealAndDispatchResult> | TSealAndDispatchResult
-  >(`${API_SUFFIX.DISPATCH_API}/seal-and-dispatch/${tripId}`, formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
-
-  return normalizeSealAndDispatchResult(
-    unwrapData<TSealAndDispatchResult>(response.data)
-  );
-};
-
 const getTripDocuments = async (
   tripId: string
 ): Promise<TDispatchTripDocuments> => {
@@ -138,7 +115,6 @@ export const dispatchTripApi = {
   getTripPickList,
   cancelTrip,
   startPicking,
-  sealAndDispatch,
   getTripDocuments,
   getTripRoute,
 };

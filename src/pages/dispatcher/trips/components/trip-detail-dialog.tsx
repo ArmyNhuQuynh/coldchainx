@@ -25,13 +25,11 @@ import {
   Navigation,
   Package,
   Play,
-  Send,
   Truck,
   User,
 } from "lucide-react";
 import {
   canCancelTrip,
-  canDepartTrip,
   canStartPickingTrip,
   formatShortTripId,
   formatTripDateTime,
@@ -44,11 +42,9 @@ type Props = {
   open: boolean;
   trip: TDispatchTrip | null;
   isStartingPicking?: boolean;
-  isDeparting?: boolean;
   onOpenChange: (open: boolean) => void;
   onCancel: (trip: TDispatchTrip) => void;
   onStartPicking: (trip: TDispatchTrip) => void;
-  onDepart: (trip: TDispatchTrip) => void;
 };
 
 const formatRouteDuration = (
@@ -69,11 +65,9 @@ const TripDetailDialog = ({
   open,
   trip,
   isStartingPicking,
-  isDeparting,
   onOpenChange,
   onCancel,
   onStartPicking,
-  onDepart,
 }: Props) => {
   const {
     getPickingTripDetail,
@@ -411,21 +405,6 @@ const TripDetailDialog = ({
                     <Play className="h-4 w-4" />
                   )}
                   Bắt đầu bốc hàng
-                </Button>
-              )}
-              {canDepartTrip(trip) && (
-                <Button
-                  type="button"
-                  className="gap-2"
-                  disabled={isDeparting}
-                  onClick={() => onDepart(trip)}
-                >
-                  {isDeparting ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Send className="h-4 w-4" />
-                  )}
-                  Xuất Phát
                 </Button>
               )}
               <Button

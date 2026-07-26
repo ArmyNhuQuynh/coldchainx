@@ -77,7 +77,7 @@ const manualDispatch = async (data: TManualDispatchRequest) => {
   const response = await apiRequest.baseApi.post<
     TDispatchLookupEnvelope<TManualDispatchResult> | TManualDispatchResult
   >(`${API_SUFFIX.DISPATCH_API}/manual-dispatch`, formData, {
-    params: new URLSearchParams(data.lpnIds.map((lpnId) => ["lpnIds", lpnId])),
+    params: { lpnIds: data.lpnIds },
   });
 
   return unwrapData<TManualDispatchResult>(response.data);
