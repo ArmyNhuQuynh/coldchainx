@@ -26,17 +26,16 @@ const TrackingDetailPage = () => {
   const {
     getTrackingDetail,
     getTripChart,
-    getTripRouteGoong,
     getTripAlerts,
   } = useMonitoring();
-  const { getTripRoute } = useDispatchTrips();
+  const { getTripDetails, getTripRoute } = useDispatchTrips();
   const [selectedPoint, setSelectedPoint] = useState<TTrackingPoint | null>(null);
   const [selectedDistance, setSelectedDistance] = useState<number | null>(null);
 
   const detailQuery = getTrackingDetail(tripId, Boolean(tripId));
   const chartQuery = getTripChart(tripId, Boolean(tripId), 800);
-  const goongRouteQuery = getTripRouteGoong(tripId, Boolean(tripId));
   const plannedRouteQuery = getTripRoute(tripId, Boolean(tripId));
+  const tripDetailsQuery = getTripDetails(tripId, Boolean(tripId));
   const riskAlertsQuery = getTripAlerts(tripId, "risk", Boolean(tripId));
   const ssaAlertsQuery = getTripAlerts(tripId, "ssa", Boolean(tripId));
   const smartAlertsQuery = getTripAlerts(tripId, "smart", Boolean(tripId));
@@ -66,7 +65,7 @@ const TrackingDetailPage = () => {
     const timer = window.setInterval(() => {
       detailQuery.refetch();
       chartQuery.refetch();
-      goongRouteQuery.refetch();
+      tripDetailsQuery.refetch();
       riskAlertsQuery.refetch();
       ssaAlertsQuery.refetch();
       smartAlertsQuery.refetch();
@@ -76,18 +75,18 @@ const TrackingDetailPage = () => {
   }, [
     chartQuery,
     detailQuery,
-    goongRouteQuery,
     riskAlertsQuery,
     smartAlertsQuery,
     ssaAlertsQuery,
+    tripDetailsQuery,
     tripId,
   ]);
 
   const handleRefresh = () => {
     detailQuery.refetch();
     chartQuery.refetch();
-    goongRouteQuery.refetch();
     plannedRouteQuery.refetch();
+    tripDetailsQuery.refetch();
     riskAlertsQuery.refetch();
     ssaAlertsQuery.refetch();
     smartAlertsQuery.refetch();
@@ -138,8 +137,7 @@ const TrackingDetailPage = () => {
           className="gap-2"
           disabled={
             detailQuery.isFetching ||
-            chartQuery.isFetching ||
-            goongRouteQuery.isFetching
+            chartQuery.isFetching
           }
           onClick={handleRefresh}
         >
@@ -163,13 +161,15 @@ const TrackingDetailPage = () => {
 
       {!isInitialLoading && (
         <>
-          <TripOverviewPanel trip={trip} />
+          <TripOverviewPanel
+            trip={trip}
+            tripDetails={tripDetailsQuery.data}
+          />
 
           <div className="grid gap-4 xl:grid-cols-[1.6fr_0.9fr]">
             <TrackingMap
               points={points}
               latestPoint={latestPoint}
-              actualEncodedPolyline={goongRouteQuery.data?.encodedPolyline}
               plannedEncodedPolyline={plannedEncodedPolyline}
               deviceCode={trip?.device?.deviceCode}
               onPointSelect={(point, distance) => {
@@ -189,9 +189,12 @@ const TrackingDetailPage = () => {
             </div>
           </div>
 
-          <div className="grid gap-4 xl:grid-cols-2">
+          <div className="grid gap-4 xl:grid-cols-[1.5fr_0.9fr]">
+            <TrackingOrdersPanel
+              tripDetails={tripDetailsQuery.data}
+              isLoading={tripDetailsQuery.isLoading}
+            />
             <TrackingAlertsPanel alerts={allAlerts} />
-            <TrackingOrdersPanel orders={trip?.orders ?? []} />
           </div>
         </>
       )}

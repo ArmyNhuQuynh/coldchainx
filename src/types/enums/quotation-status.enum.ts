@@ -2,6 +2,7 @@ export const QUOTATION_STATUS = {
   DRAFT: "DRAFT",
   SENT: "SENT",
   ACCEPTED: "ACCEPTED",
+  APPROVED: "APPROVED",
 } as const;
 
 export type TQuotationStatus =
@@ -24,6 +25,11 @@ export const getQuotationStatusLabel = (
     case QUOTATION_STATUS.ACCEPTED:
       return {
         label: "Đã chấp nhận",
+        className: "text-green-600 bg-green-50 border border-green-200",
+      };
+    case QUOTATION_STATUS.APPROVED:
+      return {
+        label: "Đã duyệt",
         className: "text-green-600 bg-green-50 border border-green-200",
       };
   }

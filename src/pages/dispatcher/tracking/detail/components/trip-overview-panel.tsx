@@ -1,7 +1,9 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { TDispatchTripDetails } from "@/schemas/dispatch.schema";
 import type { TTrackingTrip } from "@/schemas/monitoring.schema";
 import {
+  CalendarDays,
   Clock,
   MapPin,
   Navigation,
@@ -21,9 +23,19 @@ import {
 
 type Props = {
   trip: TTrackingTrip | null | undefined;
+  tripDetails?: TDispatchTripDetails | null;
 };
 
-const TripOverviewPanel = ({ trip }: Props) => {
+const formatScheduleDate = (value?: string | null) => {
+  if (!value) return "-";
+
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? value
+    : new Intl.DateTimeFormat("vi-VN").format(date);
+};
+
+const TripOverviewPanel = ({ trip, tripDetails }: Props) => {
   if (!trip) {
     return null;
   }
@@ -81,6 +93,30 @@ const TripOverviewPanel = ({ trip }: Props) => {
             <p className="mt-1 font-medium">
               {trip.eta?.estimatedDurationMinutes != null
                 ? `${trip.eta.estimatedDurationMinutes} phút`
+                : "-"}
+            </p>
+          </div>
+          <div>
+            <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <MapPin className="h-3.5 w-3.5" />
+              Tuyến vận chuyển
+            </p>
+            <p className="mt-1 line-clamp-1 font-medium">
+              {tripDetails?.route
+                ? `${tripDetails.route.routeCode} · ${tripDetails.route.originCity} → ${tripDetails.route.destinationCity}`
+                : "-"}
+            </p>
+          </div>
+          <div>
+            <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <CalendarDays className="h-3.5 w-3.5" />
+              Lịch khởi hành
+            </p>
+            <p className="mt-1 line-clamp-1 font-medium">
+              {tripDetails?.schedule
+                ? `${tripDetails.schedule.scheduleName} · ${formatScheduleDate(
+                    tripDetails.schedule.departureDate
+                  )} ${tripDetails.schedule.departureTime.slice(0, 5)}`
                 : "-"}
             </p>
           </div>

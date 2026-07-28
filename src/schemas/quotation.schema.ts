@@ -10,6 +10,7 @@ export const QuotationStatusSchema = z.union([
   z.literal(QUOTATION_STATUS.DRAFT),
   z.literal(QUOTATION_STATUS.SENT),
   z.literal(QUOTATION_STATUS.ACCEPTED),
+  z.literal(QUOTATION_STATUS.APPROVED),
 ]);
 
 export const QuotationAdditionalChargeSchema = z.object({

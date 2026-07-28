@@ -25,7 +25,6 @@ declare global {
 type Props = {
   points: TTrackingPoint[];
   latestPoint?: TTrackingPoint | null;
-  actualEncodedPolyline?: string | null;
   plannedEncodedPolyline?: string | null;
   deviceCode?: string | null;
   onPointSelect?: (point: TTrackingPoint, distanceMeters?: number | null) => void;
@@ -120,7 +119,6 @@ const setGeoJsonSource = (map: any, sourceId: string, data: unknown) => {
 const TrackingMap = ({
   points,
   latestPoint,
-  actualEncodedPolyline,
   plannedEncodedPolyline,
   deviceCode,
   onPointSelect,
@@ -132,10 +130,10 @@ const TrackingMap = ({
   const [scriptError, setScriptError] = useState(false);
 
   const maptilesKey = envConfig.VITE_GOONG_MAPTILES_KEY;
-  const actualCoordinates = useMemo(() => {
-    const decoded = decodePolyline(actualEncodedPolyline);
-    return decoded.length >= 2 ? decoded : pointsToCoordinates(points);
-  }, [actualEncodedPolyline, points]);
+  const actualCoordinates = useMemo(
+    () => pointsToCoordinates(points),
+    [points]
+  );
   const plannedCoordinates = useMemo(
     () => decodePolyline(plannedEncodedPolyline),
     [plannedEncodedPolyline]

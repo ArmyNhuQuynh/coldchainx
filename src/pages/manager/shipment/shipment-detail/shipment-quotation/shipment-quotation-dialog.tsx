@@ -6,14 +6,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { resolveFileUrl } from "@/lib/file-url";
 import { formatPrice } from "@/lib/utils";
 import type { TQuotation, TUpdateQuotation } from "@/schemas/quotation.schema";
 import {
   getQuotationStatusLabel,
   QUOTATION_STATUS,
 } from "@/types/enums/quotation-status.enum";
-import { ExternalLink, Loader2, Pencil, Send } from "lucide-react";
+import { Eye, Loader2, Pencil, Send } from "lucide-react";
+import { useState } from "react";
+import ShipmentQuotationDocumentPreview from "./shipment-quotation-document-preview";
 import ShipmentQuotationForm from "./shipment-quotation-form";
 
 type Props = {
@@ -46,8 +47,18 @@ const ShipmentQuotationDialog = ({
   onUpdate,
   onSend,
 }: Props) => {
+  const [isDocumentPreviewOpen, setIsDocumentPreviewOpen] = useState(false);
   const { label, className } = getQuotationStatusLabel(quotation.status);
   const isDraft = quotation.status === QUOTATION_STATUS.DRAFT;
+
+  if (isDocumentPreviewOpen) {
+    return (
+      <ShipmentQuotationDocumentPreview
+        quotation={quotation}
+        onBack={() => setIsDocumentPreviewOpen(false)}
+      />
+    );
+  }
 
   if (isEditing) {
     return (
@@ -132,14 +143,15 @@ const ShipmentQuotationDialog = ({
         </div>
       )}
 
-      {quotation.fileUrl && (
-        <Button variant="outline" asChild className="w-fit">
-          <a href={resolveFileUrl(quotation.fileUrl)} target="_blank" rel="noreferrer">
-            <ExternalLink className="mr-2 h-4 w-4" />
-            Mở file báo giá
-          </a>
-        </Button>
-      )}
+      <Button
+        type="button"
+        variant="outline"
+        className="w-fit"
+        onClick={() => setIsDocumentPreviewOpen(true)}
+      >
+        <Eye className="mr-2 h-4 w-4" />
+        Xem phiếu báo giá
+      </Button>
 
       <DialogFooter>
         {isDraft ? (
@@ -155,9 +167,9 @@ const ShipmentQuotationDialog = ({
           </>
         ) : (
           <p className="text-sm text-muted-foreground">
-            {quotation.status === QUOTATION_STATUS.ACCEPTED
-              ? "Khách hàng đã chấp nhận báo giá này."
-              : "Báo giá đã được gửi cho khách hàng."}
+            {quotation.status === QUOTATION_STATUS.SENT
+              ? "Báo giá đã được gửi nên không thể chỉnh sửa."
+              : "Báo giá đã được khách hàng chấp nhận nên không thể chỉnh sửa."}
           </p>
         )}
       </DialogFooter>

@@ -73,6 +73,16 @@ export const useDispatchTrips = () => {
       enabled: enabled && Boolean(tripId),
     });
 
+  const getTripDetails = (tripId?: string, enabled = true) =>
+    useQuery({
+      queryKey: ["dispatch", "trips", "details", tripId],
+      queryFn: async () => {
+        if (!tripId) return null;
+        return dispatchTripApi.getTripDetails(tripId);
+      },
+      enabled: enabled && Boolean(tripId),
+    });
+
   return {
     getCreatedTrips,
     getPickingTripDetail,
@@ -81,5 +91,6 @@ export const useDispatchTrips = () => {
     startPicking,
     getTripDocuments,
     getTripRoute,
+    getTripDetails,
   };
 };

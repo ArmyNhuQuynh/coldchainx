@@ -280,3 +280,101 @@ export type TDispatchTripRoute = {
   optimizedStops?: TDispatchOptimizedStop[];
   legs?: TDispatchTripRouteLeg[];
 };
+
+export type TDispatchTripDetailsRoute = {
+  routeId: string;
+  routeCode: string;
+  originCity: string;
+  destinationCity: string;
+  transitTime?: string | null;
+  status?: string | null;
+};
+
+export type TDispatchTripDetailsSchedule = {
+  scheduleId: string;
+  routeId: string;
+  scheduleName: string;
+  departureDate: string;
+  departureTime: string;
+  cutOffTime?: string | null;
+  status?: string | null;
+};
+
+export type TDispatchTripDetailsLocation = {
+  locationId: string;
+  address: string;
+  latitude?: number | null;
+  longitude?: number | null;
+};
+
+export type TDispatchTripDetailsStop = {
+  stopId: string;
+  locationId?: string | null;
+  stopSequence: number;
+  stopType: string;
+  plannedArrivalTime?: string | null;
+  actualArrivalTime?: string | null;
+  status?: string | null;
+  location?: TDispatchTripDetailsLocation | null;
+  orderIds: string[];
+  orderTrackingCodes: string[];
+  lpnIds: string[];
+  lpnCodes: string[];
+};
+
+export type TDispatchTripDeliveryEpod = {
+  epodId: string;
+  status?: string | null;
+  receiverName?: string | null;
+  signedAt?: string | null;
+  handoverConfirmedAt?: string | null;
+};
+
+export type TDispatchTripDetailsOrder = {
+  orderId: string;
+  trackingCode: string;
+  itemName: string;
+  category?: string | null;
+  quantity?: number | null;
+  tempCondition?: string | null;
+  destinationAddress?: string | null;
+  deliveryStopSequence?: number | null;
+  status: string;
+  customerName?: string | null;
+  lpnIds: string[];
+  lpnCodes: string[];
+  deliveryEpods: TDispatchTripDeliveryEpod[];
+};
+
+export type TDispatchTripDetailsLpn = {
+  lpnId: string;
+  lpnCode: string;
+  orderId: string;
+  state: string;
+  deliveryStopSequence?: number | null;
+};
+
+export type TDispatchTripDetailsSummary = {
+  totalOrders: number;
+  totalLpns: number;
+  deliveredLpns: number;
+  returnedLpns: number;
+};
+
+export type TDispatchTripDetails = {
+  tripId: string;
+  status?: string | null;
+  departureDate?: string | null;
+  plannedStartTime?: string | null;
+  plannedEndTime?: string | null;
+  startedAt?: string | null;
+  completedAt?: string | null;
+  route?: TDispatchTripDetailsRoute | null;
+  schedule?: TDispatchTripDetailsSchedule | null;
+  origin?: TDispatchTripDetailsLocation | null;
+  destination?: TDispatchTripDetailsLocation | null;
+  stops: TDispatchTripDetailsStop[];
+  orders: TDispatchTripDetailsOrder[];
+  lpns: TDispatchTripDetailsLpn[];
+  summary: TDispatchTripDetailsSummary;
+};

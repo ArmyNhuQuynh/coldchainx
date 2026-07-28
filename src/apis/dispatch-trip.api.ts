@@ -3,6 +3,7 @@ import type {
   TCancelTripResult,
   TDispatchLookupEnvelope,
   TDispatchTrip,
+  TDispatchTripDetails,
   TDispatchTripDocuments,
   TDispatchTripLpn,
   TDispatchTripRoute,
@@ -16,6 +17,7 @@ import {
   normalizeTripLpn,
   normalizeTripRoute,
 } from "./dispatch-trip-normalizers";
+import { normalizeTripDetails } from "./dispatch-trip-details-normalizer";
 import { API_SUFFIX } from "./util.api";
 
 const getTripsCanStartPicking = async () => {
@@ -109,6 +111,16 @@ const getTripRoute = async (tripId: string) => {
   return normalizeTripRoute(unwrapData<TDispatchTripRoute>(response.data));
 };
 
+const getTripDetails = async (tripId: string) => {
+  const response = await apiRequest.baseApi.get<
+    TDispatchLookupEnvelope<TDispatchTripDetails> | TDispatchTripDetails
+  >(`${API_SUFFIX.DISPATCH_API}/trips/${tripId}`);
+
+  return normalizeTripDetails(
+    unwrapData<TDispatchTripDetails>(response.data)
+  );
+};
+
 export const dispatchTripApi = {
   getCreatedTrips,
   getPickingTrips,
@@ -117,4 +129,5 @@ export const dispatchTripApi = {
   startPicking,
   getTripDocuments,
   getTripRoute,
+  getTripDetails,
 };
