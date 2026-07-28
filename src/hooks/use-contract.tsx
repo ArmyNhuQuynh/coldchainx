@@ -1,5 +1,8 @@
 import { contractApi } from "@/apis/contract.api";
-import type { TUpdateContractDraft } from "@/schemas/contract.schema";
+import type {
+  TReviewContract,
+  TUpdateContractDraft,
+} from "@/schemas/contract.schema";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const useContract = () => {
@@ -74,6 +77,20 @@ export const useContract = () => {
     },
   });
 
+  const reviewContract = useMutation({
+    mutationFn: ({
+      contractId,
+      data,
+    }: {
+      contractId: string;
+      data: TReviewContract;
+    }) => contractApi.reviewContract(contractId, data),
+    onSuccess: (response, { contractId }) => {
+      invalidateContractQueries(contractId, response.data.orderId);
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+    },
+  });
+
   const verifyContract = useMutation({
     mutationFn: (contractId: string) => contractApi.verifyContract(contractId),
     onSuccess: (response, contractId) => {
@@ -89,6 +106,7 @@ export const useContract = () => {
     previewContract,
     updateContractDraft,
     sendContract,
+    reviewContract,
     verifyContract,
   };
 };

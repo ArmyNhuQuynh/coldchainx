@@ -75,6 +75,12 @@ const ShipmentQuotationAdditionalCharges = ({ form }: Props) => {
           ))}
         </div>
       )}
+
+      {form.formState.errors.additionalCharges && (
+        <p className="text-sm font-medium text-destructive">
+          Không thể lưu dịch vụ đã chọn. Vui lòng tải lại danh sách và thử lại.
+        </p>
+      )}
     </div>
   );
 };

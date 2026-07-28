@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { QUOTATION_STATUS } from "@/types/enums/quotation-status.enum";
+import { ServiceCatalogIdSchema } from "@/schemas/service-catalog.schema";
 
 export interface TGetQuotationsQuery {
   pageNumber?: number;
@@ -14,11 +15,7 @@ export const QuotationStatusSchema = z.union([
 ]);
 
 export const QuotationAdditionalChargeSchema = z.object({
-  serviceCatalogId: z
-    .string()
-    .uuid({ message: "ID dịch vụ không hợp lệ" })
-    .nullable()
-    .optional(),
+  serviceCatalogId: ServiceCatalogIdSchema.nullable().optional(),
   name: z.string().min(1, { message: "Tên phụ phí không được để trống" }),
   amount: z.number().min(0, { message: "Phụ phí không được là số âm" }),
   note: z.string().nullable(),
@@ -51,7 +48,7 @@ export const QuotationSchema = z.object({
 });
 
 export const UpdateQuotationAdditionalChargeSchema = z.object({
-  serviceCatalogId: z.string().uuid({ message: "ID dịch vụ không hợp lệ" }),
+  serviceCatalogId: ServiceCatalogIdSchema,
 });
 
 export const UpdateQuotationSchema = z.object({
@@ -63,7 +60,7 @@ export const UpdateQuotationSchema = z.object({
 });
 
 export const QuotationFormAdditionalChargeSchema = z.object({
-  serviceCatalogId: z.string().uuid({ message: "ID dịch vụ không hợp lệ" }),
+  serviceCatalogId: ServiceCatalogIdSchema,
 });
 
 export const QuotationFormSchema = z.object({

@@ -114,11 +114,11 @@ export const ReviewOrderResponseSchema = z.object({
   orderId:              z.string().uuid({ message: "ID đơn hàng không hợp lệ" }),
   trackingCode:         z.string({ message: "Mã tracking không hợp lệ" }),
   status:               z.string({ message: "Trạng thái đơn hàng không hợp lệ" }),
-  quoteId:              z.string().uuid({ message: "ID báo giá không hợp lệ" }).nullable(),
-  baseFreight:          z.number({ message: "Cước cơ bản không hợp lệ" }).nullable(),
-  lastMileSurcharge:    z.number({ message: "Phụ phí chặng cuối không hợp lệ" }).nullable(),
-  vatAmount:            z.number({ message: "Tiền VAT không hợp lệ" }).nullable(),
-  finalAmount:          z.number({ message: "Tổng tiền không hợp lệ" }).nullable(),
+  quoteId:              z.string().uuid({ message: "ID báo giá không hợp lệ" }).nullable().optional(),
+  baseFreight:          z.number({ message: "Cước cơ bản không hợp lệ" }).nullable().optional(),
+  lastMileSurcharge:    z.number({ message: "Phụ phí chặng cuối không hợp lệ" }).nullable().optional(),
+  vatAmount:            z.number({ message: "Tiền VAT không hợp lệ" }).nullable().optional(),
+  finalAmount:          z.number({ message: "Tổng tiền không hợp lệ" }).nullable().optional(),
 });
 
 // ===== EXPORT TYPES =====

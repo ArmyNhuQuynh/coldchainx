@@ -168,6 +168,18 @@ const DispatchPage = () => {
     setIsPreviewOpen(false);
   }, [selectedWarehouseId]);
 
+  useEffect(() => {
+    if (!selectedVehicleId || vehiclesQuery.isFetching) return;
+    if (vehicles.some((vehicle) => vehicle.vehicleId === selectedVehicleId)) {
+      return;
+    }
+
+    setSelectedVehicleId("");
+    setPackingPreview(null);
+    setPackingPreviewKey(null);
+    setIsPreviewOpen(false);
+  }, [selectedVehicleId, vehicles, vehiclesQuery.isFetching]);
+
   const resetPackingPreview = () => {
     setPackingPreview(null);
     setPackingPreviewKey(null);

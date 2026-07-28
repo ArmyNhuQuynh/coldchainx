@@ -1,4 +1,5 @@
 import { apiRequest } from "@/lib/http";
+import { iotDeviceApi } from "./iot-device.api";
 import type {
   TCompatibleLpnsSearchParams,
   TCompatibleLpnsSearchRequest,
@@ -206,13 +207,22 @@ const searchCompatibleLpns = async (
 };
 
 const getAvailableVehicles = async (warehouseId: string) => {
-  const response = await apiRequest.baseApi.get<
-    TDispatchLookupEnvelope<TDispatchVehicleLookup[]> | TDispatchVehicleLookup[]
-  >(
-    `${API_SUFFIX.DISPATCH_API}/lookup/vehicles/by-warehouse/${warehouseId}`
+  const [response, devices] = await Promise.all([
+    apiRequest.baseApi.get<
+      | TDispatchLookupEnvelope<TDispatchVehicleLookup[]>
+      | TDispatchVehicleLookup[]
+    >(`${API_SUFFIX.DISPATCH_API}/lookup/vehicles/by-warehouse/${warehouseId}`),
+    iotDeviceApi.getIotDevices(),
+  ]);
+  const assignedVehicleIds = new Set(
+    devices
+      .map((device) => device.vehicleId)
+      .filter((vehicleId): vehicleId is string => Boolean(vehicleId))
   );
 
-  return unwrapLookup<TDispatchVehicleLookup>(response.data).map(normalizeVehicle);
+  return unwrapLookup<TDispatchVehicleLookup>(response.data)
+    .map(normalizeVehicle)
+    .filter((vehicle) => assignedVehicleIds.has(vehicle.vehicleId));
 };
 
 const getAvailableDrivers = async (warehouseId: string) => {

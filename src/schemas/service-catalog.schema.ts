@@ -1,7 +1,14 @@
 import { z } from "zod";
 
+export const ServiceCatalogIdSchema = z
+  .string()
+  .regex(
+    /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/,
+    "ID dịch vụ không hợp lệ"
+  );
+
 export const ServiceCatalogSchema = z.object({
-  serviceCatalogId: z.string().uuid("ID dịch vụ không hợp lệ"),
+  serviceCatalogId: ServiceCatalogIdSchema,
   serviceCode: z.string({ message: "Mã dịch vụ không hợp lệ" }),
   serviceName: z.string({ message: "Tên dịch vụ không hợp lệ" }),
   description: z.string().nullable().optional(),

@@ -28,6 +28,8 @@ type Props = {
   onSend: () => void;
   isVerifying: boolean;
   onVerify: () => void;
+  isRequestingResubmit: boolean;
+  onRequestResubmit: () => void;
 };
 
 const SIGNED_IMAGE_PATTERN = /\.(?:png|jpe?g)(?:$|[?#])/i;
@@ -61,6 +63,8 @@ const ShipmentContractDialog = ({
   onSend,
   isVerifying,
   onVerify,
+  isRequestingResubmit,
+  onRequestResubmit,
 }: Props) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const { label, className } = getContractStatusLabel(contract.status);
@@ -209,7 +213,17 @@ const ShipmentContractDialog = ({
           </div>
         ) : contract.status === CONTRACT_STATUS.PENDING_SALES_VERIFICATION ? (
           <div className="flex flex-col-reverse gap-2 sm:flex-row">
-            <Button onClick={onVerify} disabled={isVerifying}>
+            <Button
+              variant="outline"
+              onClick={onRequestResubmit}
+              disabled={isVerifying || isRequestingResubmit}
+            >
+              Yêu cầu gửi lại
+            </Button>
+            <Button
+              onClick={onVerify}
+              disabled={isVerifying || isRequestingResubmit}
+            >
               {isVerifying ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (

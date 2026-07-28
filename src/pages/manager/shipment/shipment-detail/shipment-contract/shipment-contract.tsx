@@ -8,6 +8,7 @@ import { QUOTATION_STATUS } from "@/types/enums/quotation-status.enum";
 import { FileSignature, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import ShipmentContractDialog from "./shipment-contract-dialog";
+import ShipmentContractResubmitDialog from "./shipment-contract-resubmit-dialog";
 import ShipmentSendConfirmationDialog from "../components/shipment-send-confirmation-dialog";
 
 type Props = {
@@ -20,12 +21,15 @@ const ShipmentContract = ({ order }: Props) => {
     previewContract,
     updateContractDraft,
     sendContract,
+    reviewContract,
     verifyContract,
   } = useContract();
   const [open, setOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [sendConfirmationOpen, setSendConfirmationOpen] = useState(false);
   const [verifyConfirmationOpen, setVerifyConfirmationOpen] = useState(false);
+  const [resubmitDialogOpen, setResubmitDialogOpen] = useState(false);
+  const [resubmitNote, setResubmitNote] = useState("");
 
   const quotations = order.quotations ?? [];
   const hasAcceptedQuotation = quotations.some(
@@ -54,6 +58,8 @@ const ShipmentContract = ({ order }: Props) => {
       setIsEditing(false);
       setSendConfirmationOpen(false);
       setVerifyConfirmationOpen(false);
+      setResubmitDialogOpen(false);
+      setResubmitNote("");
     }
   };
 
@@ -92,6 +98,27 @@ const ShipmentContract = ({ order }: Props) => {
       const response = await verifyContract.mutateAsync(contract.contractId);
       setVerifyConfirmationOpen(false);
       toast.success(response.message || "Xác nhận hợp đồng thành công");
+    } catch (error) {
+      handleApiError(error);
+    }
+  };
+
+  const handleRequestResubmit = async () => {
+    if (!contract || !resubmitNote.trim()) return;
+
+    try {
+      const response = await reviewContract.mutateAsync({
+        contractId: contract.contractId,
+        data: {
+          action: "REQUEST_RESUBMIT",
+          customerNote: resubmitNote.trim(),
+        },
+      });
+      setResubmitDialogOpen(false);
+      setResubmitNote("");
+      toast.success(
+        response.message || "Đã yêu cầu khách hàng gửi lại hợp đồng"
+      );
     } catch (error) {
       handleApiError(error);
     }
@@ -148,6 +175,8 @@ const ShipmentContract = ({ order }: Props) => {
               onSend={() => setSendConfirmationOpen(true)}
               isVerifying={verifyContract.isPending}
               onVerify={() => setVerifyConfirmationOpen(true)}
+              isRequestingResubmit={reviewContract.isPending}
+              onRequestResubmit={() => setResubmitDialogOpen(true)}
             />
           )}
         </DialogContent>
@@ -170,6 +199,20 @@ const ShipmentContract = ({ order }: Props) => {
         isPending={verifyContract.isPending}
         onOpenChange={setVerifyConfirmationOpen}
         onConfirm={handleVerify}
+      />
+
+      <ShipmentContractResubmitDialog
+        open={resubmitDialogOpen}
+        note={resubmitNote}
+        isPending={reviewContract.isPending}
+        onOpenChange={(nextOpen) => {
+          setResubmitDialogOpen(nextOpen);
+          if (!nextOpen && !reviewContract.isPending) {
+            setResubmitNote("");
+          }
+        }}
+        onNoteChange={setResubmitNote}
+        onConfirm={handleRequestResubmit}
       />
     </>
   );

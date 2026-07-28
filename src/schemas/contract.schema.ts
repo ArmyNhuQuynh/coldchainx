@@ -35,6 +35,15 @@ export const UpdateContractDraftSchema = z.object({
     }),
 });
 
+export const ReviewContractSchema = z.object({
+  action: z.literal("REQUEST_RESUBMIT"),
+  customerNote: z
+    .string({ message: "Lý do yêu cầu gửi lại không hợp lệ" })
+    .trim()
+    .min(1, { message: "Vui lòng nhập lý do yêu cầu khách hàng gửi lại" }),
+});
+
 export type TContractInfo = z.infer<typeof ContractInfoSchema>;
 export type TContractDraft = z.infer<typeof ContractDraftSchema>;
 export type TUpdateContractDraft = z.infer<typeof UpdateContractDraftSchema>;
+export type TReviewContract = z.infer<typeof ReviewContractSchema>;

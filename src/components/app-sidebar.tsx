@@ -190,7 +190,7 @@ const saleRoutes = {
         icon: HomeIcon,
       },
       {
-        title: "Xử lý sự cố",
+        title: "Xử lý sai lệch",
         url: PATH_SALE_DASHBOARD.incident.root,
         icon: AlertTriangle,
       },

@@ -2,6 +2,7 @@ import { apiRequest } from "@/lib/http";
 import type {
   TContractDraft,
   TContractInfo,
+  TReviewContract,
   TUpdateContractDraft,
 } from "@/schemas/contract.schema";
 import type { BaseResponse } from "@/types/response.type";
@@ -60,6 +61,17 @@ const sendContract = async (contractId: string) => {
   return response.data;
 };
 
+const reviewContract = async (
+  contractId: string,
+  data: TReviewContract
+) => {
+  const response = await apiRequest.baseApi.post<BaseResponse<TContractInfo>>(
+    `${API_SUFFIX.CONTRACTS_API}/${contractId}/review`,
+    data
+  );
+  return response.data;
+};
+
 const verifyContract = async (contractId: string) => {
   const response = await apiRequest.baseApi.post<BaseResponse<TContractInfo>>(
     `${API_SUFFIX.CONTRACTS_API}/${contractId}/verify`
@@ -74,5 +86,6 @@ export const contractApi = {
   previewContract,
   updateContractDraft,
   sendContract,
+  reviewContract,
   verifyContract,
 };
