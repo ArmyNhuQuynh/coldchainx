@@ -4,7 +4,7 @@ import type {
   TChangeUserRoleRequest,
   TChangeUserStatusRequest,
   TChangeUserWarehouseRequest,
-  TCreateSaleUserRequest,
+  TCreateStaffUserRequest,
   TResetUserPasswordRequest,
   TUserListParams,
 } from "@/schemas/user.schema";
@@ -32,8 +32,8 @@ export const useUser = () => {
       enabled: !!id,
     });
 
-  const createSaleUser = useMutation({
-    mutationFn: (data: TCreateSaleUserRequest) => userApi.createSaleUser(data),
+  const createStaffUser = useMutation({
+    mutationFn: (data: TCreateStaffUserRequest) => userApi.createStaffUser(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
     },
@@ -91,7 +91,7 @@ export const useUser = () => {
   return {
     getUsers,
     getUserById,
-    createSaleUser,
+    createStaffUser,
     updateUser,
     changeUserRole,
     changeUserStatus,

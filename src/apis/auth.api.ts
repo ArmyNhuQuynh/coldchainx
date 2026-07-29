@@ -4,8 +4,10 @@ import { API_SUFFIX } from "./util.api";
 import type {
   TAuthResponse,
   TCreateWarehouseWorkerRequest,
+  TGoogleLoginResponse,
   TLoginRequest,
 } from "@/schemas/auth.schema";
+import envConfig from "@/schemas/config.schema";
 
 const login = async (request: TLoginRequest) => apiRequest.baseApi.post<BaseResponse<TAuthResponse>>(`${API_SUFFIX.AUTH_API}/login`, request);
 
@@ -19,6 +21,16 @@ const refreshTokens = async (refreshToken: string) =>
       },
     }
   );
+
+const getGoogleAuthorizationUrl = () =>
+  `${envConfig.VITE_API_BASE_URL.replace(/\/$/, "")}${API_SUFFIX.AUTH_API}/google-auth`;
+
+const exchangeGoogleLoginCode = async (code: string) => {
+  const response = await apiRequest.baseApi.post<
+    BaseResponse<TGoogleLoginResponse>
+  >(`${API_SUFFIX.AUTH_API}/google/exchange`, { code });
+  return response.data;
+};
 
 const createWarehouseWorker = async (
   data: TCreateWarehouseWorkerRequest
@@ -41,5 +53,7 @@ const createWarehouseWorker = async (
 export const authApi = {
     login,
     refreshTokens,
+    getGoogleAuthorizationUrl,
+    exchangeGoogleLoginCode,
     createWarehouseWorker,
 }

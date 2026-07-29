@@ -35,6 +35,9 @@ const Loadable = (Component: ElementType) => (props: any) => {
 };
 //
 const LoginPage = Loadable(lazy(() => import("@/pages/auth/login")));
+const GoogleCallbackPage = Loadable(
+  lazy(() => import("@/pages/auth/google-callback"))
+);
 const ShipmentPage = Loadable(
   lazy(() => import("@/pages/manager/shipment/list-shipments/list-shipment-page"))
 );
@@ -169,6 +172,10 @@ export const AppRoutes = () =>
               <LoginPage />
             </GuestGuard>
           ),
+        },
+        {
+          path: "google/callback",
+          element: <GoogleCallbackPage />,
         },
         {
           path: "logout",

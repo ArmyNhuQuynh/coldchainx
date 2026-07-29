@@ -9,6 +9,9 @@ export const useAuth = () => {
     const refreshTokensMutation = useMutation({
         mutationFn: authApi.refreshTokens,
     })
+    const exchangeGoogleLoginCodeMutation = useMutation({
+        mutationFn: authApi.exchangeGoogleLoginCode,
+    })
     const createWarehouseWorkerMutation = useMutation({
         mutationFn: authApi.createWarehouseWorker,
         onSuccess: () => {
@@ -18,6 +21,7 @@ export const useAuth = () => {
     return {
         loginMutation,
         refreshTokensMutation,
+        exchangeGoogleLoginCodeMutation,
         createWarehouseWorkerMutation,
     }
 }

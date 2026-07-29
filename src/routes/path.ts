@@ -12,6 +12,7 @@ const ROOTS_DISPATCHER_DASHBOARD = '/dispatcher/dashboard';
 export const PATH_AUTH = {
   root: ROOTS_AUTH,
   login: path(ROOTS_AUTH, '/login'),
+  googleCallback: path(ROOTS_AUTH, '/google/callback'),
   logout: path(ROOTS_AUTH, '/logout'),
 };
 

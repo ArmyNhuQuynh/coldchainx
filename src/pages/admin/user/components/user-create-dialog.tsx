@@ -18,7 +18,10 @@ import {
   type TUserCreateFormValues,
 } from "@/schemas/user.schema";
 import { USER_ACCOUNT_TYPE } from "@/types/enums/user-account-type.enum";
-import { USER_ROLE } from "@/types/enums/user-role.enum";
+import {
+  USER_ROLE,
+  getUserRoleLabel,
+} from "@/types/enums/user-role.enum";
 import { USER_STATUS_OPTIONS } from "@/types/enums/user-status.enum";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Save, UserRound, Warehouse } from "lucide-react";
@@ -33,13 +36,13 @@ type Props = {
 };
 
 const UserCreateDialog = ({ open, onOpenChange, onCreated }: Props) => {
-  const { createSaleUser } = useUser();
+  const { createStaffUser } = useUser();
   const { createWarehouseWorkerMutation } = useAuth();
   const { getWarehouses } = useWarehouse();
   const { data: warehouses = [], isLoading: isLoadingWarehouses } =
     getWarehouses();
   const isSubmitting =
-    createSaleUser.isPending || createWarehouseWorkerMutation.isPending;
+    createStaffUser.isPending || createWarehouseWorkerMutation.isPending;
 
   const form = useForm<TUserCreateFormValues>({
     resolver: zodResolver(UserCreateFormSchema),
@@ -61,18 +64,20 @@ const UserCreateDialog = ({ open, onOpenChange, onCreated }: Props) => {
 
   const handleSubmit = async (values: TUserCreateFormValues) => {
     try {
-      if (values.accountType === USER_ACCOUNT_TYPE.SALES) {
+      if (values.accountType === USER_ACCOUNT_TYPE.STAFF) {
         const email = values.email?.trim().toLowerCase() ?? "";
-        const response = await createSaleUser.mutateAsync({
+        const response = await createStaffUser.mutateAsync({
           fullName: values.fullName.trim(),
           email,
           password: values.password,
           phoneNumber: values.phoneNumber?.trim() || null,
-          role: USER_ROLE.SALES,
+          role: values.role,
           status: values.status,
         });
 
-        toast.success("Tạo tài khoản Sale thành công");
+        toast.success(
+          `Tạo tài khoản ${getUserRoleLabel(values.role)} thành công`
+        );
         onCreated?.(response.data.userId);
       } else {
         const email = values.email?.trim().toLowerCase();
@@ -125,11 +130,11 @@ const UserCreateDialog = ({ open, onOpenChange, onCreated }: Props) => {
             >
               <TabsList className="grid w-full grid-cols-2 rounded-xl border bg-muted/30 p-1">
                 <TabsTrigger
-                  value={USER_ACCOUNT_TYPE.SALES}
+                  value={USER_ACCOUNT_TYPE.STAFF}
                   className="gap-2 rounded-lg border-0 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm"
                 >
                   <UserRound className="h-4 w-4" />
-                  Sale
+                  Nhân viên web
                 </TabsTrigger>
                 <TabsTrigger
                   value={USER_ACCOUNT_TYPE.WAREHOUSE}
@@ -181,7 +186,19 @@ const UserCreateDialog = ({ open, onOpenChange, onCreated }: Props) => {
                 placeholder="0909123456"
                 type="tel"
               />
-              {accountType === USER_ACCOUNT_TYPE.SALES && (
+              {accountType === USER_ACCOUNT_TYPE.STAFF && (
+                <UserSelectField
+                  control={form.control}
+                  name="role"
+                  label="Role"
+                  placeholder="Chọn role"
+                  options={[
+                    { label: "Sale", value: USER_ROLE.SALES },
+                    { label: "Dispatcher", value: USER_ROLE.DISPATCHER },
+                  ]}
+                />
+              )}
+              {accountType === USER_ACCOUNT_TYPE.STAFF && (
                 <UserSelectField
                   control={form.control}
                   name="status"

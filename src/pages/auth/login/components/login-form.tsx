@@ -12,11 +12,12 @@ import { Input, PasswordInput } from "@/components/ui/input"
 import { handleApiError } from "@/lib/error"
 import { cn } from "@/lib/utils"
 import { setUser } from "@/redux/User/user-slice"
-import { useMemo, useEffect, useRef } from "react"
+import { useMemo, useEffect, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useDispatch } from "react-redux"
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/hooks/use-auth"
+import { authApi } from "@/apis/auth.api"
 import { LoginRequestSchema, type TAuthResponse, type TLoginRequest } from "@/schemas/auth.schema"
 
 const getAuthResponseData = (responseData: unknown): TAuthResponse | null => {
@@ -37,6 +38,7 @@ export function LoginForm({
   ...props
 }: React.ComponentProps<"div">) {
   const { loginMutation } = useAuth();
+  const [isGoogleRedirecting, setIsGoogleRedirecting] = useState(false);
   // const { connect } = useSignalRContext();
   const dispatch = useDispatch();
 
@@ -61,6 +63,13 @@ export function LoginForm({
     } catch (error) {
       handleApiError(error);
     }
+  };
+
+  const handleGoogleLogin = () => {
+    if (isGoogleRedirecting || loginMutation.isPending) return;
+
+    setIsGoogleRedirecting(true);
+    window.location.assign(authApi.getGoogleAuthorizationUrl());
   };
 
   const RandomIllustration = useMemo(() => {
@@ -172,7 +181,7 @@ export function LoginForm({
                       <Button
                         type="submit"
                         className="w-full h-12 bg-linear-to-r from-primary/40 via-primary/80 to-primary hover:from-primary/40 hover:via-primary/80 hover:to-primary text-primary-foreground font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
-                        disabled={loginMutation.isPending}
+                        disabled={loginMutation.isPending || isGoogleRedirecting}
                         size="lg"
                       >
                         <div className="flex items-center justify-center gap-2">
@@ -184,6 +193,29 @@ export function LoginForm({
                           )}
                           {loginMutation.isPending ? "Đang đăng nhập..." : "Đăng nhập"}
                         </div>
+                      </Button>
+
+                      <div className="flex items-center gap-3">
+                        <div className="h-px flex-1 bg-border" />
+                        <span className="text-xs text-muted-foreground">
+                          hoặc
+                        </span>
+                        <div className="h-px flex-1 bg-border" />
+                      </div>
+
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="h-12 w-full rounded-xl border-2 font-semibold"
+                        disabled={loginMutation.isPending || isGoogleRedirecting}
+                        onClick={handleGoogleLogin}
+                      >
+                        <span className="mr-2 flex h-6 w-6 items-center justify-center rounded-full border bg-white text-sm font-bold text-blue-600">
+                          G
+                        </span>
+                        {isGoogleRedirecting
+                          ? "Đang chuyển đến Google..."
+                          : "Đăng nhập bằng Google"}
                       </Button>
                     </div>
 

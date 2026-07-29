@@ -48,12 +48,12 @@ export const UserListParamsSchema = z.object({
   order: z.enum(["asc", "desc"]).optional(),
 });
 
-export const CreateSaleUserRequestSchema = z.object({
+export const CreateStaffUserRequestSchema = z.object({
   fullName: z.string().min(1, "Họ tên không được để trống"),
   email: z.string().email("Email không hợp lệ"),
   password: z.string().min(1, "Mật khẩu không được để trống"),
   phoneNumber: z.string().nullable().optional(),
-  role: z.literal(USER_ROLE.SALES),
+  role: z.enum([USER_ROLE.SALES, USER_ROLE.DISPATCHER]),
   status: z.enum([USER_STATUS_REQUEST.ACTIVE, USER_STATUS_REQUEST.INACTIVE]),
 });
 
@@ -81,18 +81,19 @@ export const ResetUserPasswordRequestSchema = z.object({
 
 export const UserCreateFormSchema = z
   .object({
-    accountType: z.enum([USER_ACCOUNT_TYPE.SALES, USER_ACCOUNT_TYPE.WAREHOUSE]),
+    accountType: z.enum([USER_ACCOUNT_TYPE.STAFF, USER_ACCOUNT_TYPE.WAREHOUSE]),
     username: z.string().trim().optional(),
     fullName: z.string().trim().min(1, "Họ tên không được để trống"),
     email: z.string().trim().optional(),
     password: z.string().trim().min(1, "Mật khẩu không được để trống"),
     phoneNumber: z.string().trim().optional(),
+    role: z.enum([USER_ROLE.SALES, USER_ROLE.DISPATCHER]),
     status: z.enum([USER_STATUS_REQUEST.ACTIVE, USER_STATUS_REQUEST.INACTIVE]),
     warehouseId: z.string().optional(),
   })
   .superRefine((values, context) => {
     if (
-      values.accountType === USER_ACCOUNT_TYPE.SALES &&
+      values.accountType === USER_ACCOUNT_TYPE.STAFF &&
       !values.email
     ) {
       context.addIssue({
@@ -161,7 +162,7 @@ export const UserPasswordFormSchema = z
 export type TUserProfile = z.infer<typeof UserProfileSchema>;
 export type TUserListResponse = z.infer<typeof UserListResponseSchema>;
 export type TUserListParams = z.infer<typeof UserListParamsSchema>;
-export type TCreateSaleUserRequest = z.infer<typeof CreateSaleUserRequestSchema>;
+export type TCreateStaffUserRequest = z.infer<typeof CreateStaffUserRequestSchema>;
 export type TAdminUpdateUserRequest = z.infer<typeof AdminUpdateUserRequestSchema>;
 export type TChangeUserRoleRequest = z.infer<typeof ChangeUserRoleRequestSchema>;
 export type TChangeUserStatusRequest = z.infer<
@@ -180,12 +181,13 @@ export type TUserWarehouseFormValues = z.infer<typeof UserWarehouseFormSchema>;
 export type TUserPasswordFormValues = z.infer<typeof UserPasswordFormSchema>;
 
 export const USER_CREATE_FORM_DEFAULTS: TUserCreateFormValues = {
-  accountType: USER_ACCOUNT_TYPE.SALES,
+  accountType: USER_ACCOUNT_TYPE.STAFF,
   username: "",
   fullName: "",
   email: "",
   password: "@123@",
   phoneNumber: "",
+  role: USER_ROLE.SALES,
   status: USER_STATUS_REQUEST.ACTIVE,
   warehouseId: "",
 };

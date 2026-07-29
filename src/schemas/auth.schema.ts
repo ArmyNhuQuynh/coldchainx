@@ -15,6 +15,24 @@ export const AuthResponseSchema = z.object({
     accessTokenExpiresAt: z.union([z.string(), z.number()]).optional().nullable(),
 });
 
+export const GoogleLoginResponseSchema = z.object({
+    token: z.string().min(1),
+    refreshToken: z.string().min(1),
+    expiresAt: z.string(),
+    user: z.object({
+        userId: z.string().uuid(),
+        customerId: z.string().uuid().nullable().optional(),
+        driverId: z.string().uuid().nullable().optional(),
+        username: z.string(),
+        fullName: z.string(),
+        email: z.string().email().nullable().optional(),
+        role: z.string().nullable().optional(),
+        status: z.string().nullable().optional(),
+        avatarUrl: z.string().nullable().optional(),
+        authProvider: z.string().nullable().optional(),
+    }),
+});
+
 export const CreateWarehouseWorkerRequestSchema = z.object({
     username: z.string().min(1, "Tên đăng nhập không được để trống"),
     password: z.string().min(1, "Mật khẩu không được để trống"),
@@ -27,6 +45,7 @@ export const CreateWarehouseWorkerRequestSchema = z.object({
 
 export type TLoginRequest = z.TypeOf<typeof LoginRequestSchema>;
 export type TAuthResponse = z.TypeOf<typeof AuthResponseSchema>;
+export type TGoogleLoginResponse = z.infer<typeof GoogleLoginResponseSchema>;
 export type TCreateWarehouseWorkerRequest = z.infer<
     typeof CreateWarehouseWorkerRequestSchema
 >;

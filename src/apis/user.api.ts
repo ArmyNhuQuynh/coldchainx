@@ -4,7 +4,7 @@ import type {
   TChangeUserRoleRequest,
   TChangeUserStatusRequest,
   TChangeUserWarehouseRequest,
-  TCreateSaleUserRequest,
+  TCreateStaffUserRequest,
   TResetUserPasswordRequest,
   TUserListParams,
   TUserListResponse,
@@ -35,7 +35,7 @@ const getUserById = async (id: string) => {
   return response.data;
 };
 
-const createSaleUser = async (data: TCreateSaleUserRequest) => {
+const createStaffUser = async (data: TCreateStaffUserRequest) => {
   const response = await apiRequest.baseApi.post<BaseResponse<TUserProfile>>(
     API_SUFFIX.USERS_API,
     data
@@ -92,7 +92,7 @@ const resetUserPassword = async (
 export const userApi = {
   getUsers,
   getUserById,
-  createSaleUser,
+  createStaffUser,
   updateUser,
   changeUserRole,
   changeUserStatus,
