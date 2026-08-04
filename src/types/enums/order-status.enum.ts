@@ -18,6 +18,10 @@ export const ORDER_STATUS = {
   DELIVERED: "DELIVERED",
   RETURNED: "RETURNED",
   PARTIALLY_DELIVERED: "PARTIALLY_DELIVERED",
+  PARTIAL_DELIVER_OSD: "PARTIAL_DELIVER_OSD",
+  OSD_DOCK_PENDING: "OSD_DOCK_PENDING",
+  OSD_REJECT_PENDING: "OSD_REJECT_PENDING",
+  DELIVERY_FAILED_NOSHOW: "DELIVERY_FAILED_NOSHOW",
   OSD_CLAIM_APPROVED_BY_DISPATCHER: "OSD_CLAIM_APPROVED_BY_DISPATCHER",
   OSD_CLAIM_REJECTED_BY_DISPATCHER: "OSD_CLAIM_REJECTED_BY_DISPATCHER",
   COMPLETED_WITH_OSD_REFUNDED: "COMPLETED_WITH_OSD_REFUNDED",
@@ -122,6 +126,26 @@ export function getOrderStatusLabel(status: string): {
         label: "Giao một phần",
         className: "border-amber-400 text-amber-700 bg-transparent",
       };
+    case ORDER_STATUS.PARTIAL_DELIVER_OSD:
+      return {
+        label: "Đã giao một phần (OS&D)",
+        className: "border-amber-400 text-amber-700 bg-transparent",
+      };
+    case ORDER_STATUS.OSD_DOCK_PENDING:
+      return {
+        label: "Chờ xử lý hàng từ chối",
+        className: "border-orange-400 text-orange-700 bg-transparent",
+      };
+    case ORDER_STATUS.OSD_REJECT_PENDING:
+      return {
+        label: "Từ chối toàn bộ - chờ xử lý",
+        className: "border-rose-400 text-rose-700 bg-transparent",
+      };
+    case ORDER_STATUS.DELIVERY_FAILED_NOSHOW:
+      return {
+        label: "Giao thất bại - khách vắng mặt",
+        className: "border-rose-400 text-rose-700 bg-transparent",
+      };
     case ORDER_STATUS.OSD_CLAIM_APPROVED_BY_DISPATCHER:
       return {
         label: "Đã duyệt bồi thường",
@@ -149,6 +173,22 @@ export function getOrderStatusLabel(status: string): {
       };
   }
 }
+
+const PROCESSED_DELIVERY_ORDER_STATUSES = new Set<string>([
+  ORDER_STATUS.DELIVERED,
+  ORDER_STATUS.RETURNED,
+  ORDER_STATUS.PARTIALLY_DELIVERED,
+  ORDER_STATUS.PARTIAL_DELIVER_OSD,
+  ORDER_STATUS.OSD_DOCK_PENDING,
+  ORDER_STATUS.OSD_REJECT_PENDING,
+  ORDER_STATUS.DELIVERY_FAILED_NOSHOW,
+  ORDER_STATUS.OSD_CLAIM_APPROVED_BY_DISPATCHER,
+  ORDER_STATUS.OSD_CLAIM_REJECTED_BY_DISPATCHER,
+  ORDER_STATUS.COMPLETED_WITH_OSD_REFUNDED,
+]);
+
+export const isOrderDeliveryStopProcessed = (status?: string | null) =>
+  Boolean(status && PROCESSED_DELIVERY_ORDER_STATUSES.has(normalizeOrderStatus(status)));
 
 export const ORDER_STATUS_FILTER_OPTIONS = [
   { label: "Tất cả trạng thái", value: "ALL" },

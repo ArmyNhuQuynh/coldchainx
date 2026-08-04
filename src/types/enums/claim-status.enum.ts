@@ -1,5 +1,6 @@
 export const CLAIM_STATUS = {
   OPEN: "OPEN",
+  PENDING_REVIEW: "PENDING_REVIEW",
   PENDING_DISPATCHER_REVIEW: "PENDING_DISPATCHER_REVIEW",
   PENDING_ACCOUNTANT_REVIEW: "PENDING_ACCOUNTANT_REVIEW",
   RESOLVED_PAID: "RESOLVED_PAID",
@@ -13,6 +14,7 @@ export const getClaimStatusLabel = (status?: string | null) => {
   switch (status?.trim().toUpperCase()) {
     case CLAIM_STATUS.OPEN:
       return "Mới tạo";
+    case CLAIM_STATUS.PENDING_REVIEW:
     case CLAIM_STATUS.PENDING_DISPATCHER_REVIEW:
       return "Chờ điều phối duyệt";
     case CLAIM_STATUS.PENDING_ACCOUNTANT_REVIEW:
@@ -28,6 +30,7 @@ export const getClaimStatusLabel = (status?: string | null) => {
 
 export const getClaimStatusClassName = (status?: string | null) => {
   switch (status?.trim().toUpperCase()) {
+    case CLAIM_STATUS.PENDING_REVIEW:
     case CLAIM_STATUS.PENDING_DISPATCHER_REVIEW:
       return "border-amber-400 text-amber-700";
     case CLAIM_STATUS.PENDING_ACCOUNTANT_REVIEW:

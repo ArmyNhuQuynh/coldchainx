@@ -17,10 +17,11 @@ const DispatcherClaimDetailPage = () => {
   const investigationQuery = getInvestigation(claimId);
   const [note, setNote] = useState("");
   const [mode, setMode] = useState<"approve" | "reject" | null>(null);
-  const isActionable = [
-    CLAIM_STATUS.OPEN,
-    CLAIM_STATUS.PENDING_DISPATCHER_REVIEW,
-  ].includes(investigationQuery.data?.status as typeof CLAIM_STATUS.OPEN);
+  const claimStatus = investigationQuery.data?.status?.trim().toUpperCase();
+  const isActionable =
+    claimStatus === CLAIM_STATUS.OPEN ||
+    claimStatus === CLAIM_STATUS.PENDING_REVIEW ||
+    claimStatus === CLAIM_STATUS.PENDING_DISPATCHER_REVIEW;
   const isPending = approveByDispatcher.isPending || rejectByDispatcher.isPending;
 
   const handleSubmit = async () => {

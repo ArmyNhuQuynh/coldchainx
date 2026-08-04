@@ -9,7 +9,10 @@ import ShipmentContract from "./shipment-contract";
 import OrderWeightSection from "./components/shipment-weight-section";
 import OrderDocuments from "./components/shipment-document";
 import OrderReviewActions from "./components/shipment-review-action";
-import { ORDER_STATUS } from "@/types/enums/order-status.enum";
+import {
+    ORDER_STATUS,
+    isOrderDeliveryStopProcessed,
+} from "@/types/enums/order-status.enum";
 import type { RootState } from "@/redux/store";
 import { useSelector } from "react-redux";
 import { useState } from "react";
@@ -31,11 +34,8 @@ const OrderDetailPage = () => {
     const order = data?.data;
     const canTrackOrder = Boolean(
         order?.masterTripId &&
-        [
-            ORDER_STATUS.SHIPPING,
-            ORDER_STATUS.PARTIALLY_DELIVERED,
-            ORDER_STATUS.DELIVERED,
-        ].includes(order.status)
+        (order.status === ORDER_STATUS.SHIPPING ||
+            isOrderDeliveryStopProcessed(order.status))
     );
 
     if (isLoading) {

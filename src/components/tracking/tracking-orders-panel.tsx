@@ -9,6 +9,7 @@ import type {
 import {
   ORDER_STATUS,
   getOrderStatusLabel,
+  isOrderDeliveryStopProcessed,
 } from "@/types/enums/order-status.enum";
 import { CheckCircle2, Clock3, MapPin, Package } from "lucide-react";
 import { useMemo } from "react";
@@ -97,6 +98,9 @@ const TrackingOrdersPanel = ({ tripDetails, isLoading }: Props) => {
                 const allDelivered = orders.every(
                   (order) => order.status === ORDER_STATUS.DELIVERED
                 );
+                const allProcessed = orders.every((order) =>
+                  isOrderDeliveryStopProcessed(order.status)
+                );
 
                 return (
                   <section
@@ -113,13 +117,13 @@ const TrackingOrdersPanel = ({ tripDetails, isLoading }: Props) => {
                           <span className="font-semibold">
                             Điểm giao {groupIndex + 1}
                           </span>
-                          {allDelivered && (
+                          {allProcessed && (
                             <Badge
                               variant="outline"
                               className="border-emerald-400 bg-transparent text-emerald-700"
                             >
                               <CheckCircle2 className="mr-1 h-3.5 w-3.5" />
-                              Đã giao xong
+                              {allDelivered ? "Đã giao xong" : "Đã xử lý điểm giao"}
                             </Badge>
                           )}
                         </div>

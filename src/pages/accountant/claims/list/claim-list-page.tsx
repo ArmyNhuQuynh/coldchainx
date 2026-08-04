@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 const AccountantClaimListPage = () => {
   const navigate = useNavigate();
   const { getClaims } = useClaim();
-  const [status, setStatus] = useState(CLAIM_STATUS.PENDING_ACCOUNTANT_REVIEW);
+  const [status, setStatus] = useState<string>(CLAIM_STATUS.PENDING_ACCOUNTANT_REVIEW);
   const [search, setSearch] = useState("");
   const claimsQuery = getClaims({ status, pageNumber: 1, pageSize: 100 });
   const claims = useMemo(() => {

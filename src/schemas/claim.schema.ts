@@ -91,9 +91,7 @@ export type TPayoutClaimRequest = {
 };
 
 export const PayoutClaimFormSchema = z.object({
-  refundAmount: z.coerce
-    .number()
-    .positive("Số tiền giải ngân phải lớn hơn 0"),
+  refundAmount: z.number().positive("Số tiền giải ngân phải lớn hơn 0"),
   paymentMethod: z.string().min(1, "Vui lòng chọn phương thức thanh toán"),
   payoutTransactionCode: z.string().trim().optional(),
   bankTransferImageUrl: z

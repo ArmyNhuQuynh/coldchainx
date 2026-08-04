@@ -33,7 +33,7 @@ export type CustomerCareCustomer = {
   orders: CustomerCareOrder[];
 };
 
-const TERMINAL_ORDER_STATUSES = new Set([
+const TERMINAL_ORDER_STATUSES: ReadonlySet<string> = new Set([
   ORDER_STATUS.REJECTED,
   ORDER_STATUS.DELIVERED,
   ORDER_STATUS.RETURNED,
@@ -41,9 +41,7 @@ const TERMINAL_ORDER_STATUSES = new Set([
 
 export const isCustomerCareOrderActive = (status?: string | null) => {
   if (!status) return false;
-  return !TERMINAL_ORDER_STATUSES.has(
-    status.trim().toUpperCase() as (typeof ORDER_STATUS)[keyof typeof ORDER_STATUS]
-  );
+  return !TERMINAL_ORDER_STATUSES.has(status.trim().toUpperCase());
 };
 
 export const toCustomerCareOrder = (

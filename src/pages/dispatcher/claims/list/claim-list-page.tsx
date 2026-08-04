@@ -19,7 +19,7 @@ const DispatcherClaimListPage = () => {
   const navigate = useNavigate();
   const { getClaims } = useClaim();
   const [pageNumber, setPageNumber] = useState(1);
-  const [status, setStatus] = useState(CLAIM_STATUS.PENDING_DISPATCHER_REVIEW);
+  const [status, setStatus] = useState<string>(CLAIM_STATUS.PENDING_REVIEW);
   const [search, setSearch] = useState("");
   const claimsQuery = getClaims({ status, pageNumber, pageSize: 20 });
   const claims = useMemo(() => {
@@ -63,6 +63,7 @@ const DispatcherClaimListPage = () => {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value={CLAIM_STATUS.PENDING_REVIEW}>Chờ duyệt từ giao hàng</SelectItem>
             <SelectItem value={CLAIM_STATUS.PENDING_DISPATCHER_REVIEW}>Chờ điều phối duyệt</SelectItem>
             <SelectItem value={CLAIM_STATUS.OPEN}>Hồ sơ mới</SelectItem>
             <SelectItem value={CLAIM_STATUS.PENDING_ACCOUNTANT_REVIEW}>Đã chuyển kế toán</SelectItem>
