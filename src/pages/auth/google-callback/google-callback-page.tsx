@@ -2,10 +2,10 @@ import { useAuth } from "@/hooks/use-auth";
 import { handleApiError } from "@/lib/error";
 import { logout, setUser } from "@/redux/User/user-slice";
 import {
+  PATH_ACCOUNTANT_DASHBOARD,
   PATH_ADMIN_DASHBOARD,
   PATH_AUTH,
   PATH_DISPATCHER_DASHBOARD,
-  PATH_MANAGER_DASHBOARD,
   PATH_SALE_DASHBOARD,
 } from "@/routes/path";
 import type { TAuthResponse } from "@/schemas/auth.schema";
@@ -21,14 +21,14 @@ const resolveManagementRole = (role?: string | null): TRole | null => {
     case "admin":
     case "systemadmin":
       return "Admin";
-    case "manager":
-    case "systemmanager":
-      return "Manager";
     case "sale":
     case "sales":
       return "Sale";
     case "dispatcher":
       return "Dispatcher";
+    case "account":
+    case "accountant":
+      return "Accountant";
     default:
       return null;
   }
@@ -38,12 +38,12 @@ const getDashboardPath = (role: TRole) => {
   switch (role) {
     case "Admin":
       return PATH_ADMIN_DASHBOARD.vehicle.root;
-    case "Manager":
-      return PATH_MANAGER_DASHBOARD.shipment.root;
     case "Sale":
       return PATH_SALE_DASHBOARD.shipment.root;
     case "Dispatcher":
       return PATH_DISPATCHER_DASHBOARD.dispatch.root;
+    case "Accountant":
+      return PATH_ACCOUNTANT_DASHBOARD.driverReimbursement.root;
   }
 };
 
@@ -79,7 +79,7 @@ const GoogleCallbackPage = () => {
           dispatch(logout());
           toast.error("Tài khoản không có quyền truy cập web quản lý.", {
             description:
-              "Web chỉ dành cho Admin, Manager, Sale và Dispatcher.",
+              "Web chỉ dành cho Admin, Sale, Dispatcher và Kế toán.",
           });
           navigate(PATH_AUTH.login, { replace: true });
           return;

@@ -12,7 +12,7 @@ import {
 } from "@/types/enums/order-status.enum";
 import { CheckCircle2, Clock3, MapPin, Package } from "lucide-react";
 import { useMemo } from "react";
-import { formatTrackingDateTime } from "../../shared/tracking-formatters";
+import { formatTrackingDateTime } from "./shared/tracking-formatters";
 
 type Props = {
   tripDetails?: TDispatchTripDetails | null;

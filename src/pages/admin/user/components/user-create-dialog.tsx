@@ -176,7 +176,7 @@ const UserCreateDialog = ({ open, onOpenChange, onCreated }: Props) => {
                 control={form.control}
                 name="password"
                 label="Mật khẩu"
-                placeholder="@123@"
+                placeholder="Tối thiểu 8 ký tự"
                 type="password"
               />
               <UserTextField
@@ -195,6 +195,7 @@ const UserCreateDialog = ({ open, onOpenChange, onCreated }: Props) => {
                   options={[
                     { label: "Sale", value: USER_ROLE.SALES },
                     { label: "Dispatcher", value: USER_ROLE.DISPATCHER },
+                    { label: "Kế toán", value: USER_ROLE.ACCOUNTANT },
                   ]}
                 />
               )}

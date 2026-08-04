@@ -35,7 +35,8 @@ const importCopy: Record<
 > = {
   vehicles: {
     title: "Import xe",
-    description: "Tải lên file theo mẫu của BE để tạo hoặc cập nhật đội xe.",
+    description:
+      "Tải file mẫu mới nhất từ BE và điền WarehouseName đúng tên kho để tạo xe tại kho tương ứng.",
     templateName: "vehicles",
     success: "Import xe hoàn tất",
   },

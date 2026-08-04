@@ -9,12 +9,12 @@ import {
   decodePolyline,
   findNearestTrackingPoint,
   pointsToCoordinates,
-} from "../utils/map-utils";
+} from "./utils/map-utils";
 import {
   formatCoordinate,
   formatTemperature,
   formatTrackingDateTime,
-} from "../../shared/tracking-formatters";
+} from "./shared/tracking-formatters";
 
 declare global {
   interface Window {

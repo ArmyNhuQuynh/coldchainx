@@ -11,10 +11,10 @@ import { ErrorBoundary } from "react-error-boundary";
 import { Navigate, useRoutes } from "react-router-dom";
 import GuestGuard from "../guards/guest-guard";
 import {
+  PATH_ACCOUNTANT_DASHBOARD,
   PATH_ADMIN_DASHBOARD,
   PATH_AUTH,
   PATH_DISPATCHER_DASHBOARD,
-  PATH_MANAGER_DASHBOARD,
   PATH_SALE_DASHBOARD,
 } from "./path";
 
@@ -39,10 +39,13 @@ const GoogleCallbackPage = Loadable(
   lazy(() => import("@/pages/auth/google-callback"))
 );
 const ShipmentPage = Loadable(
-  lazy(() => import("@/pages/manager/shipment/list-shipments/list-shipment-page"))
+  lazy(() => import("@/pages/sale/shipment/list-shipments/list-shipment-page"))
 );
 const ShipmentDetailPage = Loadable(
-  lazy(() => import("@/pages/manager/shipment/shipment-detail"))
+  lazy(() => import("@/pages/sale/shipment/shipment-detail"))
+);
+const ShipmentTrackingPage = Loadable(
+  lazy(() => import("@/pages/sale/shipment/tracking/shipment-tracking-page"))
 );
 const SaleIncidentPage = Loadable(
   lazy(() => import("@/pages/sale/incident/list-incidents"))
@@ -117,7 +120,13 @@ const UserDetailPage = Loadable(
   lazy(() => import("@/pages/admin/user/detail-user"))
 );
 const ReimbursementPage = Loadable(
-  lazy(() => import("@/pages/admin/reimbursements"))
+  lazy(() => import("@/pages/accountant/driver-reimbursements"))
+);
+const AccountantClaimPage = Loadable(
+  lazy(() => import("@/pages/accountant/claims/list/claim-list-page"))
+);
+const AccountantClaimDetailPage = Loadable(
+  lazy(() => import("@/pages/accountant/claims/detail/claim-detail-page"))
 );
 const DispatchPage = Loadable(
   lazy(() => import("@/pages/dispatcher/dispatch"))
@@ -139,6 +148,12 @@ const DispatcherIncidentPage = Loadable(
 );
 const DispatcherIncidentDetailPage = Loadable(
   lazy(() => import("@/pages/dispatcher/incidents/detail"))
+);
+const DispatcherClaimPage = Loadable(
+  lazy(() => import("@/pages/dispatcher/claims/list/claim-list-page"))
+);
+const DispatcherClaimDetailPage = Loadable(
+  lazy(() => import("@/pages/dispatcher/claims/detail/claim-detail-page"))
 );
 
 
@@ -284,33 +299,6 @@ export const AppRoutes = () =>
           path: "user/:id",
           element: <UserDetailPage />,
         },
-        {
-          path: "reimbursements",
-          element: <ReimbursementPage />,
-        },
-      ],
-    },
-    {
-      path: PATH_MANAGER_DASHBOARD.root,
-      element: (
-        <RoleBasedGuard role="Manager">
-          <DashBoardLayout />
-        </RoleBasedGuard>
-      ),
-      children: [
-        {
-          element: <Navigate to={PATH_MANAGER_DASHBOARD.shipment.root} replace />,
-          index: true,
-        },
-        {
-          path: "shipment",
-          element: <ShipmentPage />,
-        },
-        {
-          path: "shipment/:id",
-          element: <ShipmentDetailPage />,
-        },
-
       ],
     },
     {
@@ -332,6 +320,10 @@ export const AppRoutes = () =>
         {
           path: "shipment/:id",
           element: <ShipmentDetailPage />,
+        },
+        {
+          path: "shipment/:orderId/tracking",
+          element: <ShipmentTrackingPage />,
         },
         {
           path: "incident",
@@ -388,12 +380,38 @@ export const AppRoutes = () =>
           element: <DispatcherIncidentDetailPage />,
         },
         {
-          path: "shipment",
-          element: <ShipmentPage />,
+          path: "claims",
+          element: <DispatcherClaimPage />,
         },
         {
-          path: "shipment/:id",
-          element: <ShipmentDetailPage />,
+          path: "claims/:claimId",
+          element: <DispatcherClaimDetailPage />,
+        },
+      ],
+    },
+    {
+      path: PATH_ACCOUNTANT_DASHBOARD.root,
+      element: (
+        <RoleBasedGuard role="Accountant">
+          <DashBoardLayout />
+        </RoleBasedGuard>
+      ),
+      children: [
+        {
+          element: <Navigate to={PATH_ACCOUNTANT_DASHBOARD.driverReimbursement.root} replace />,
+          index: true,
+        },
+        {
+          path: "driver-reimbursements",
+          element: <ReimbursementPage />,
+        },
+        {
+          path: "claims",
+          element: <AccountantClaimPage />,
+        },
+        {
+          path: "claims/:claimId",
+          element: <AccountantClaimDetailPage />,
         },
       ],
     },

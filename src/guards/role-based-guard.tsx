@@ -1,9 +1,9 @@
 import { LoginForm } from '@/pages/auth/login/components/login-form';
 import type { RootState } from '@/redux/store';
 import {
+    PATH_ACCOUNTANT_DASHBOARD,
     PATH_ADMIN_DASHBOARD,
     PATH_DISPATCHER_DASHBOARD,
-    PATH_MANAGER_DASHBOARD,
     PATH_SALE_DASHBOARD,
 } from '@/routes/path';
 import { RoleSchema, type TRole } from '@/schemas/role.schema';
@@ -37,12 +37,12 @@ const RoleBasedGuard = ({ children, role }: RoleBasedGuardProps) => {
         switch (userRole) {
             case RoleSchema.enum.Admin:
                 return <Navigate to={PATH_ADMIN_DASHBOARD.root} replace />;
-            case RoleSchema.enum.Manager:
-                return <Navigate to={PATH_MANAGER_DASHBOARD.root} replace />;
             case RoleSchema.enum.Sale:
                 return <Navigate to={PATH_SALE_DASHBOARD.shipment.root} replace />;
             case RoleSchema.enum.Dispatcher:
-                return <Navigate to={PATH_DISPATCHER_DASHBOARD.shipment.root} replace />;
+                return <Navigate to={PATH_DISPATCHER_DASHBOARD.dispatch.root} replace />;
+            case RoleSchema.enum.Accountant:
+                return <Navigate to={PATH_ACCOUNTANT_DASHBOARD.driverReimbursement.root} replace />;
             default:
                 return <Navigate to='/404' replace />;
         }

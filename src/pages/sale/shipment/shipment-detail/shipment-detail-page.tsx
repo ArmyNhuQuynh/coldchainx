@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useOrder } from "@/hooks/use-order";
 import OrderDetailHeader from "./components/shipment-detail-header";
 import OrderInfoCards from "./components/shipment-infor-card";
@@ -13,18 +13,30 @@ import { ORDER_STATUS } from "@/types/enums/order-status.enum";
 import type { RootState } from "@/redux/store";
 import { useSelector } from "react-redux";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { MapPinned } from "lucide-react";
+import { PATH_SALE_DASHBOARD } from "@/routes/path";
 
 
 const OrderDetailPage = () => {
     const { id } = useParams<{ id: string }>();
     const { getOrderById } = useOrder();
+    const navigate = useNavigate();
     const role = useSelector((state: RootState) => state.user.role);
-    const canReviewOrder = role === "Admin" || role === "Sale" || role === "Dispatcher";
+    const canReviewOrder = role === "Sale";
     const [preferredQuoteId, setPreferredQuoteId] = useState<string>();
 
     const { data, isLoading } = getOrderById(id!);
 
     const order = data?.data;
+    const canTrackOrder = Boolean(
+        order?.masterTripId &&
+        [
+            ORDER_STATUS.SHIPPING,
+            ORDER_STATUS.PARTIALLY_DELIVERED,
+            ORDER_STATUS.DELIVERED,
+        ].includes(order.status)
+    );
 
     if (isLoading) {
         return (
@@ -70,6 +82,19 @@ const OrderDetailPage = () => {
                         preferredQuoteId={preferredQuoteId}
                     />
                     <ShipmentContract order={order} />
+                    {canTrackOrder && (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            className="w-full justify-start"
+                            onClick={() =>
+                                navigate(PATH_SALE_DASHBOARD.shipment.tracking(order.orderId))
+                            }
+                        >
+                            <MapPinned className="mr-2 h-4 w-4" />
+                            Theo dõi tuyến
+                        </Button>
+                    )}
                 </div>
             </div>
 

@@ -10,6 +10,7 @@ import type { RootState } from "@/redux/store";
 import { useSelector } from "react-redux";
 import {
   AlertTriangle,
+  BadgeDollarSign,
   CalendarClock,
   ClipboardList,
   HomeIcon,
@@ -25,9 +26,9 @@ import {
   Warehouse,
 } from "lucide-react";
 import {
+  PATH_ACCOUNTANT_DASHBOARD,
   PATH_ADMIN_DASHBOARD,
   PATH_DISPATCHER_DASHBOARD,
-  PATH_MANAGER_DASHBOARD,
   PATH_SALE_DASHBOARD,
 } from "@/routes/path";
 import { ERole } from "@/types/enums/role.enum";
@@ -82,89 +83,6 @@ const adminRoutes = {
         title: "User",
         url: PATH_ADMIN_DASHBOARD.user.root,
         icon: Users,
-      },
-      {
-        title: "Giải ngân",
-        url: PATH_ADMIN_DASHBOARD.reimbursement.root,
-        icon: WalletCards,
-      },
-    ],
-  },
-};
-
-const managerRoutes = {
-  dashboard: {
-    mainTitle: "Dashboard",
-    items: [
-      {
-        title: "Quản lý",
-        url: PATH_MANAGER_DASHBOARD.root,
-        icon: HomeIcon,
-      },
-    ],
-  },
-  operations: {
-    mainTitle: "Vận hành",
-    items: [
-      {
-        title: "Lô hàng",
-        url: PATH_MANAGER_DASHBOARD.shipment.root,
-        icon: HomeIcon,
-      },
-      {
-        title: "Thiết bị",
-        url: "",
-        icon: HomeIcon,
-      },
-      {
-        title: "Tài xế",
-        url: "",
-        icon: HomeIcon,
-      },
-    ],
-  },
-  coordinationAndManagement: {
-    mainTitle: "Điều phối & Quản lý",
-    items: [
-      {
-        title: "Yêu cầu nhiên liệu",
-        url: "",
-        icon: HomeIcon,
-      },
-      {
-        title: "Sự cố",
-        url: "",
-        icon: HomeIcon,
-      },
-    ],
-  },
-  customer: {
-    mainTitle: "Khách hàng",
-    items: [
-      {
-        title: "Tư vấn",
-        url: "",
-        icon: HomeIcon,
-      },
-    ],
-  },
-  management: {
-    mainTitle: "Quản lý",
-    items: [
-      {
-        title: "Tài khoản",
-        url: "",
-        icon: HomeIcon,
-      },
-    ],
-  },
-  settings: {
-    mainTitle: "Cài đặt",
-    items: [
-      {
-        title: "Cài đặt chung",
-        url: "",
-        icon: HomeIcon,
       },
     ],
   },
@@ -243,9 +161,27 @@ const dispatcherRoutes = {
         icon: AlertTriangle,
       },
       {
-        title: "Lô hàng",
-        url: PATH_DISPATCHER_DASHBOARD.shipment.root,
-        icon: HomeIcon,
+        title: "Khiếu nại",
+        url: PATH_DISPATCHER_DASHBOARD.claim.root,
+        icon: BadgeDollarSign,
+      },
+    ],
+  },
+};
+
+const accountantRoutes = {
+  dashboard: {
+    mainTitle: "Tài chính",
+    items: [
+      {
+        title: "Hoàn chi tài xế",
+        url: PATH_ACCOUNTANT_DASHBOARD.driverReimbursement.root,
+        icon: WalletCards,
+      },
+      {
+        title: "Bồi thường khách hàng",
+        url: PATH_ACCOUNTANT_DASHBOARD.claim.root,
+        icon: BadgeDollarSign,
       },
     ],
   },
@@ -294,18 +230,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               </SidebarContent>
             );
 
-          case ERole.Manager:
-            return (
-              <SidebarContent>
-                <NavMain content={managerRoutes.dashboard} />
-                <NavMain content={managerRoutes.operations} />
-                <NavMain content={managerRoutes.coordinationAndManagement} />
-                <NavMain content={managerRoutes.customer} />
-                <NavMain content={managerRoutes.management} />
-                <NavMain content={managerRoutes.settings} />
-              </SidebarContent>
-            );
-
           case ERole.Sale:
             return (
               <SidebarContent>
@@ -319,6 +243,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <SidebarContent>
                 <NavMain content={dispatcherRoutes.dashboard} />
                 <NavMain content={dispatcherOperations} />
+              </SidebarContent>
+            );
+
+          case ERole.Accountant:
+            return (
+              <SidebarContent>
+                <NavMain content={accountantRoutes.dashboard} />
               </SidebarContent>
             );
 

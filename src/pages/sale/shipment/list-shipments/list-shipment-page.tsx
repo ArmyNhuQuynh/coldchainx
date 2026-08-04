@@ -13,8 +13,7 @@ const ShipmentPage = (_: Props) => {
           </h1>
 
           <p className="text-sm text-muted-foreground mt-1">
-            Duyệt, báo giá, điều phối và theo dõi
-            toàn bộ lô hàng
+            Duyệt, báo giá và theo dõi toàn bộ lô hàng
           </p>
         </div>
       </div>

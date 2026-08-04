@@ -5,7 +5,7 @@ import {
   formatCoordinate,
   formatTemperature,
   formatTrackingDateTime,
-} from "../../shared/tracking-formatters";
+} from "./shared/tracking-formatters";
 
 type Props = {
   point: TTrackingPoint | null;

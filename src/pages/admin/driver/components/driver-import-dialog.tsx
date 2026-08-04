@@ -36,7 +36,7 @@ const importCopy: Record<
   drivers: {
     title: "Import tài xế",
     description:
-      "Tải lên file theo mẫu của BE để tạo hoặc cập nhật nhiều hồ sơ tài xế.",
+      "Tải file mẫu mới nhất từ BE và điền WarehouseName đúng tên kho để tạo tài xế tại kho tương ứng.",
     templateName: "drivers",
     success: "Import tài xế hoàn tất",
   },

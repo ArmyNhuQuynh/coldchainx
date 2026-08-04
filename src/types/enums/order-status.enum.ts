@@ -18,6 +18,9 @@ export const ORDER_STATUS = {
   DELIVERED: "DELIVERED",
   RETURNED: "RETURNED",
   PARTIALLY_DELIVERED: "PARTIALLY_DELIVERED",
+  OSD_CLAIM_APPROVED_BY_DISPATCHER: "OSD_CLAIM_APPROVED_BY_DISPATCHER",
+  OSD_CLAIM_REJECTED_BY_DISPATCHER: "OSD_CLAIM_REJECTED_BY_DISPATCHER",
+  COMPLETED_WITH_OSD_REFUNDED: "COMPLETED_WITH_OSD_REFUNDED",
 } as const;
 
 export type TOrderStatus = (typeof ORDER_STATUS)[keyof typeof ORDER_STATUS];
@@ -118,6 +121,21 @@ export function getOrderStatusLabel(status: string): {
       return {
         label: "Giao một phần",
         className: "border-amber-400 text-amber-700 bg-transparent",
+      };
+    case ORDER_STATUS.OSD_CLAIM_APPROVED_BY_DISPATCHER:
+      return {
+        label: "Đã duyệt bồi thường",
+        className: "border-blue-400 text-blue-700 bg-transparent",
+      };
+    case ORDER_STATUS.OSD_CLAIM_REJECTED_BY_DISPATCHER:
+      return {
+        label: "Từ chối bồi thường",
+        className: "border-rose-400 text-rose-700 bg-transparent",
+      };
+    case ORDER_STATUS.COMPLETED_WITH_OSD_REFUNDED:
+      return {
+        label: "Đã hoàn tất bồi thường",
+        className: "border-emerald-400 text-emerald-700 bg-transparent",
       };
     case ORDER_STATUS.ACTIVE:
       return {

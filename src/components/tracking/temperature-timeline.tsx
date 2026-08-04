@@ -4,7 +4,7 @@ import { Activity } from "lucide-react";
 import {
   formatTemperature,
   formatTrackingDateTime,
-} from "../../shared/tracking-formatters";
+} from "./shared/tracking-formatters";
 
 type Props = {
   points: TTrackingPoint[];

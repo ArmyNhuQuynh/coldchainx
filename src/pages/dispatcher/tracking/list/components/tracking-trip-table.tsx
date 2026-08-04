@@ -23,14 +23,14 @@ import {
   Truck,
   User,
 } from "lucide-react";
-import TrackingStatusBadge from "../../shared/tracking-status-badge";
+import TrackingStatusBadge from "@/components/tracking/shared/tracking-status-badge";
 import {
   formatShortTripId,
   formatTemperature,
   formatTrackingDateTime,
   getDeviceStatusClassName,
   getDeviceStatusLabel,
-} from "../../shared/tracking-formatters";
+} from "@/components/tracking/shared/tracking-formatters";
 
 type Props = {
   trips: TTrackingTrip[];

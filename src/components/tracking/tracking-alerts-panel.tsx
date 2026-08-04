@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { TMonitoringAlert } from "@/schemas/monitoring.schema";
 import { AlertTriangle } from "lucide-react";
-import { formatTrackingDateTime } from "../../shared/tracking-formatters";
+import { formatTrackingDateTime } from "./shared/tracking-formatters";
 
 type Props = {
   alerts: TMonitoringAlert[];

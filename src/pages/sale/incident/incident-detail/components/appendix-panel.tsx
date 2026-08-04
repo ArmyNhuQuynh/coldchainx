@@ -9,7 +9,7 @@ import { APPENDIX_STATUS, getAppendixStatusLabel } from "@/types/enums/appendix-
 import { ExternalLink, FileSignature, Loader2, PlayCircle, Send } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import ShipmentSendConfirmationDialog from "@/pages/manager/shipment/shipment-detail/components/shipment-send-confirmation-dialog";
+import ShipmentSendConfirmationDialog from "@/pages/sale/shipment/shipment-detail/components/shipment-send-confirmation-dialog";
 import AppendixEditorDialog from "./appendix-editor-dialog";
 
 type Props = {

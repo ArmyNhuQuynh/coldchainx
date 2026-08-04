@@ -39,9 +39,10 @@ const normalizeRole = (role: unknown): TRole | null => {
         const normalized = role.trim();
         const legacyRoleMap: Record<string, TRole> = {
             SystemAdmin: "Admin",
-            SystemManager: "Manager",
             Sales: "Sale",
             Dispatcher: "Dispatcher",
+            Account: "Accountant",
+            ACCOUNTANT: "Accountant",
         };
 
         if (legacyRoleMap[normalized]) {
@@ -56,9 +57,9 @@ const normalizeRole = (role: unknown): TRole | null => {
     if (typeof role === "number") {
         const roleByValue: Record<number, TRole> = {
             0: "Admin",
-            1: "Manager",
             2: "Sale",
             3: "Dispatcher",
+            4: "Accountant",
         };
 
         return roleByValue[role] ?? null;

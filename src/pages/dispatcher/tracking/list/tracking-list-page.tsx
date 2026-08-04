@@ -8,7 +8,7 @@ import TrackingFilterBar from "./components/tracking-filter-bar";
 import {
   TRACKING_ALL_STATUS,
   formatShortTripId,
-} from "../shared/tracking-formatters";
+} from "@/components/tracking/shared/tracking-formatters";
 import TrackingSummaryCards from "./components/tracking-summary-cards";
 import TrackingTripTable from "./components/tracking-trip-table";
 

@@ -1,96 +1,13 @@
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useDispatchTrips } from "@/hooks/use-dispatch-trip";
-import { useMonitoring } from "@/hooks/use-monitoring";
-import type { TMonitoringAlert, TTrackingPoint } from "@/schemas/monitoring.schema";
+import TripTrackingView from "@/components/tracking/trip-tracking-view";
+import { formatShortTripId } from "@/components/tracking/shared/tracking-formatters";
 import { PATH_DISPATCHER_DASHBOARD } from "@/routes/path";
-import { ArrowLeft, MapPinned, RefreshCw } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { ArrowLeft, MapPinned } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
-import SelectedPointCard from "./components/selected-point-card";
-import TemperatureTimeline from "./components/temperature-timeline";
-import TrackingAlertsPanel from "./components/tracking-alerts-panel";
-import TrackingMap from "./components/tracking-map";
-import TrackingOrdersPanel from "./components/tracking-orders-panel";
-import TripOverviewPanel from "./components/trip-overview-panel";
-import {
-  formatShortTripId,
-  getLatestPoint,
-} from "../shared/tracking-formatters";
-
-const POLLING_INTERVAL_MS = 30000;
 
 const TrackingDetailPage = () => {
   const { tripId } = useParams();
   const navigate = useNavigate();
-  const {
-    getTrackingDetail,
-    getTripChart,
-    getTripAlerts,
-  } = useMonitoring();
-  const { getTripDetails, getTripRoute } = useDispatchTrips();
-  const [selectedPoint, setSelectedPoint] = useState<TTrackingPoint | null>(null);
-  const [selectedDistance, setSelectedDistance] = useState<number | null>(null);
-
-  const detailQuery = getTrackingDetail(tripId, Boolean(tripId));
-  const chartQuery = getTripChart(tripId, Boolean(tripId), 800);
-  const plannedRouteQuery = getTripRoute(tripId, Boolean(tripId));
-  const tripDetailsQuery = getTripDetails(tripId, Boolean(tripId));
-  const riskAlertsQuery = getTripAlerts(tripId, "risk", Boolean(tripId));
-  const ssaAlertsQuery = getTripAlerts(tripId, "ssa", Boolean(tripId));
-  const smartAlertsQuery = getTripAlerts(tripId, "smart", Boolean(tripId));
-
-  const trip = detailQuery.data ?? null;
-  const points = chartQuery.data?.points ?? [];
-  const lastPoint = points.length > 0 ? points[points.length - 1] : null;
-  const latestPoint = (trip ? getLatestPoint(trip) : null) ?? lastPoint;
-  const allAlerts = useMemo<TMonitoringAlert[]>(
-    () => [
-      ...(chartQuery.data?.alerts ?? []),
-      ...(riskAlertsQuery.data ?? []),
-      ...(ssaAlertsQuery.data ?? []),
-      ...(smartAlertsQuery.data ?? []),
-    ],
-    [
-      chartQuery.data?.alerts,
-      riskAlertsQuery.data,
-      smartAlertsQuery.data,
-      ssaAlertsQuery.data,
-    ]
-  );
-
-  useEffect(() => {
-    if (!tripId) return;
-
-    const timer = window.setInterval(() => {
-      detailQuery.refetch();
-      chartQuery.refetch();
-      tripDetailsQuery.refetch();
-      riskAlertsQuery.refetch();
-      ssaAlertsQuery.refetch();
-      smartAlertsQuery.refetch();
-    }, POLLING_INTERVAL_MS);
-
-    return () => window.clearInterval(timer);
-  }, [
-    chartQuery,
-    detailQuery,
-    riskAlertsQuery,
-    smartAlertsQuery,
-    ssaAlertsQuery,
-    tripDetailsQuery,
-    tripId,
-  ]);
-
-  const handleRefresh = () => {
-    detailQuery.refetch();
-    chartQuery.refetch();
-    plannedRouteQuery.refetch();
-    tripDetailsQuery.refetch();
-    riskAlertsQuery.refetch();
-    ssaAlertsQuery.refetch();
-    smartAlertsQuery.refetch();
-  };
 
   if (!tripId) {
     return (
@@ -100,104 +17,30 @@ const TrackingDetailPage = () => {
     );
   }
 
-  const isInitialLoading = detailQuery.isLoading || chartQuery.isLoading;
-  const plannedEncodedPolyline =
-    plannedRouteQuery.data?.overviewPolyline ??
-    plannedRouteQuery.data?.goongRouteOverview ??
-    null;
-
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div className="flex items-start gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            onClick={() => navigate(PATH_DISPATCHER_DASHBOARD.tracking.root)}
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-50 text-blue-700">
-            <MapPinned className="h-5 w-5" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-semibold">
-              Hành trình {formatShortTripId(tripId)}
-            </h1>
-            <p className="mt-1 text-muted-foreground">
-              Vị trí, nhiệt độ và lịch sử di chuyển của xe trong chuyến
-            </p>
-          </div>
-        </div>
-
+      <div className="flex items-start gap-3">
         <Button
           type="button"
           variant="outline"
-          className="gap-2"
-          disabled={
-            detailQuery.isFetching ||
-            chartQuery.isFetching
-          }
-          onClick={handleRefresh}
+          size="icon"
+          onClick={() => navigate(PATH_DISPATCHER_DASHBOARD.tracking.root)}
         >
-          <RefreshCw
-            className={
-              detailQuery.isFetching || chartQuery.isFetching
-                ? "h-4 w-4 animate-spin"
-                : "h-4 w-4"
-            }
-          />
-          Làm mới dữ liệu
+          <ArrowLeft className="h-4 w-4" />
         </Button>
-      </div>
-
-      {isInitialLoading && (
-        <div className="space-y-4">
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-[620px] w-full" />
+        <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-50 text-blue-700">
+          <MapPinned className="h-5 w-5" />
         </div>
-      )}
-
-      {!isInitialLoading && (
-        <>
-          <TripOverviewPanel
-            trip={trip}
-            tripDetails={tripDetailsQuery.data}
-          />
-
-          <div className="grid gap-4 xl:grid-cols-[1.6fr_0.9fr]">
-            <TrackingMap
-              points={points}
-              latestPoint={latestPoint}
-              plannedEncodedPolyline={plannedEncodedPolyline}
-              deviceCode={trip?.device?.deviceCode}
-              onPointSelect={(point, distance) => {
-                setSelectedPoint(point);
-                setSelectedDistance(distance ?? null);
-              }}
-            />
-            <div className="space-y-4">
-              <SelectedPointCard
-                point={selectedPoint}
-                distanceMeters={selectedDistance}
-              />
-              <TemperatureTimeline
-                points={points}
-                selectedPoint={selectedPoint}
-              />
-            </div>
-          </div>
-
-          <div className="grid gap-4 xl:grid-cols-[1.5fr_0.9fr]">
-            <TrackingOrdersPanel
-              tripDetails={tripDetailsQuery.data}
-              isLoading={tripDetailsQuery.isLoading}
-            />
-            <TrackingAlertsPanel alerts={allAlerts} />
-          </div>
-        </>
-      )}
+        <div>
+          <h1 className="text-3xl font-semibold">
+            Hành trình {formatShortTripId(tripId)}
+          </h1>
+          <p className="mt-1 text-muted-foreground">
+            Vị trí, nhiệt độ và lịch sử di chuyển của xe trong chuyến
+          </p>
+        </div>
+      </div>
+      <TripTrackingView tripId={tripId} />
     </div>
   );
 };

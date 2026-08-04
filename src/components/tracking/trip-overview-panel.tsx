@@ -12,14 +12,14 @@ import {
   Truck,
   User,
 } from "lucide-react";
-import TrackingStatusBadge from "../../shared/tracking-status-badge";
+import TrackingStatusBadge from "./shared/tracking-status-badge";
 import {
   formatCoordinate,
   formatTemperature,
   formatTrackingDateTime,
   getDeviceStatusClassName,
   getDeviceStatusLabel,
-} from "../../shared/tracking-formatters";
+} from "./shared/tracking-formatters";
 
 type Props = {
   trip: TTrackingTrip | null | undefined;

@@ -3,6 +3,17 @@ import { USER_ACCOUNT_TYPE } from "@/types/enums/user-account-type.enum";
 import { USER_ROLE } from "@/types/enums/user-role.enum";
 import { USER_STATUS_REQUEST } from "@/types/enums/user-status.enum";
 
+const VIETNAMESE_PHONE_PATTERN = /^(?:\+84|0)(?:3|5|7|8|9)\d{8}$/;
+
+const optionalPhoneNumber = z
+  .string()
+  .trim()
+  .refine(
+    (value) => !value || VIETNAMESE_PHONE_PATTERN.test(value),
+    "Số điện thoại không hợp lệ"
+  )
+  .optional();
+
 export const USER_FILTER_ALL = "ALL";
 
 export const USER_SORT_OPTIONS = [
@@ -51,16 +62,20 @@ export const UserListParamsSchema = z.object({
 export const CreateStaffUserRequestSchema = z.object({
   fullName: z.string().min(1, "Họ tên không được để trống"),
   email: z.string().email("Email không hợp lệ"),
-  password: z.string().min(1, "Mật khẩu không được để trống"),
-  phoneNumber: z.string().nullable().optional(),
-  role: z.enum([USER_ROLE.SALES, USER_ROLE.DISPATCHER]),
+  password: z.string().min(8, "Mật khẩu phải có ít nhất 8 ký tự"),
+  phoneNumber: optionalPhoneNumber.nullable(),
+  role: z.enum([
+    USER_ROLE.SALES,
+    USER_ROLE.DISPATCHER,
+    USER_ROLE.ACCOUNTANT,
+  ]),
   status: z.enum([USER_STATUS_REQUEST.ACTIVE, USER_STATUS_REQUEST.INACTIVE]),
 });
 
 export const AdminUpdateUserRequestSchema = z.object({
   fullName: z.string().min(1, "Họ tên không được để trống"),
   email: z.string().email("Email không hợp lệ"),
-  phoneNumber: z.string().nullable().optional(),
+  phoneNumber: optionalPhoneNumber.nullable(),
 });
 
 export const ChangeUserRoleRequestSchema = z.object({
@@ -76,7 +91,7 @@ export const ChangeUserWarehouseRequestSchema = z.object({
 });
 
 export const ResetUserPasswordRequestSchema = z.object({
-  newPassword: z.string().min(1, "Mật khẩu mới không được để trống"),
+  newPassword: z.string().min(8, "Mật khẩu mới phải có ít nhất 8 ký tự"),
 });
 
 export const UserCreateFormSchema = z
@@ -85,9 +100,13 @@ export const UserCreateFormSchema = z
     username: z.string().trim().optional(),
     fullName: z.string().trim().min(1, "Họ tên không được để trống"),
     email: z.string().trim().optional(),
-    password: z.string().trim().min(1, "Mật khẩu không được để trống"),
-    phoneNumber: z.string().trim().optional(),
-    role: z.enum([USER_ROLE.SALES, USER_ROLE.DISPATCHER]),
+    password: z.string().trim().min(8, "Mật khẩu phải có ít nhất 8 ký tự"),
+    phoneNumber: optionalPhoneNumber,
+    role: z.enum([
+      USER_ROLE.SALES,
+      USER_ROLE.DISPATCHER,
+      USER_ROLE.ACCOUNTANT,
+    ]),
     status: z.enum([USER_STATUS_REQUEST.ACTIVE, USER_STATUS_REQUEST.INACTIVE]),
     warehouseId: z.string().optional(),
   })
@@ -151,7 +170,7 @@ export const UserWarehouseFormSchema = z.object({
 
 export const UserPasswordFormSchema = z
   .object({
-    newPassword: z.string().trim().min(1, "Mật khẩu mới không được để trống"),
+    newPassword: z.string().trim().min(8, "Mật khẩu mới phải có ít nhất 8 ký tự"),
     confirmPassword: z.string().trim().min(1, "Vui lòng nhập lại mật khẩu"),
   })
   .refine((values) => values.newPassword === values.confirmPassword, {
@@ -185,7 +204,7 @@ export const USER_CREATE_FORM_DEFAULTS: TUserCreateFormValues = {
   username: "",
   fullName: "",
   email: "",
-  password: "@123@",
+  password: "",
   phoneNumber: "",
   role: USER_ROLE.SALES,
   status: USER_STATUS_REQUEST.ACTIVE,

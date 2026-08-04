@@ -5,7 +5,7 @@ import {
   TRACKING_ALL_STATUS,
   TRACKING_STATUS_OPTIONS,
   getTrackingStatusLabel,
-} from "../../shared/tracking-formatters";
+} from "@/components/tracking/shared/tracking-formatters";
 
 type Props = {
   search: string;

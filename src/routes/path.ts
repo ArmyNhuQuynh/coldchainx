@@ -4,10 +4,10 @@ const path = (root: string, sublink: string) => {
 }
 
 const ROOTS_AUTH = '/auth';
-const ROOTS_MANAGER_DASHBOARD = '/manager/dashboard';
 const ROOTS_ADMIN_DASHBOARD = '/admin/dashboard';
 const ROOTS_SALE_DASHBOARD = '/sale/dashboard';
 const ROOTS_DISPATCHER_DASHBOARD = '/dispatcher/dashboard';
+const ROOTS_ACCOUNTANT_DASHBOARD = '/accountant/dashboard';
 
 export const PATH_AUTH = {
   root: ROOTS_AUTH,
@@ -15,21 +15,6 @@ export const PATH_AUTH = {
   googleCallback: path(ROOTS_AUTH, '/google/callback'),
   logout: path(ROOTS_AUTH, '/logout'),
 };
-
-export const PATH_MANAGER_DASHBOARD = {
-  root: ROOTS_MANAGER_DASHBOARD,
-
-  general: {
-    app: path(ROOTS_MANAGER_DASHBOARD, "/general"),
-  },
-  
-  shipment: {
-    root: path(ROOTS_MANAGER_DASHBOARD, '/shipment'),
-    create: path(ROOTS_MANAGER_DASHBOARD, '/shipment/new'),
-    edit: (id: string) => path(ROOTS_MANAGER_DASHBOARD, `/shipment/${id}`),
-  },
-}
-
 
 export const PATH_ADMIN_DASHBOARD = {
   root: ROOTS_ADMIN_DASHBOARD,
@@ -88,9 +73,6 @@ export const PATH_ADMIN_DASHBOARD = {
     root: path(ROOTS_ADMIN_DASHBOARD, "/user"),
     detail: (id: string) => path(ROOTS_ADMIN_DASHBOARD, `/user/${id}`),
   },
-  reimbursement: {
-    root: path(ROOTS_ADMIN_DASHBOARD, "/reimbursements"),
-  },
 };
 
 export const PATH_SALE_DASHBOARD = {
@@ -102,6 +84,8 @@ export const PATH_SALE_DASHBOARD = {
   shipment: {
     root: path(ROOTS_SALE_DASHBOARD, '/shipment'),
     edit: (id: string) => path(ROOTS_SALE_DASHBOARD, `/shipment/${id}`),
+    tracking: (orderId: string) =>
+      path(ROOTS_SALE_DASHBOARD, `/shipment/${orderId}/tracking`),
   },
   incident: {
     root: path(ROOTS_SALE_DASHBOARD, '/incident'),
@@ -135,8 +119,19 @@ export const PATH_DISPATCHER_DASHBOARD = {
     root: path(ROOTS_DISPATCHER_DASHBOARD, "/incidents"),
     detail: (id: string) => path(ROOTS_DISPATCHER_DASHBOARD, `/incidents/${id}`),
   },
-  shipment: {
-    root: path(ROOTS_DISPATCHER_DASHBOARD, '/shipment'),
-    edit: (id: string) => path(ROOTS_DISPATCHER_DASHBOARD, `/shipment/${id}`),
+  claim: {
+    root: path(ROOTS_DISPATCHER_DASHBOARD, "/claims"),
+    detail: (id: string) => path(ROOTS_DISPATCHER_DASHBOARD, `/claims/${id}`),
+  },
+};
+
+export const PATH_ACCOUNTANT_DASHBOARD = {
+  root: ROOTS_ACCOUNTANT_DASHBOARD,
+  driverReimbursement: {
+    root: path(ROOTS_ACCOUNTANT_DASHBOARD, "/driver-reimbursements"),
+  },
+  claim: {
+    root: path(ROOTS_ACCOUNTANT_DASHBOARD, "/claims"),
+    detail: (id: string) => path(ROOTS_ACCOUNTANT_DASHBOARD, `/claims/${id}`),
   },
 };
