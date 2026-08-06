@@ -22,7 +22,7 @@ const ChatMessageBubble = ({ message, currentUserId }: Props) => {
           "max-w-[72%] rounded-3xl px-4 py-2 text-[15px] shadow-sm",
           isMine
             ? "bg-blue-600 text-white"
-            : "bg-white text-foreground"
+            : "bg-white text-slate-900"
         )}
       >
         <p className="whitespace-pre-wrap leading-relaxed">
@@ -31,7 +31,7 @@ const ChatMessageBubble = ({ message, currentUserId }: Props) => {
         <div
           className={cn(
             "mt-1 flex items-center gap-2 text-[11px]",
-            isMine ? "justify-end text-white/80" : "text-muted-foreground"
+            isMine ? "justify-end text-white/80" : "text-slate-500"
           )}
         >
           <span>{formatMessageTime(message.createdAt)}</span>

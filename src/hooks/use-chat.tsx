@@ -37,16 +37,19 @@ export const chatQueryKeys = {
     [...chatQueryKeys.root, "customer-messages", customerId] as const,
   customerMessages: (customerId: string, pageSize: number) =>
     [...chatQueryKeys.customerMessagesRoot(customerId), { pageSize }] as const,
+  orderMessagesRoot: (orderId: string) =>
+    [...chatQueryKeys.root, "order-messages", orderId] as const,
+  orderMessages: (orderId: string, pageSize: number) =>
+    [...chatQueryKeys.orderMessagesRoot(orderId), { pageSize }] as const,
 };
 
-const upsertCustomerMessage = (
+const upsertMessageCache = (
   queryClient: QueryClient,
+  queryKey: readonly unknown[],
   message: TChatMessage
 ) => {
-  if (!message.customerId) return;
-
   queryClient.setQueriesData<CustomerMessageCache>(
-    { queryKey: chatQueryKeys.customerMessagesRoot(message.customerId) },
+    { queryKey },
     (current) => {
       if (!current?.pages.length) return current;
 
@@ -75,6 +78,25 @@ const upsertCustomerMessage = (
   );
 };
 
+const upsertChatMessage = (
+  queryClient: QueryClient,
+  message: TChatMessage
+) => {
+  upsertMessageCache(
+    queryClient,
+    chatQueryKeys.orderMessagesRoot(message.orderId),
+    message
+  );
+
+  if (message.customerId) {
+    upsertMessageCache(
+      queryClient,
+      chatQueryKeys.customerMessagesRoot(message.customerId),
+      message
+    );
+  }
+};
+
 export const useChatSignalR = (
   onMessage?: (message: TChatMessage) => void
 ) => {
@@ -91,7 +113,7 @@ export const useChatSignalR = (
     let retryTimer: ReturnType<typeof setTimeout> | undefined;
 
     connection.on("ReceiveMessage", (message: TChatMessage) => {
-      upsertCustomerMessage(queryClient, message);
+      upsertChatMessage(queryClient, message);
       void queryClient.invalidateQueries({
         queryKey: chatQueryKeys.customerConversationsRoot(),
       });
@@ -155,6 +177,22 @@ export const useChat = () => {
       enabled: !!customerId,
     });
 
+  const getMessages = (orderId: string | undefined, pageSize = 30) =>
+    useInfiniteQuery({
+      queryKey: chatQueryKeys.orderMessages(orderId ?? "", pageSize),
+      queryFn: ({ pageParam }) =>
+        chatApi.getMessages(orderId!, {
+          pageNumber: pageParam,
+          pageSize,
+        }),
+      initialPageParam: 1,
+      getNextPageParam: (lastPage) =>
+        lastPage.data.currentPage < lastPage.data.totalPages
+          ? lastPage.data.currentPage + 1
+          : undefined,
+      enabled: !!orderId,
+    });
+
   const getParticipants = (orderId: string | undefined) =>
     useQuery({
       queryKey: chatQueryKeys.participants(orderId ?? ""),
@@ -171,7 +209,7 @@ export const useChat = () => {
       data: TSendChatMessage;
     }) => chatApi.sendMessage(orderId, data),
     onSuccess: (response) => {
-      if (response.data) upsertCustomerMessage(queryClient, response.data);
+      if (response.data) upsertChatMessage(queryClient, response.data);
       void queryClient.invalidateQueries({
         queryKey: chatQueryKeys.customerConversationsRoot(),
       });
@@ -190,6 +228,7 @@ export const useChat = () => {
   return {
     getCustomerConversations,
     getCustomerMessages,
+    getMessages,
     getParticipants,
     sendMessage,
     markMessagesAsRead,

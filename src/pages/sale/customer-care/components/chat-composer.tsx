@@ -16,6 +16,7 @@ type Props = {
   canSend: boolean;
   isSending?: boolean;
   disabledReason?: string;
+  orderLoadError?: string;
   onSelectOrder: (orderId: string) => void;
   onSend: (message: string) => Promise<void>;
 };
@@ -26,6 +27,7 @@ const ChatComposer = ({
   canSend,
   isSending,
   disabledReason,
+  orderLoadError,
   onSelectOrder,
   onSend,
 }: Props) => {
@@ -72,7 +74,11 @@ const ChatComposer = ({
               </p>
             </div>
             <div className="max-h-72 space-y-1 overflow-y-auto p-1">
-              {orders.length === 0 ? (
+              {orderLoadError ? (
+                <div className="rounded-xl bg-rose-50 p-3 text-sm text-rose-700">
+                  {orderLoadError}
+                </div>
+              ) : orders.length === 0 ? (
                 <div className="rounded-xl p-3 text-sm text-muted-foreground">
                   Khách này chưa có order đang hoạt động.
                 </div>

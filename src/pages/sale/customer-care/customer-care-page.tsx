@@ -114,7 +114,13 @@ const CustomerCarePage = () => {
 
     return messages.flatMap((message) => {
       const order = ordersById.get(message.orderId);
-      return order ? [{ order, message }] : [];
+      return [{
+        order: order ?? {
+          orderId: message.orderId,
+          trackingCode: message.trackingCode ?? `Order ${message.orderId.slice(0, 8)}`,
+        },
+        message,
+      }];
     });
   }, [messages, selectedOrders]);
 
@@ -202,8 +208,13 @@ const CustomerCarePage = () => {
     }
   };
 
-  const disabledReason = !selectedOrder
-    ? "Chọn order để trả lời."
+  const orderLoadError = customerOrdersQuery.isError
+    ? "Không tải được danh sách order của khách hàng."
+    : undefined;
+  const disabledReason = orderLoadError
+    ? orderLoadError
+    : !selectedOrder
+      ? "Chọn order để trả lời."
     : participantQuery.isLoading
       ? "Đang kiểm tra tài khoản khách hàng."
       : !participantQuery.data?.data.customerUserId
@@ -250,6 +261,7 @@ const CustomerCarePage = () => {
                 canSend={!!participantQuery.data?.data.customerUserId}
                 isSending={sendMessage.isPending}
                 disabledReason={disabledReason}
+                orderLoadError={orderLoadError}
                 onSelectOrder={setSelectedOrderId}
                 onSend={handleSendMessage}
               />

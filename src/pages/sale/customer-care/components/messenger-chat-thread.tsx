@@ -6,7 +6,7 @@ import { LoaderCircle } from "lucide-react";
 import { useCallback, useEffect, useRef } from "react";
 
 export type CustomerCareTimelineItem = {
-  order: CustomerCareOrder;
+  order: Pick<CustomerCareOrder, "orderId" | "trackingCode">;
   message: TChatMessage;
 };
 
@@ -123,18 +123,18 @@ const MessengerChatThread = ({
     >
       <div className="min-h-full px-8 py-6">
         {isLoading ? (
-          <div className="flex h-full min-h-[360px] items-center justify-center text-sm text-muted-foreground">
+          <div className="flex h-full min-h-[360px] items-center justify-center text-sm text-slate-600">
             Đang tải tin nhắn...
           </div>
         ) : items.length === 0 ? (
           <div className="flex h-full min-h-[360px] items-center justify-center text-center">
             <div>
-              <p className="text-lg font-semibold">
+              <p className="text-lg font-semibold text-slate-900">
                 {hasSelectedOrder
                   ? "Chưa có tin nhắn cho order này"
                   : "Chọn đơn hàng để bắt đầu tư vấn"}
               </p>
-              <p className="mt-2 text-sm text-muted-foreground">
+              <p className="mt-2 text-sm text-slate-600">
                 {hasSelectedOrder
                   ? "Bạn có thể nhập tin nhắn ở ô bên dưới để bắt đầu trao đổi với khách."
                   : "Bấm nút dấu cộng bên dưới để chọn một order đang hoạt động của khách."}
@@ -144,7 +144,7 @@ const MessengerChatThread = ({
         ) : (
           <div className="space-y-2">
             {isLoadingOlder && (
-              <div className="flex items-center justify-center gap-2 py-2 text-xs text-muted-foreground">
+              <div className="flex items-center justify-center gap-2 py-2 text-xs text-slate-500">
                 <LoaderCircle className="h-4 w-4 animate-spin" />
                 Đang tải tin nhắn cũ
               </div>
@@ -160,7 +160,7 @@ const MessengerChatThread = ({
                   {shouldShowDivider && (
                     <button
                       type="button"
-                      className="flex w-full items-center gap-3 py-3 text-xs font-semibold text-muted-foreground"
+                      className="flex w-full items-center gap-3 py-3 text-xs font-semibold text-slate-600"
                       onClick={() => onSelectOrder(item.order.orderId)}
                     >
                       <span className="h-px flex-1 bg-border/80" />
@@ -168,7 +168,7 @@ const MessengerChatThread = ({
                         className={
                           isSelected
                             ? "rounded-full bg-blue-600 px-3 py-1 text-white"
-                            : "rounded-full bg-white/80 px-3 py-1 text-foreground shadow-sm"
+                            : "rounded-full bg-white/80 px-3 py-1 text-slate-900 shadow-sm"
                         }
                       >
                         {item.order.trackingCode}

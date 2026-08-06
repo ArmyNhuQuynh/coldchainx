@@ -19,6 +19,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { MapPinned } from "lucide-react";
 import { PATH_SALE_DASHBOARD } from "@/routes/path";
+import OrderChatPopup from "@/pages/sale/customer-care/components/order-chat-popup";
 
 
 const OrderDetailPage = () => {
@@ -82,6 +83,11 @@ const OrderDetailPage = () => {
                         preferredQuoteId={preferredQuoteId}
                     />
                     <ShipmentContract order={order} />
+                    <OrderChatPopup
+                        orderId={order.orderId}
+                        trackingCode={order.trackingCode}
+                        customerName={order.customerName}
+                    />
                     {canTrackOrder && (
                         <Button
                             type="button"
