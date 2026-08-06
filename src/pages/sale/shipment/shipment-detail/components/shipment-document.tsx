@@ -11,6 +11,51 @@ type Props = {
     order: TOrder;
 };
 
+const DOCUMENT_LABELS: Record<string, string> = {
+    LEGAL_DOCUMENT: "Giấy tờ pháp lý",
+    ITEM_IMAGE: "Hình ảnh kiện hàng",
+    DISCREPANCY_REPORT: "Biên bản sai lệch",
+    DELIVERY_NOTE: "Phiếu giao hàng",
+    VAT_INVOICE: "Hóa đơn VAT",
+    INTERNAL_TRANSFER: "Phiếu vận chuyển nội bộ",
+    PHYSICAL_POD: "Biên bản giao nhận",
+};
+
+const getDocumentLabel = (docType: string) =>
+    DOCUMENT_LABELS[docType.trim().toUpperCase()] ?? docType;
+
+const getDocumentBadge = (status: string | null | undefined, hasFile: boolean) => {
+    if (!hasFile) {
+        return {
+            label: "Chưa có tệp",
+            className: "w-fit border border-slate-300 bg-transparent text-slate-600",
+        };
+    }
+
+    switch (status?.trim().toUpperCase()) {
+        case "PENDING":
+            return {
+                label: "Chờ duyệt",
+                className: "w-fit border border-amber-300 bg-transparent text-amber-700",
+            };
+        case "APPROVED":
+            return {
+                label: "Đã duyệt",
+                className: "w-fit border border-emerald-300 bg-transparent text-emerald-700",
+            };
+        case "REJECTED":
+            return {
+                label: "Bị từ chối",
+                className: "w-fit border border-rose-300 bg-transparent text-rose-700",
+            };
+        default:
+            return {
+                label: "Đã tải lên",
+                className: "w-fit border border-sky-300 bg-transparent text-sky-700",
+            };
+    }
+};
+
 const OrderDocuments = ({ order }: Props) => {
     const { getContractByOrderId } = useContract();
     const quotations = order.quotations ?? [];
@@ -47,39 +92,36 @@ const OrderDocuments = ({ order }: Props) => {
             </CardHeader>
             <CardContent>
                 <div className="space-y-4">
-                    {documents.map((doc) => (
-                        <div key={doc.docId} className="flex items-start gap-4">
-                            <FilePreview
-                                fileUrl={doc.imageUrl}
-                                alt={doc.docType}
-                                className="h-24 w-24 shrink-0"
-                            />
-                            <div className="flex flex-col gap-1">
-                                <p className="font-semibold text-sm uppercase">{doc.docType}</p>
-                                <p className="text-xs text-muted-foreground">{doc.imageUrl}</p>
-                                <Badge
-                                    className={
-                                        doc.status === "PENDING"
-                                            ? "text-yellow-600 bg-yellow-50 border border-yellow-200 w-fit"
-                                            : doc.status === "APPROVED"
-                                                ? "text-green-600 bg-green-50 border border-green-200 w-fit"
-                                                : "text-red-600 bg-red-50 border border-red-200 w-fit"
-                                    }
-                                >
-                                    {doc.status === "PENDING"
-                                        ? "Chờ duyệt"
-                                        : doc.status === "APPROVED"
-                                            ? "Đã duyệt"
-                                            : doc.status ?? "Chưa cập nhật"}
-                                </Badge>
-                                <p className="text-xs text-muted-foreground">
-                                    Tải lên: {doc.createdAt
-                                        ? format(new Date(doc.createdAt), "dd/MM/yyyy")
-                                        : "—"}
-                                </p>
+                    {documents.map((doc) => {
+                        const hasFile = Boolean(doc.imageUrl?.trim());
+                        const badge = getDocumentBadge(doc.status, hasFile);
+
+                        return (
+                            <div key={doc.docId} className="flex items-start gap-4">
+                                <FilePreview
+                                    fileUrl={doc.imageUrl}
+                                    alt={getDocumentLabel(doc.docType)}
+                                    className="h-24 w-24 shrink-0"
+                                />
+                                <div className="flex min-w-0 flex-col gap-1">
+                                    <p className="text-sm font-semibold uppercase">
+                                        {getDocumentLabel(doc.docType)}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                        {hasFile
+                                            ? "Bấm vào bản xem trước để mở tài liệu"
+                                            : "Hệ thống mới tạo mục tài liệu, chưa có tệp được tải lên"}
+                                    </p>
+                                    <Badge className={badge.className}>{badge.label}</Badge>
+                                    <p className="text-xs text-muted-foreground">
+                                        Tạo lúc: {doc.createdAt
+                                            ? format(new Date(doc.createdAt), "dd/MM/yyyy")
+                                            : "—"}
+                                    </p>
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
 
                     {hasSignedContract && signedContract && (
                         <div className="flex items-start gap-4">

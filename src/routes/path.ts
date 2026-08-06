@@ -73,6 +73,10 @@ export const PATH_ADMIN_DASHBOARD = {
     root: path(ROOTS_ADMIN_DASHBOARD, "/user"),
     detail: (id: string) => path(ROOTS_ADMIN_DASHBOARD, `/user/${id}`),
   },
+
+  permission: {
+    root: path(ROOTS_ADMIN_DASHBOARD, "/permissions"),
+  },
 };
 
 export const PATH_SALE_DASHBOARD = {

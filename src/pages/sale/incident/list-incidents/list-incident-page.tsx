@@ -1,11 +1,19 @@
 import { useDiscrepancy } from "@/hooks/use-discrepancy";
+import IncidentLoadError from "@/components/incidents/incident-load-error";
 import { AlertTriangle } from "lucide-react";
 import IncidentSummaryCards from "./components/incident-summary-cards";
 import IncidentTable from "./components/incident-table";
 
 const ListIncidentPage = () => {
   const { getPendingDiscrepancies } = useDiscrepancy();
-  const { data = [], isLoading, refetch } = getPendingDiscrepancies();
+  const {
+    data = [],
+    error,
+    isError,
+    isFetching,
+    isLoading,
+    refetch,
+  } = getPendingDiscrepancies();
 
   return (
     <div className="space-y-6">
@@ -25,13 +33,24 @@ const ListIncidentPage = () => {
         </div>
       </div>
 
-      <IncidentSummaryCards items={data} />
+      {isError ? (
+        <IncidentLoadError
+          error={error}
+          fallbackMessage="Không thể tải danh sách LPN đang giữ do sai lệch."
+          isRetrying={isFetching}
+          onRetry={() => void refetch()}
+        />
+      ) : (
+        <>
+          <IncidentSummaryCards items={data} />
 
-      <IncidentTable
-        data={data}
-        isLoading={isLoading}
-        onRefresh={() => refetch()}
-      />
+          <IncidentTable
+            data={data}
+            isLoading={isLoading}
+            onRefresh={() => refetch()}
+          />
+        </>
+      )}
     </div>
   );
 };

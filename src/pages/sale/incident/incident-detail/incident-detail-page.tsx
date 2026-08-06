@@ -1,5 +1,6 @@
 import { useDiscrepancy } from "@/hooks/use-discrepancy";
 import { useOrder } from "@/hooks/use-order";
+import IncidentLoadError from "@/components/incidents/incident-load-error";
 import { handleApiError } from "@/lib/error";
 import { PATH_SALE_DASHBOARD } from "@/routes/path";
 import { Loader2 } from "lucide-react";
@@ -24,8 +25,11 @@ const IncidentDetailPage = () => {
 
   const {
     data: detail,
+    error,
+    isFetching,
     isLoading,
     isError,
+    refetch,
   } = getDiscrepancyDetail(id);
   const orderId = detail?.orderId ?? "";
   const { data: orderResponse, isLoading: isLoadingOrder } =
@@ -83,9 +87,12 @@ const IncidentDetailPage = () => {
 
   if (isError || !detail) {
     return (
-      <div className="flex h-96 items-center justify-center text-muted-foreground">
-        Không tìm thấy sự cố
-      </div>
+      <IncidentLoadError
+        error={error}
+        fallbackMessage="Không thể tải chi tiết sai lệch."
+        isRetrying={isFetching}
+        onRetry={() => void refetch()}
+      />
     );
   }
 

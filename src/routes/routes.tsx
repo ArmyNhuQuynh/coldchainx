@@ -119,6 +119,9 @@ const UserPage = Loadable(
 const UserDetailPage = Loadable(
   lazy(() => import("@/pages/admin/user/detail-user"))
 );
+const PermissionPage = Loadable(
+  lazy(() => import("@/pages/admin/permission"))
+);
 const ReimbursementPage = Loadable(
   lazy(() => import("@/pages/accountant/driver-reimbursements"))
 );
@@ -298,6 +301,10 @@ export const AppRoutes = () =>
         {
           path: "user/:id",
           element: <UserDetailPage />,
+        },
+        {
+          path: "permissions",
+          element: <PermissionPage />,
         },
       ],
     },

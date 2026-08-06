@@ -32,6 +32,13 @@ const diffClassName = (percent: number) =>
 const DiscrepancyComparisonTable = ({ detail }: Props) => {
   const rows = [
     {
+      label: "Số lượng",
+      unit: "kiện",
+      expected: detail.expectedQuantity,
+      actual: detail.actualQuantity,
+      digits: 0,
+    },
+    {
       label: "Cân nặng",
       unit: "kg",
       expected: detail.expectedWeightKg,
@@ -44,6 +51,27 @@ const DiscrepancyComparisonTable = ({ detail }: Props) => {
       expected: detail.expectedCbm,
       actual: detail.actualCbm,
       digits: 4,
+    },
+    {
+      label: "Chiều dài",
+      unit: "cm",
+      expected: detail.expectedLengthCm,
+      actual: detail.actualLengthCm,
+      digits: 2,
+    },
+    {
+      label: "Chiều rộng",
+      unit: "cm",
+      expected: detail.expectedWidthCm,
+      actual: detail.actualWidthCm,
+      digits: 2,
+    },
+    {
+      label: "Chiều cao",
+      unit: "cm",
+      expected: detail.expectedHeightCm,
+      actual: detail.actualHeightCm,
+      digits: 2,
     },
   ].map((item) => {
     const delta = item.actual - item.expected;
