@@ -38,6 +38,18 @@ const LoginPage = Loadable(lazy(() => import("@/pages/auth/login")));
 const GoogleCallbackPage = Loadable(
   lazy(() => import("@/pages/auth/google-callback"))
 );
+const AdminDashboardPage = Loadable(
+  lazy(() => import("@/pages/admin/dashboard"))
+);
+const SaleDashboardPage = Loadable(
+  lazy(() => import("@/pages/sale/dashboard"))
+);
+const DispatcherDashboardPage = Loadable(
+  lazy(() => import("@/pages/dispatcher/dashboard"))
+);
+const AccountantDashboardPage = Loadable(
+  lazy(() => import("@/pages/accountant/dashboard"))
+);
 const ShipmentPage = Loadable(
   lazy(() => import("@/pages/sale/shipment/list-shipments/list-shipment-page"))
 );
@@ -211,7 +223,7 @@ export const AppRoutes = () =>
       ),
       children: [
         {
-          element: <Navigate to={PATH_ADMIN_DASHBOARD.vehicle.root} replace />,
+          element: <AdminDashboardPage />,
           index: true,
         },
         {
@@ -317,7 +329,7 @@ export const AppRoutes = () =>
       ),
       children: [
         {
-          element: <Navigate to={PATH_SALE_DASHBOARD.shipment.root} replace />,
+          element: <SaleDashboardPage />,
           index: true,
         },
         {
@@ -355,7 +367,7 @@ export const AppRoutes = () =>
       ),
       children: [
         {
-          element: <Navigate to={PATH_DISPATCHER_DASHBOARD.dispatch.root} replace />,
+          element: <DispatcherDashboardPage />,
           index: true,
         },
         {
@@ -405,7 +417,7 @@ export const AppRoutes = () =>
       ),
       children: [
         {
-          element: <Navigate to={PATH_ACCOUNTANT_DASHBOARD.driverReimbursement.root} replace />,
+          element: <AccountantDashboardPage />,
           index: true,
         },
         {

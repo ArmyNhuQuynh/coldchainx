@@ -41,7 +41,7 @@ const adminRoutes = {
     mainTitle: "Dashboard",
     items: [
       {
-        title: "Quản lý",
+        title: "Tổng quan",
         url: PATH_ADMIN_DASHBOARD.root,
         icon: HomeIcon,
       },
@@ -99,7 +99,7 @@ const saleRoutes = {
     mainTitle: "Dashboard",
     items: [
       {
-        title: "Quản lý",
+        title: "Tổng quan",
         url: PATH_SALE_DASHBOARD.root,
         icon: HomeIcon,
       },
@@ -132,7 +132,7 @@ const dispatcherRoutes = {
     mainTitle: "Dashboard",
     items: [
       {
-        title: "Quản lý",
+        title: "Tổng quan",
         url: PATH_DISPATCHER_DASHBOARD.root,
         icon: HomeIcon,
       },
@@ -179,6 +179,11 @@ const accountantRoutes = {
   dashboard: {
     mainTitle: "Tài chính",
     items: [
+      {
+        title: "Tổng quan",
+        url: PATH_ACCOUNTANT_DASHBOARD.root,
+        icon: HomeIcon,
+      },
       {
         title: "Hoàn chi tài xế",
         url: PATH_ACCOUNTANT_DASHBOARD.driverReimbursement.root,

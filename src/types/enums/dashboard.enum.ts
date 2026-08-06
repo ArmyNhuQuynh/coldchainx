@@ -1,0 +1,73 @@
+export enum DASHBOARD_GROUP_BY {
+  DAY = "DAY",
+  MONTH = "MONTH",
+}
+
+export const DASHBOARD_STATUS_LABELS: Record<string, string> = {
+  DRAFT: "Bản nháp",
+  SENT: "Đã gửi",
+  ACCEPTED: "Đã chấp nhận",
+  REJECTED: "Đã từ chối",
+  PLANNED: "Đã lên kế hoạch",
+  PICKING: "Đang lấy hàng",
+  LOADING_COMPLETED: "Đã bốc hàng",
+  DISPATCHED: "Đã xuất phát",
+  IN_TRANSIT: "Đang vận chuyển",
+  DELAYED: "Bị trễ",
+  COMPLETED: "Hoàn thành",
+  ACTIVE: "Hoạt động",
+  INACTIVE: "Ngừng hoạt động",
+  MAINTENANCE: "Bảo trì",
+  ONLINE: "Trực tuyến",
+  OFFLINE: "Mất kết nối",
+  UNPAID: "Chưa thanh toán",
+  PAID: "Đã thanh toán",
+  PARTIALLY_PAID: "Thanh toán một phần",
+  CANCELLED: "Đã hủy",
+};
+
+export const DASHBOARD_WORK_LABELS: Record<string, string> = {
+  PENDING_ORDER_REVIEW: "Duyệt đơn hàng",
+  NEEDS_ORDER_UPDATE: "Chờ khách bổ sung đơn",
+  DRAFT_QUOTATION: "Hoàn thiện báo giá",
+  WAITING_QUOTATION_RESPONSE: "Theo dõi phản hồi báo giá",
+  DRAFT_CONTRACT: "Hoàn thiện hợp đồng",
+  PENDING_CUSTOMER_SIGNATURE: "Theo dõi khách ký hợp đồng",
+  PENDING_SALES_VERIFICATION: "Xác minh bản hợp đồng đã ký",
+  REQUEST_RESUBMIT: "Kiểm tra hợp đồng gửi lại",
+  UNASSIGNED_LPN: "Ghép LPN vào chuyến",
+  TRIP_NEAR_DEPARTURE: "Chuyến sắp khởi hành",
+  READY_TO_SEAL: "Chuyến chờ kẹp chì",
+  IOT_OFFLINE: "Thiết bị IoT mất kết nối",
+  IOT_UNASSIGNED: "Thiết bị IoT chưa gán xe",
+  LATE_TRIP: "Chuyến bị trễ",
+  OPEN_INCIDENT: "Sự cố chưa xử lý",
+  PENDING_DISPATCHER_CLAIM: "Khiếu nại chờ điều phối",
+  PENDING_REDELIVERY: "Hàng chờ tái giao",
+  DOCUMENT_EXPIRING: "Giấy tờ sắp hết hạn",
+  VEHICLE_DOCUMENT_EXPIRED: "Giấy tờ xe hết hạn",
+  DRIVER_LICENSE_EXPIRING: "GPLX sắp hết hạn",
+  DRIVER_LICENSE_EXPIRED: "GPLX đã hết hạn",
+  VEHICLE_MAINTENANCE_DUE: "Xe đến hạn bảo trì",
+  CRITICAL_INCIDENT: "Sự cố nghiêm trọng",
+  OVERDUE_CLAIM: "Khiếu nại quá hạn",
+  LOCKED_USER: "Tài khoản bị khóa",
+  PENDING_TRANSACTION_VERIFICATION: "Xác minh giao dịch",
+  UNPAID_INVOICE: "Hóa đơn chưa thanh toán",
+  OVERDUE_INVOICE: "Hóa đơn quá hạn",
+  COD_PENDING_HANDOVER: "COD chờ bàn giao",
+  PENDING_ACCOUNTANT_REVIEW: "Khiếu nại chờ kế toán",
+  CLAIM_PAYOUT_NEAR_SLA: "Bồi thường gần quá hạn",
+  APPROVED_DRIVER_EXPENSE: "Hoàn chi tài xế đã duyệt",
+};
+
+export const getDashboardLabel = (
+  value: string,
+  dictionary: Record<string, string> = DASHBOARD_STATUS_LABELS
+) =>
+  dictionary[value] ??
+  value
+    .toLowerCase()
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");

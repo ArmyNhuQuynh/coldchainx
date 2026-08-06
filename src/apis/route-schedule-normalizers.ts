@@ -3,6 +3,7 @@ import type {
   TRouteScheduleListResponse,
 } from "@/schemas/route-schedule.schema";
 import type { BaseResponse } from "@/types/response.type";
+import { normalizeRouteScheduleStatus } from "@/types/enums/route-schedule-status.enum";
 
 export type ApiEnvelope<T> = BaseResponse<T> & {
   Data?: T;
@@ -34,6 +35,7 @@ export const normalizeRouteSchedule = (
   item: TRouteSchedule | Record<string, any>
 ): TRouteSchedule => {
   const raw = item as Record<string, any>;
+  const status = read<string>(raw, "status", "Status");
 
   return {
     scheduleId: read<string>(raw, "scheduleId", "ScheduleId"),
@@ -42,7 +44,7 @@ export const normalizeRouteSchedule = (
     departureDate: read<string>(raw, "departureDate", "DepartureDate"),
     departureTime: read<string>(raw, "departureTime", "DepartureTime"),
     cutOffTime: read<string>(raw, "cutOffTime", "CutOffTime"),
-    status: read<string>(raw, "status", "Status"),
+    status: normalizeRouteScheduleStatus(status) ?? status,
     createdAt: read<string | null | undefined>(raw, "createdAt", "CreatedAt"),
   };
 };

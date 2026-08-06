@@ -3,6 +3,10 @@ import {
   type TRouteSchedule,
   type TRouteScheduleFormValues,
 } from "@/schemas/route-schedule.schema";
+import {
+  normalizeRouteScheduleStatus,
+  ROUTE_SCHEDULE_STATUS,
+} from "@/types/enums/route-schedule-status.enum";
 
 export type RouteScheduleFormErrors = Partial<
   Record<keyof TRouteScheduleFormValues, string>
@@ -43,7 +47,9 @@ export const toRouteScheduleFormState = (
   cutOffTime: schedule?.cutOffTime
     ? formatScheduleTime(schedule.cutOffTime)
     : ROUTE_SCHEDULE_FORM_DEFAULTS.cutOffTime,
-  status: schedule?.status === "INACTIVE" ? "INACTIVE" : "ACTIVE",
+  status:
+    normalizeRouteScheduleStatus(schedule?.status) ??
+    ROUTE_SCHEDULE_STATUS.ACTIVE,
 });
 
 export const collectRouteScheduleFormErrors = (

@@ -53,4 +53,6 @@ export const API_SUFFIX = {
   // Service pricing
   SERVICE_CATALOGS_API: "/service-catalogs",
   IMPORT_TEMPLATES_API: "/import-templates",
+  // Dashboards
+  DASHBOARDS_API: "/v1/dashboards",
 };

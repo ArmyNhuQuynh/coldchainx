@@ -5,6 +5,7 @@ import type {
   TRouteStopListResponse,
 } from "@/schemas/route.schema";
 import type { BaseResponse } from "@/types/response.type";
+import { normalizeRouteStatus } from "@/types/enums/route-status.enum";
 
 export type ApiEnvelope<T> = BaseResponse<T> & {
   Data?: T;
@@ -18,6 +19,7 @@ export const getEnvelopeData = <T>(payload: ApiEnvelope<T>) =>
 
 export const normalizeRoute = (item: TRoute | Record<string, any>): TRoute => {
   const raw = item as Record<string, any>;
+  const status = read<string>(raw, "status", "Status");
 
   return {
     routeId: read<string>(raw, "routeId", "RouteId"),
@@ -25,7 +27,7 @@ export const normalizeRoute = (item: TRoute | Record<string, any>): TRoute => {
     originCity: read<string>(raw, "originCity", "OriginCity"),
     destCity: read<string>(raw, "destCity", "DestCity"),
     transitTime: read<string>(raw, "transitTime", "TransitTime"),
-    status: read<string>(raw, "status", "Status"),
+    status: normalizeRouteStatus(status) ?? status,
     createdAt: read<string | null | undefined>(raw, "createdAt", "CreatedAt"),
   };
 };
