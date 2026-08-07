@@ -156,6 +156,38 @@ export type TWarehouseResourceCount = {
 export type TAdminDashboardParams = TDateRangeDashboardParams & {
   warehouseId?: string;
   routeId?: string;
+  groupBy: "WEEK" | "MONTH";
+  top: 5 | 10 | 15;
+};
+
+export type TStatusPeriodItem = {
+  period: string;
+  total: number;
+  statusDistribution: TStatusCount[];
+};
+
+export type TTripOperationPeriod = {
+  period: string;
+  totalTrips: number;
+  completedTrips: number;
+  successfulTrips: number;
+  tripsWithIncidents: number;
+  incidentRate: number;
+  deliverySuccessRate: number;
+  statusDistribution: TStatusCount[];
+};
+
+export type TFleetUtilizationItem = {
+  vehicleId: string;
+  vehiclePlate: string;
+  tripCount: number;
+  utilizationRate: number;
+};
+
+export type TDriverUtilizationItem = {
+  driverId: string;
+  driverName: string;
+  tripCount: number;
 };
 
 export type TAdminKpis = {
@@ -185,6 +217,58 @@ export type TAdminKpis = {
 };
 
 export type TAdminOverview = {
+  fromDate: string;
+  toDate: string;
+  groupBy: "WEEK" | "MONTH";
+  orderOverview: {
+    totalOrders: number;
+    statusDistribution: TStatusCount[];
+    byPeriod: TStatusPeriodItem[];
+  };
+  tripOverview: {
+    totalTrips: number;
+    completedTrips: number;
+    successfulTrips: number;
+    tripsWithIncidents: number;
+    incidentRate: number;
+    deliverySuccessRate: number;
+    statusDistribution: TStatusCount[];
+    byPeriod: TTripOperationPeriod[];
+  };
+  fleetOverview: {
+    totalVehicles: number;
+    availableVehicles: number;
+    statusDistribution: TStatusCount[];
+    availableByWarehouse: TWarehouseResourceCount[];
+    topUsedVehicles: TFleetUtilizationItem[];
+  };
+  driverOverview: {
+    totalDrivers: number;
+    availableDrivers: number;
+    statusDistribution: TStatusCount[];
+    availableByWarehouse: TWarehouseResourceCount[];
+    topUsedDrivers: TDriverUtilizationItem[];
+  };
+  routeDemand: Array<{
+    routeId: string;
+    routeCode: string;
+    routeName: string;
+    orderCount: number;
+    percentage: number;
+  }>;
+  serviceUsage: Array<{
+    serviceCatalogId?: string | null;
+    serviceCode: string;
+    serviceName: string;
+    isMandatory: boolean;
+    usageCount: number;
+    percentage: number;
+  }>;
+  lpnsByWarehouse: TWarehouseResourceCount[];
+  iotOverview: {
+    totalDevices: number;
+    statusDistribution: TStatusCount[];
+  };
   kpis: TAdminKpis;
   vehicleStatusDistribution: TStatusCount[];
   iotStatusDistribution: TStatusCount[];
@@ -206,12 +290,7 @@ export type TAdminOverview = {
     tripCount: number;
     orderCount: number;
   }>;
-  fleetUtilization: Array<{
-    vehicleId: string;
-    vehiclePlate: string;
-    tripCount: number;
-    utilizationRate: number;
-  }>;
+  fleetUtilization: TFleetUtilizationItem[];
   financialSnapshot: {
     recognizedRevenue: number;
     netCashFlow: number;

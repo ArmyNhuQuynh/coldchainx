@@ -6,6 +6,7 @@ type Props = {
   title: string;
   description?: string;
   children: ReactNode;
+  action?: ReactNode;
   isEmpty?: boolean;
   emptyText?: string;
 };
@@ -14,15 +15,23 @@ const DashboardChartCard = ({
   title,
   description,
   children,
+  action,
   isEmpty,
   emptyText = "Chưa có dữ liệu trong khoảng thời gian này.",
 }: Props) => (
   <Card className="h-full gap-4 rounded-lg py-5 shadow-sm">
     <CardHeader className="px-5">
-      <CardTitle className="text-base">{title}</CardTitle>
-      {description && (
-        <p className="mt-1 text-sm text-muted-foreground">{description}</p>
-      )}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <CardTitle className="text-base">{title}</CardTitle>
+          {description && (
+            <p className="mt-1 text-sm text-muted-foreground">
+              {description}
+            </p>
+          )}
+        </div>
+        {action && <div className="shrink-0">{action}</div>}
+      </div>
     </CardHeader>
     <CardContent className="min-h-72 px-5">
       {isEmpty ? (

@@ -144,6 +144,83 @@ export const DashboardBarChart = ({
   </div>
 );
 
+export const DashboardIntegerColumnChart = ({
+  data,
+  series,
+  valueFormatter = formatDashboardNumber,
+}: CommonProps) => {
+  const maxValue = Math.max(
+    0,
+    ...data.flatMap((item) =>
+      series.map((seriesItem) => Number(item[seriesItem.key] ?? 0))
+    )
+  );
+  const axisMax = Math.max(1, maxValue);
+  const tickStep = Math.max(1, Math.ceil(axisMax / 5));
+  const ticks = Array.from(
+    { length: Math.floor(axisMax / tickStep) + 1 },
+    (_, index) => index * tickStep
+  );
+
+  if (ticks[ticks.length - 1] !== axisMax) {
+    ticks.push(axisMax);
+  }
+
+  return (
+    <div className="h-96 w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart
+          data={data}
+          margin={{ left: 0, right: 12, top: 12, bottom: 72 }}
+        >
+          <CartesianGrid strokeDasharray="3 3" vertical={false} />
+          <XAxis
+            dataKey="label"
+            interval={0}
+            angle={-35}
+            textAnchor="end"
+            height={88}
+            tick={{ fontSize: 11 }}
+            tickFormatter={(value) => {
+              const label = String(value);
+              return label.length > 18 ? `${label.slice(0, 18)}...` : label;
+            }}
+          />
+          <YAxis
+            allowDecimals={false}
+            domain={[0, axisMax]}
+            ticks={ticks}
+            tick={{ fontSize: 11 }}
+            tickFormatter={(value) => valueFormatter(Number(value))}
+          />
+          <Tooltip
+            contentStyle={tooltipStyle}
+            formatter={(value, name) => [
+              valueFormatter(Number(value)),
+              series.find((item) => item.key === name)?.label ?? String(name),
+            ]}
+          />
+          <Legend
+            formatter={(value) =>
+              series.find((item) => item.key === value)?.label ?? value
+            }
+          />
+          {series.map((item) => (
+            <Bar
+              key={item.key}
+              dataKey={item.key}
+              name={item.key}
+              fill={item.color}
+              radius={[4, 4, 0, 0]}
+              maxBarSize={64}
+            />
+          ))}
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
+
 type DonutDatum = {
   name: string;
   value: number;
