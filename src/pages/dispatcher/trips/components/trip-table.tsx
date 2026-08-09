@@ -13,9 +13,8 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import type { TDispatchTrip } from "@/schemas/dispatch.schema";
-import { Ban, Clock, Eye, PackageCheck, Play, Truck, User } from "lucide-react";
+import { Clock, Eye, PackageCheck, Play, Truck, User } from "lucide-react";
 import {
-  canCancelTrip,
   canStartPickingTrip,
   formatShortTripId,
   formatTripDateTime,
@@ -29,7 +28,6 @@ type Props = {
   isLoading?: boolean;
   isStartingPicking?: boolean;
   onSelect: (trip: TDispatchTrip) => void;
-  onCancel: (trip: TDispatchTrip) => void;
   onStartPicking: (trip: TDispatchTrip) => void;
 };
 
@@ -38,7 +36,6 @@ const TripTable = ({
   isLoading,
   isStartingPicking,
   onSelect,
-  onCancel,
   onStartPicking,
 }: Props) => {
   return (
@@ -186,20 +183,6 @@ const TripTable = ({
                               Bắt đầu
                             </Button>
                           )}
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            className="gap-1.5 text-rose-700 hover:text-rose-800"
-                            disabled={!canCancelTrip(trip)}
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              onCancel(trip);
-                            }}
-                          >
-                            <Ban className="h-3.5 w-3.5" />
-                            Hủy bốc hàng
-                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>

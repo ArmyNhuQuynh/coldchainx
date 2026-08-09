@@ -1,10 +1,9 @@
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Separator } from "@/components/ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useTheme } from "@/providers/theme-provider"
 import { PATH_AUTH } from "@/routes/path"
-import { LogOut, Moon, Settings, Sun } from "lucide-react"
+import { LogOut, Moon, PanelLeft, Settings, Snowflake, Sun } from "lucide-react"
 import { Link } from "react-router-dom"
 import { useSidebar } from "./ui/sidebar"
 
@@ -92,8 +91,8 @@ const HeaderMain = () => {
 
 
     return (
-        <nav className="flex h-16 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 sticky top-0 z-10">
-            <div className="flex items-center gap-2 px-4 justify-between w-full">
+        <nav className="pointer-events-none absolute right-0 top-0 z-30 flex h-16 items-center p-3">
+            <div className="pointer-events-auto flex items-center gap-2">
                 <div className="flex items-center gap-2">
                     {/* {shouldShowBack() && (
                         <>
@@ -127,11 +126,11 @@ const HeaderMain = () => {
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="rounded-full bg-card"
+                                        className="rounded-full border border-primary/20 bg-card/90 text-primary shadow-sm backdrop-blur hover:bg-accent"
                                         onClick={toggleSidebar}
                                     >
                                         <span className="sr-only">Toggle sidebar</span>
-                                        {/* <CollapseIcon className="size-6 cursor-pointer text-gray-500 hover:text-gray-700 transition-colors duration-200" /> */}
+                                        <PanelLeft className="size-5" />
                                     </Button>
                                 </TooltipTrigger>
                                 <TooltipContent>
@@ -141,12 +140,15 @@ const HeaderMain = () => {
                         </TooltipProvider>
                     )}
 
-                    <Separator orientation="vertical" className="h-5" />
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="rounded-full bg-card">
-                                {/* <img className="size-7" src={ brandData?.data.data.pictureUrl || storeLogoImage || "https://s3-hcm5-r1.longvan.net/19429498-dimpos/0a8eae54-e987-4205-9fb8-c0e3b5266f9f.jpg" } /> */}
-                                <span className="sr-only">Toggle theme</span>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="size-11 rounded-full border border-primary/25 bg-card/90 text-primary shadow-sm backdrop-blur hover:bg-accent hover:text-primary"
+                            >
+                                <Snowflake className="size-5" strokeWidth={2.25} />
+                                <span className="sr-only">Mở menu ColdchainX</span>
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent

@@ -38,11 +38,11 @@ const RoleBasedGuard = ({ children, role }: RoleBasedGuardProps) => {
             case RoleSchema.enum.Admin:
                 return <Navigate to={PATH_ADMIN_DASHBOARD.root} replace />;
             case RoleSchema.enum.Sale:
-                return <Navigate to={PATH_SALE_DASHBOARD.shipment.root} replace />;
+                return <Navigate to={PATH_SALE_DASHBOARD.root} replace />;
             case RoleSchema.enum.Dispatcher:
-                return <Navigate to={PATH_DISPATCHER_DASHBOARD.dispatch.root} replace />;
+                return <Navigate to={PATH_DISPATCHER_DASHBOARD.root} replace />;
             case RoleSchema.enum.Accountant:
-                return <Navigate to={PATH_ACCOUNTANT_DASHBOARD.driverReimbursement.root} replace />;
+                return <Navigate to={PATH_ACCOUNTANT_DASHBOARD.root} replace />;
             default:
                 return <Navigate to='/404' replace />;
         }

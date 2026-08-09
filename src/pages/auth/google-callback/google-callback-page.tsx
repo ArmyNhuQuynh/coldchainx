@@ -37,13 +37,13 @@ const resolveManagementRole = (role?: string | null): TRole | null => {
 const getDashboardPath = (role: TRole) => {
   switch (role) {
     case "Admin":
-      return PATH_ADMIN_DASHBOARD.vehicle.root;
+      return PATH_ADMIN_DASHBOARD.root;
     case "Sale":
-      return PATH_SALE_DASHBOARD.shipment.root;
+      return PATH_SALE_DASHBOARD.root;
     case "Dispatcher":
-      return PATH_DISPATCHER_DASHBOARD.dispatch.root;
+      return PATH_DISPATCHER_DASHBOARD.root;
     case "Accountant":
-      return PATH_ACCOUNTANT_DASHBOARD.driverReimbursement.root;
+      return PATH_ACCOUNTANT_DASHBOARD.root;
   }
 };
 

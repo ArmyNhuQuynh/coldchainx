@@ -17,6 +17,8 @@ type Props = {
   onRefresh: () => void;
 };
 
+export const ALL_ROUTES_VALUE = "all";
+
 const ScheduleFilterBar = ({
   routes,
   selectedRouteId,
@@ -37,6 +39,7 @@ const ScheduleFilterBar = ({
             <SelectValue placeholder="Chọn tuyến" />
           </SelectTrigger>
           <SelectContent className="max-h-80">
+            <SelectItem value={ALL_ROUTES_VALUE}>Tất cả tuyến</SelectItem>
             {routes.map((route) => (
               <SelectItem key={route.routeId} value={route.routeId}>
                 {route.routeCode} · {route.originCity} → {route.destCity}

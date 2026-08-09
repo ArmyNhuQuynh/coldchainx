@@ -19,8 +19,12 @@ export const normalizeTripLpn = (
     lpnId: read<string>(raw, "lpnId", "LpnId"),
     lpnCode: read<string>(raw, "lpnCode", "LpnCode"),
     orderId: read<string | null>(raw, "orderId", "OrderId"),
-    orderCode: read<string | null>(raw, "orderCode", "OrderCode"),
-    itemName: read<string | null>(raw, "itemName", "ItemName"),
+    orderCode:
+      read<string | null>(raw, "orderCode", "OrderCode") ??
+      read<string | null>(raw, "orderTrackingCode", "OrderTrackingCode"),
+    itemName:
+      read<string | null>(raw, "itemName", "ItemName") ??
+      read<string | null>(raw, "orderItemName", "OrderItemName"),
     storageLocation: read<string | null>(
       raw,
       "storageLocation",
@@ -262,6 +266,80 @@ export const normalizeTrip = (
     label: read<string | undefined>(raw, "label", "Label"),
     source,
     lpns: Array.isArray(lpns) ? lpns.map(normalizeTripLpn) : undefined,
+  };
+};
+
+export const normalizeCreatedTripDetails = (
+  item: Record<string, any>
+): TDispatchTrip => {
+  const status = (
+    read<string>(item, "status", "Status") || "UNKNOWN"
+  ).toUpperCase();
+  const vehicle = read<Record<string, any> | string | null>(
+    item,
+    "vehicle",
+    "Vehicle"
+  );
+  const drivers = read<unknown>(item, "drivers", "Drivers");
+  const summary =
+    read<Record<string, any> | null>(item, "summary", "Summary") ?? {};
+  const lpnsRaw = read<unknown>(item, "lpns", "Lpns");
+  const lpns = Array.isArray(lpnsRaw) ? lpnsRaw.map(normalizeTripLpn) : [];
+  const countLpnState = (state: string) =>
+    lpns.filter(
+      (lpn) => (lpn.state ?? "").toUpperCase() === state
+    ).length;
+
+  return {
+    tripId: read<string>(item, "tripId", "TripId"),
+    status,
+    vehicle:
+      typeof vehicle === "string"
+        ? vehicle
+        : vehicle
+          ? read<string | null>(vehicle, "truckPlate", "TruckPlate")
+          : null,
+    driver: Array.isArray(drivers)
+      ? drivers
+          .map((driver) =>
+            read<string>(
+              driver as Record<string, any>,
+              "fullName",
+              "FullName"
+            )
+          )
+          .filter(Boolean)
+          .join(", ") || null
+      : read<string | null>(item, "driver", "Driver"),
+    plannedStartTime: read<string | null>(
+      item,
+      "plannedStartTime",
+      "PlannedStartTime"
+    ),
+    plannedEndTime: read<string | null>(
+      item,
+      "plannedEndTime",
+      "PlannedEndTime"
+    ),
+    estimatedDurationHours: read<number | null>(
+      item,
+      "estimatedDurationHours",
+      "EstimatedDurationHours"
+    ),
+    totalLpns:
+      toNumber(read(summary, "totalLpns", "TotalLpns")) || lpns.length,
+    allocatedLpns: countLpnState("ALLOCATED"),
+    loadingCompletedLpns: countLpnState("LOADING_COMPLETED"),
+    releasedLpns: countLpnState("RELEASED"),
+    sealNumber: read<string | null>(item, "sealNumber", "SealNumber"),
+    label: read<string | undefined>(item, "label", "Label"),
+    source:
+      status === "PLANNED"
+        ? "planned"
+        : status === "PICKING"
+          ? "picking"
+          : "readyToSeal",
+    lpns,
   };
 };
 

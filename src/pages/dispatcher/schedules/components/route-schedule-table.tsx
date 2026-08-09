@@ -1,5 +1,6 @@
 import { DataTable } from "@/components/table/data-table";
 import type { TRouteSchedule } from "@/schemas/route-schedule.schema";
+import type { TRoute } from "@/schemas/route.schema";
 import {
   getRouteScheduleColumns,
   type TRouteScheduleTableRow,
@@ -7,6 +8,7 @@ import {
 
 type Props = {
   schedules: TRouteSchedule[];
+  routes: TRoute[];
   isLoading?: boolean;
   isDeleting?: boolean;
   pageIndex: number;
@@ -20,6 +22,7 @@ type Props = {
 
 const RouteScheduleTable = ({
   schedules,
+  routes,
   isLoading,
   isDeleting,
   pageIndex,
@@ -30,9 +33,16 @@ const RouteScheduleTable = ({
   onEdit,
   onDelete,
 }: Props) => {
+  const routeLabels = new Map(
+    routes.map((route) => [
+      route.routeId,
+      `${route.routeCode} · ${route.originCity} → ${route.destCity}`,
+    ])
+  );
   const rows: TRouteScheduleTableRow[] = schedules.map((schedule) => ({
     ...schedule,
     id: schedule.scheduleId,
+    routeLabel: routeLabels.get(schedule.routeId) ?? "—",
   }));
 
   return (

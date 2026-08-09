@@ -17,27 +17,6 @@ export const useDispatchTrips = () => {
       placeholderData: keepPreviousData,
     });
 
-  const getPickingTripDetail = (tripId?: string, enabled = true) =>
-    useQuery({
-      queryKey: ["dispatch", "trips", "picking-detail", tripId],
-      queryFn: async () => {
-        if (!tripId) return null;
-        const trips = await dispatchTripApi.getPickingTrips(tripId);
-        return trips[0] ?? null;
-      },
-      enabled: enabled && Boolean(tripId),
-    });
-
-  const getTripPickList = (tripId?: string, enabled = true) =>
-    useQuery({
-      queryKey: ["dispatch", "trips", "pick-list", tripId],
-      queryFn: async () => {
-        if (!tripId) return [];
-        return dispatchTripApi.getTripPickList(tripId);
-      },
-      enabled: enabled && Boolean(tripId),
-    });
-
   const cancelTrip = useMutation({
     mutationFn: (tripId: string) => dispatchTripApi.cancelTrip(tripId),
     onSuccess: () => {
@@ -94,8 +73,6 @@ export const useDispatchTrips = () => {
 
   return {
     getCreatedTrips,
-    getPickingTripDetail,
-    getTripPickList,
     cancelTrip,
     startPicking,
     getTripDocuments,

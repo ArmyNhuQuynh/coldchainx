@@ -2,6 +2,7 @@ import type {
   TRouteSchedule,
   TRouteScheduleListResponse,
 } from "@/schemas/route-schedule.schema";
+import type { TDispatchScheduleLookup } from "@/schemas/dispatch.schema";
 import type { BaseResponse } from "@/types/response.type";
 import { normalizeRouteScheduleStatus } from "@/types/enums/route-schedule-status.enum";
 
@@ -48,6 +49,17 @@ export const normalizeRouteSchedule = (
     createdAt: read<string | null | undefined>(raw, "createdAt", "CreatedAt"),
   };
 };
+
+export const normalizeDispatchScheduleLookup = (
+  schedule: TDispatchScheduleLookup
+): TRouteSchedule =>
+  normalizeRouteSchedule({
+    ...schedule,
+    scheduleName:
+      schedule.scheduleName || schedule.label || "Lịch vận chuyển",
+    cutOffTime: schedule.cutOffTime ?? "",
+    status: schedule.status ?? "ACTIVE",
+  });
 
 export const normalizeRouteSchedulePage = (
   page?: ApiPage<TRouteSchedule> | null

@@ -6,10 +6,11 @@ import type {
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 export const useDispatchLookup = () => {
-  const getSchedules = () =>
+  const getSchedules = (enabled = true) =>
     useQuery({
       queryKey: ["dispatch", "schedules"],
       queryFn: dispatchLookupApi.getSchedules,
+      enabled,
       placeholderData: keepPreviousData,
       retry: (failureCount, error: any) =>
         (error?.response?.status ?? 500) >= 500 && failureCount < 2,

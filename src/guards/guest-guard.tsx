@@ -15,13 +15,13 @@ export default function GuestGuard({ children }: GuestGuardProps) {
     if (isAuthenticated) {
         switch (role) {
             case 'Admin':
-                return <Navigate to={PATH_ADMIN_DASHBOARD.vehicle.root} replace />;
+                return <Navigate to={PATH_ADMIN_DASHBOARD.root} replace />;
             case 'Sale':
-                return <Navigate to={PATH_SALE_DASHBOARD.shipment.root} replace />;
+                return <Navigate to={PATH_SALE_DASHBOARD.root} replace />;
             case 'Dispatcher':
-                return <Navigate to={PATH_DISPATCHER_DASHBOARD.dispatch.root} replace />;
+                return <Navigate to={PATH_DISPATCHER_DASHBOARD.root} replace />;
             case 'Accountant':
-                return <Navigate to={PATH_ACCOUNTANT_DASHBOARD.driverReimbursement.root} replace />;
+                return <Navigate to={PATH_ACCOUNTANT_DASHBOARD.root} replace />;
             default:
                 return <Navigate to='/404' replace />;
         }

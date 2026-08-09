@@ -70,19 +70,9 @@ const TripDetailDialog = ({
   onStartPicking,
 }: Props) => {
   const {
-    getPickingTripDetail,
     getTripDocuments,
-    getTripPickList,
     getTripRoute,
   } = useDispatchTrips();
-  const pickingDetailQuery = getPickingTripDetail(
-    trip?.tripId,
-    open && trip?.status === "PICKING"
-  );
-  const pickListQuery = getTripPickList(
-    trip?.tripId,
-    open && trip?.status === "PLANNED"
-  );
   const documentsQuery = getTripDocuments(trip?.tripId, open && Boolean(trip));
   const routeQuery = getTripRoute(trip?.tripId, open && Boolean(trip));
 
@@ -90,15 +80,12 @@ const TripDetailDialog = ({
     return <Dialog open={open} onOpenChange={onOpenChange} />;
   }
 
-  const detailTrip = pickingDetailQuery.data ?? trip;
+  const detailTrip = trip;
   const documents = documentsQuery.data;
   const route = routeQuery.data;
-  const lpns =
-    detailTrip.lpns ??
-    (trip.status === "PLANNED" ? pickListQuery.data : undefined) ??
-    [];
+  const lpns = detailTrip.lpns ?? [];
   const progress = getTripProgress(detailTrip);
-  const isLoadingLpns = pickListQuery.isLoading || pickingDetailQuery.isLoading;
+  const isLoadingLpns = false;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

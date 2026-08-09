@@ -16,12 +16,13 @@ export const useRouteSchedule = () => {
 
   const getRouteSchedules = (
     routeId?: string,
-    params: TRouteScheduleListParams = { pageIndex: 1, pageSize: 10 }
+    params: TRouteScheduleListParams = { pageIndex: 1, pageSize: 10 },
+    enabled = true
   ) =>
     useQuery({
       queryKey: ["route-schedules", routeId, params],
       queryFn: () => routeScheduleApi.getRouteSchedules(routeId!, params),
-      enabled: !!routeId,
+      enabled: enabled && !!routeId,
       placeholderData: keepPreviousData,
     });
 
@@ -34,7 +35,7 @@ export const useRouteSchedule = () => {
       data: TRouteScheduleCreateRequest;
     }) => routeScheduleApi.createRouteSchedule(routeId, data),
     onSuccess: (_, { routeId }) => {
-      queryClient.invalidateQueries({ queryKey: ["route-schedules", routeId] });
+      queryClient.invalidateQueries({ queryKey: ["route-schedules"] });
     },
   });
 
@@ -49,7 +50,7 @@ export const useRouteSchedule = () => {
       data: TRouteScheduleUpdateRequest;
     }) => routeScheduleApi.updateRouteSchedule(routeId, scheduleId, data),
     onSuccess: (_, { routeId }) => {
-      queryClient.invalidateQueries({ queryKey: ["route-schedules", routeId] });
+      queryClient.invalidateQueries({ queryKey: ["route-schedules"] });
       queryClient.invalidateQueries({ queryKey: ["dispatch", "schedules"] });
     },
   });
@@ -63,7 +64,7 @@ export const useRouteSchedule = () => {
       scheduleId: string;
     }) => routeScheduleApi.deleteRouteSchedule(routeId, scheduleId),
     onSuccess: (_, { routeId }) => {
-      queryClient.invalidateQueries({ queryKey: ["route-schedules", routeId] });
+      queryClient.invalidateQueries({ queryKey: ["route-schedules"] });
     },
   });
 

@@ -2,73 +2,58 @@ import { apiRequest } from "@/lib/http";
 import type {
   TCancelTripResult,
   TDispatchLookupEnvelope,
-  TDispatchTrip,
   TDispatchTripDetails,
   TDispatchTripListQuery,
   TDispatchTripDocuments,
-  TDispatchTripLpn,
   TDispatchTripRoute,
   TStartPickingResult,
 } from "@/schemas/dispatch.schema";
-import { read, unwrapData, unwrapLookup } from "./dispatch-api.helpers";
+import { read, unwrapData } from "./dispatch-api.helpers";
 import {
   mergeTrips,
-  normalizeTrip,
+  normalizeCreatedTripDetails,
   normalizeTripDocuments,
-  normalizeTripLpn,
   normalizeTripRoute,
 } from "./dispatch-trip-normalizers";
 import { normalizeTripDetails } from "./dispatch-trip-details-normalizer";
 import { API_SUFFIX } from "./util.api";
 import type { PaginationResponse } from "@/types/response.type";
 
-const getTripsCanStartPicking = async () => {
-  const response = await apiRequest.baseApi.get<
-    TDispatchLookupEnvelope<TDispatchTrip[]> | TDispatchTrip[]
-  >(`${API_SUFFIX.DISPATCH_API}/trips/can-start-picking`);
+const CREATED_TRIP_STATUSES = new Set([
+  "PLANNED",
+  "PICKING",
+  "LOADING_COMPLETED",
+  "SEALED",
+]);
 
-  return unwrapLookup<TDispatchTrip>(response.data).map((item) =>
-    normalizeTrip(item, "planned")
-  );
-};
-
-const getPickingTrips = async (tripId?: string) => {
-  const response = await apiRequest.baseApi.get<TDispatchTrip[]>(
-    `${API_SUFFIX.OUTBOUND_API}/available-trips`,
+const getCreatedTripPage = async (pageNumber: number) => {
+  const response = await apiRequest.baseApi.get<Record<string, any>>(
+    `${API_SUFFIX.DISPATCH_API}/trips`,
     {
-      params: tripId ? { tripId } : undefined,
+      params: { pageNumber, pageSize: 100 },
     }
   );
+  const page = unwrapData<Record<string, any>>(response.data);
 
-  return response.data.map((item) => normalizeTrip(item, "picking"));
-};
-
-const getTripsReadyToSeal = async () => {
-  const response = await apiRequest.baseApi.get<
-    TDispatchLookupEnvelope<TDispatchTrip[]> | TDispatchTrip[]
-  >(`${API_SUFFIX.DISPATCH_API}/trips/ready-to-seal`);
-
-  return unwrapLookup<TDispatchTrip>(response.data).map((item) =>
-    normalizeTrip(item, "readyToSeal")
-  );
+  return {
+    data: read<unknown[]>(page, "data", "Data") ?? [],
+    totalPages: Number(read(page, "totalPages", "TotalPages") ?? 1),
+  };
 };
 
 const getCreatedTrips = async () => {
-  const [plannedTrips, pickingTrips, readyToSealTrips] = await Promise.all([
-    getTripsCanStartPicking(),
-    getPickingTrips(),
-    getTripsReadyToSeal(),
-  ]);
-
-  return mergeTrips([...plannedTrips, ...pickingTrips, ...readyToSealTrips]);
-};
-
-const getTripPickList = async (tripId: string) => {
-  const response = await apiRequest.baseApi.get<TDispatchTripLpn[]>(
-    `${API_SUFFIX.OUTBOUND_API}/pick-list/${tripId}`
+  const firstPage = await getCreatedTripPage(1);
+  const remainingPages = await Promise.all(
+    Array.from({ length: Math.max(firstPage.totalPages - 1, 0) }, (_, index) =>
+      getCreatedTripPage(index + 2)
+    )
   );
+  const trips = [firstPage, ...remainingPages]
+    .flatMap((page) => page.data)
+    .map((trip) => normalizeCreatedTripDetails(trip as Record<string, any>))
+    .filter((trip) => CREATED_TRIP_STATUSES.has(trip.status));
 
-  return response.data.map(normalizeTripLpn);
+  return mergeTrips(trips);
 };
 
 const cancelTrip = async (tripId: string) => {
@@ -146,8 +131,6 @@ const getTrips = async (
 
 export const dispatchTripApi = {
   getCreatedTrips,
-  getPickingTrips,
-  getTripPickList,
   cancelTrip,
   startPicking,
   getTripDocuments,

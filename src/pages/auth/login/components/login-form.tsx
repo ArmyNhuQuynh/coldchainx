@@ -78,7 +78,7 @@ export function LoginForm({
     >
       <div className="mb-8">
         <div className="mb-5 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-md bg-[#0d5ca8] text-white shadow-sm">
+          <div className="flex h-11 w-11 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-sm">
             <Snowflake className="h-6 w-6" strokeWidth={2} />
           </div>
           <div>
@@ -151,7 +151,7 @@ export function LoginForm({
           <Button
             type="submit"
             size="lg"
-            className="h-12 w-full rounded-md bg-[#0d5ca8] font-semibold text-white shadow-[0_10px_24px_rgba(13,92,168,0.24)] transition-colors hover:bg-[#084a89]"
+            className="h-12 w-full rounded-md bg-primary font-semibold text-primary-foreground shadow-[0_10px_24px_rgba(54,126,184,0.22)] transition-colors hover:bg-primary/90"
             disabled={loginMutation.isPending}
           >
             {loginMutation.isPending ? (

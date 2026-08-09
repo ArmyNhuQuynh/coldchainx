@@ -145,7 +145,6 @@ const TripListPage = () => {
         isLoading={tripsQuery.isLoading}
         isStartingPicking={startPicking.isPending}
         onSelect={setSelectedTrip}
-        onCancel={setTripToCancel}
         onStartPicking={handleStartPicking}
       />
 

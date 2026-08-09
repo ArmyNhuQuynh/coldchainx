@@ -15,6 +15,7 @@ import {
 
 export type TRouteScheduleTableRow = TRouteSchedule & {
   id: string;
+  routeLabel: string;
 };
 
 type ColumnHandlers = {
@@ -106,6 +107,22 @@ export const getRouteScheduleColumns = ({
       );
     },
     size: 260,
+  },
+  {
+    accessorKey: "routeLabel",
+    header: ({ column }) =>
+      createFormattedHeader("Tuyến", column, { align: "left" }),
+    cell: ({ row }) =>
+      createFormattedCell(
+        <span className="truncate">{row.original.routeLabel}</span>,
+        {
+          align: "left",
+          maxWidth: "260px",
+          tooltip: row.original.routeLabel,
+          truncate: true,
+        }
+      ),
+    size: 280,
   },
   {
     accessorKey: "departureDate",

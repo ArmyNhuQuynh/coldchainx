@@ -1,4 +1,6 @@
 import { Button } from "@/components/ui/button";
+import { normalizeDispatchScheduleLookup } from "@/apis/route-schedule-normalizers";
+import { useDispatchLookup } from "@/hooks/use-dispatch-lookup";
 import { useRoute } from "@/hooks/use-route";
 import { useRouteSchedule } from "@/hooks/use-route-schedule";
 import { handleApiError } from "@/lib/error";
@@ -10,8 +12,7 @@ import {
   type TRouteSchedule,
   type TRouteScheduleFormValues,
 } from "@/schemas/route-schedule.schema";
-import { ROUTE_STATUS } from "@/types/enums/route-status.enum";
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import RouteScheduleTable from "./components/route-schedule-table";
 import RouteScheduleUpsertDialog from "./components/route-schedule-upsert-dialog";
@@ -21,10 +22,13 @@ import {
   toRouteScheduleFormState,
   type RouteScheduleFormErrors,
 } from "./components/route-schedule-utils";
-import ScheduleFilterBar from "./components/schedule-filter-bar";
+import ScheduleFilterBar, {
+  ALL_ROUTES_VALUE,
+} from "./components/schedule-filter-bar";
 
 const SchedulePage = () => {
   const { getRoutes } = useRoute();
+  const { getSchedules: getDispatchSchedules } = useDispatchLookup();
   const {
     getRouteSchedules,
     createRouteSchedule,
@@ -32,7 +36,7 @@ const SchedulePage = () => {
     deleteRouteSchedule,
   } = useRouteSchedule();
 
-  const [selectedRouteId, setSelectedRouteId] = useState("");
+  const [selectedRouteId, setSelectedRouteId] = useState(ALL_ROUTES_VALUE);
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(ROUTE_SCHEDULE_PAGE_SIZE);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -47,24 +51,39 @@ const SchedulePage = () => {
     ...ROUTE_LIST_DEFAULT_PARAMS,
     pageNumber: 1,
     pageSize: 200,
-    status: ROUTE_STATUS.ACTIVE,
   });
   const routes = routesQuery.data?.data ?? [];
+  const isShowingAllRoutes = selectedRouteId === ALL_ROUTES_VALUE;
 
-  const schedulesQuery = getRouteSchedules(selectedRouteId, {
-    pageIndex,
-    pageSize,
-  });
-  const schedulePage = schedulesQuery.data?.data;
-  const schedules = schedulePage?.data ?? [];
-  const totalRecords = schedulePage?.totalRecords ?? 0;
+  const routeSchedulesQuery = getRouteSchedules(
+    isShowingAllRoutes ? undefined : selectedRouteId,
+    { pageIndex, pageSize },
+    !isShowingAllRoutes
+  );
+  const allSchedulesQuery = getDispatchSchedules(isShowingAllRoutes);
+  const routeSchedulePage = routeSchedulesQuery.data?.data;
+  const allSchedules = useMemo(
+    () =>
+      (allSchedulesQuery.data ?? [])
+        .map(normalizeDispatchScheduleLookup)
+        .sort((left, right) => {
+          const leftDeparture = `${left.departureDate}T${left.departureTime}`;
+          const rightDeparture = `${right.departureDate}T${right.departureTime}`;
+          return leftDeparture.localeCompare(rightDeparture);
+        }),
+    [allSchedulesQuery.data]
+  );
+  const schedules = isShowingAllRoutes
+    ? allSchedules.slice((pageIndex - 1) * pageSize, pageIndex * pageSize)
+    : routeSchedulePage?.data ?? [];
+  const totalRecords = isShowingAllRoutes
+    ? allSchedules.length
+    : routeSchedulePage?.totalRecords ?? 0;
+  const isSchedulesFetching = isShowingAllRoutes
+    ? allSchedulesQuery.isFetching
+    : routeSchedulesQuery.isFetching;
   const isSubmitting =
     createRouteSchedule.isPending || updateRouteSchedule.isPending;
-
-  useEffect(() => {
-    if (selectedRouteId || routes.length === 0) return;
-    setSelectedRouteId(routes[0].routeId);
-  }, [routes, selectedRouteId]);
 
   const handleRouteChange = (routeId: string) => {
     setSelectedRouteId(routeId);
@@ -87,7 +106,10 @@ const SchedulePage = () => {
     setEditingSchedule(null);
     setFormValues({
       ...ROUTE_SCHEDULE_FORM_DEFAULTS,
-      routeId: selectedRouteId || routes[0]?.routeId || "",
+      routeId:
+        selectedRouteId === ALL_ROUTES_VALUE
+          ? routes[0]?.routeId || ""
+          : selectedRouteId,
     });
     setFormErrors({});
     setDialogOpen(true);
@@ -147,10 +169,6 @@ const SchedulePage = () => {
           routeId,
           data: basePayload,
         });
-        if (selectedRouteId !== routeId) {
-          setSelectedRouteId(routeId);
-          setPageIndex(1);
-        }
         toast.success("Tạo lịch đi thành công");
       }
 
@@ -161,14 +179,12 @@ const SchedulePage = () => {
   };
 
   const handleDelete = async (schedule: TRouteSchedule) => {
-    if (!selectedRouteId) return;
-
     const confirmed = window.confirm(`Xóa lịch ${schedule.scheduleName}?`);
     if (!confirmed) return;
 
     try {
       await deleteRouteSchedule.mutateAsync({
-        routeId: selectedRouteId,
+        routeId: schedule.routeId,
         scheduleId: schedule.scheduleId,
       });
       toast.success("Xóa lịch đi thành công");
@@ -179,7 +195,11 @@ const SchedulePage = () => {
 
   const handleRefresh = () => {
     routesQuery.refetch();
-    schedulesQuery.refetch();
+    if (isShowingAllRoutes) {
+      allSchedulesQuery.refetch();
+    } else {
+      routeSchedulesQuery.refetch();
+    }
   };
 
   return (
@@ -211,7 +231,8 @@ const SchedulePage = () => {
 
       <RouteScheduleTable
         schedules={schedules}
-        isLoading={schedulesQuery.isFetching}
+        routes={routes}
+        isLoading={isSchedulesFetching}
         isDeleting={deleteRouteSchedule.isPending}
         pageIndex={pageIndex}
         pageSize={pageSize}
