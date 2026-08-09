@@ -16,6 +16,73 @@ export const ADMIN_CHART_COLORS = [
   "#db2777",
 ];
 
+export const ADMIN_ORDER_STAGES = [
+  {
+    key: "review",
+    label: "Tiếp nhận & duyệt",
+    color: "#0f766e",
+    statuses: ["DRAFT", "PENDING_REVIEW", "NEEDS_UPDATE", "APPROVED"],
+  },
+  {
+    key: "commercial",
+    label: "Báo giá & hợp đồng",
+    color: "#7c3aed",
+    statuses: ["QUOTING", "CONTRACT_PENDING", "CONTRACT_SIGNED"],
+  },
+  {
+    key: "warehouse",
+    label: "Nhập kho",
+    color: "#d97706",
+    statuses: [
+      "RECEIVING",
+      "IN_WAREHOUSE",
+      "IN_STOCK",
+      "DISCREPANCY_HOLD",
+    ],
+  },
+  {
+    key: "transport",
+    label: "Đang vận chuyển",
+    color: "#2563eb",
+    statuses: [
+      "RETURN_PENDING",
+      "LOADING",
+      "SEALED",
+      "SHIPPING",
+      "DISPATCHED",
+      "IN_TRANSIT",
+      "PARTIALLY_DELIVERED",
+    ],
+  },
+  {
+    key: "completed",
+    label: "Hoàn tất",
+    color: "#16a34a",
+    statuses: ["DELIVERED", "RETURNED"],
+  },
+  {
+    key: "closed",
+    label: "Hủy / từ chối",
+    color: "#dc2626",
+    statuses: ["REJECTED", "CANCELLED"],
+  },
+  {
+    key: "other",
+    label: "Trạng thái khác",
+    color: "#64748b",
+    statuses: [],
+  },
+] as const;
+
+const ORDER_STAGE_BY_STATUS = new Map(
+  ADMIN_ORDER_STAGES.flatMap((stage) =>
+    stage.statuses.map((status) => [status, stage.key] as const)
+  )
+);
+
+export const getOrderStageKey = (status: string) =>
+  ORDER_STAGE_BY_STATUS.get(status.toUpperCase()) ?? "other";
+
 const STATUS_COLORS: Record<string, string> = {
   ACTIVE: "#059669",
   AVAILABLE: "#059669",
@@ -58,6 +125,22 @@ export const toWarehouseDonutData = (items: TWarehouseResourceCount[]) =>
     color: ADMIN_CHART_COLORS[index % ADMIN_CHART_COLORS.length],
   }));
 
+export const toWarehouseBarData = (items: TWarehouseResourceCount[]) => {
+  const total = items.reduce((sum, item) => sum + item.count, 0);
+
+  return items.map((item, index) => ({
+    label: item.warehouseName,
+    count: item.count,
+    percentage: total > 0 ? (item.count / total) * 100 : 0,
+    color: ADMIN_CHART_COLORS[index % ADMIN_CHART_COLORS.length],
+  }));
+};
+
+export const getStatusCount = (items: TStatusCount[], ...statuses: string[]) =>
+  items
+    .filter((item) => statuses.includes(item.status.toUpperCase()))
+    .reduce((sum, item) => sum + item.count, 0);
+
 export const formatAdminPeriod = (period: string, groupBy: "WEEK" | "MONTH") =>
   groupBy === "WEEK"
     ? `Tuần ${formatDashboardPeriod(period)}`
@@ -65,4 +148,3 @@ export const formatAdminPeriod = (period: string, groupBy: "WEEK" | "MONTH") =>
         month: "2-digit",
         year: "numeric",
       }).format(new Date(period));
-

@@ -291,6 +291,21 @@ export type TDriverUpdateRequest = z.infer<typeof DriverUpdateRequestSchema>;
 export type TDriverLicenseRequest = z.infer<typeof DriverLicenseRequestSchema>;
 export type TDriverImportResult = z.infer<typeof DriverImportResultSchema>;
 
+export type TDriverTripHistory = {
+  tripId: string;
+  status?: string | null;
+  plannedStartTime?: string | null;
+  plannedEndTime?: string | null;
+  totalDistanceKm?: number | null;
+  targetTemperature?: number | null;
+  vehicle?: {
+    vehicleId: string;
+    truckPlate: string;
+    vehicleType: string;
+  } | null;
+  stopCount: number;
+};
+
 export type TDriverFormValues = z.infer<typeof DriverFormSchema>;
 
 export const DRIVER_FORM_DEFAULTS = {

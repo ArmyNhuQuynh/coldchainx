@@ -21,6 +21,10 @@ type TIotDeviceConnectionSource = {
   status?: string | number | null;
 };
 
+type TIotDeviceUnifiedStatusSource = TIotDeviceConnectionSource & {
+  vehicleId?: string | null;
+};
+
 export const normalizeIotDeviceStatus = (
   status?: string | number | null
 ): TIotDeviceStatus | null => {
@@ -148,6 +152,45 @@ export const getIotDeviceConnectionLabel = ({
       label: "Mất kết nối",
       className: "border-red-200 bg-red-50 text-red-700",
     };
+  }
+
+  return {
+    label: "Chưa có dữ liệu",
+    className: "border-slate-200 bg-slate-100 text-slate-700",
+  };
+};
+
+export const getIotDeviceUnifiedStatusLabel = ({
+  vehicleId,
+  isOnline,
+  lastPingTime,
+  status,
+}: TIotDeviceUnifiedStatusSource) => {
+  const normalizedStatus = normalizeIotDeviceStatus(status);
+
+  if (normalizedStatus === IOT_DEVICE_STATUS.INACTIVE) {
+    return getIotDeviceStatusLabel(IOT_DEVICE_STATUS.INACTIVE);
+  }
+
+  if (!vehicleId) {
+    return {
+      label: "Chưa gắn xe",
+      className: "border-sky-200 bg-sky-50 text-sky-700",
+    };
+  }
+
+  if (
+    isOnline === true ||
+    normalizedStatus === IOT_DEVICE_STATUS.ONLINE
+  ) {
+    return getIotDeviceStatusLabel(IOT_DEVICE_STATUS.ONLINE);
+  }
+
+  if (
+    normalizedStatus === IOT_DEVICE_STATUS.OFFLINE ||
+    (isOnline === false && Boolean(lastPingTime))
+  ) {
+    return getIotDeviceStatusLabel(IOT_DEVICE_STATUS.OFFLINE);
   }
 
   return {

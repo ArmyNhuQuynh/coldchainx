@@ -4,12 +4,13 @@ import type {
   TDispatchLookupEnvelope,
   TDispatchTrip,
   TDispatchTripDetails,
+  TDispatchTripListQuery,
   TDispatchTripDocuments,
   TDispatchTripLpn,
   TDispatchTripRoute,
   TStartPickingResult,
 } from "@/schemas/dispatch.schema";
-import { unwrapData, unwrapLookup } from "./dispatch-api.helpers";
+import { read, unwrapData, unwrapLookup } from "./dispatch-api.helpers";
 import {
   mergeTrips,
   normalizeTrip,
@@ -19,6 +20,7 @@ import {
 } from "./dispatch-trip-normalizers";
 import { normalizeTripDetails } from "./dispatch-trip-details-normalizer";
 import { API_SUFFIX } from "./util.api";
+import type { PaginationResponse } from "@/types/response.type";
 
 const getTripsCanStartPicking = async () => {
   const response = await apiRequest.baseApi.get<
@@ -121,6 +123,27 @@ const getTripDetails = async (tripId: string) => {
   );
 };
 
+const getTrips = async (
+  params: TDispatchTripListQuery
+): Promise<PaginationResponse<TDispatchTripDetails>> => {
+  const response = await apiRequest.baseApi.get<Record<string, any>>(
+    `${API_SUFFIX.DISPATCH_API}/trips`,
+    { params }
+  );
+  const page = unwrapData<Record<string, any>>(response.data);
+  const rawTrips = read<unknown[]>(page, "data", "Data") ?? [];
+
+  return {
+    currentPage: Number(read(page, "currentPage", "CurrentPage") ?? 1),
+    pageSize: Number(read(page, "pageSize", "PageSize") ?? params.pageSize),
+    totalRecords: Number(read(page, "totalRecords", "TotalRecords") ?? 0),
+    totalPages: Number(read(page, "totalPages", "TotalPages") ?? 0),
+    data: rawTrips.map((trip) =>
+      normalizeTripDetails(trip as Record<string, any>)
+    ),
+  };
+};
+
 export const dispatchTripApi = {
   getCreatedTrips,
   getPickingTrips,
@@ -130,4 +153,5 @@ export const dispatchTripApi = {
   getTripDocuments,
   getTripRoute,
   getTripDetails,
+  getTrips,
 };

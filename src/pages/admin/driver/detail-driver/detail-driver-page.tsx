@@ -1,5 +1,6 @@
 import { useDriver } from "@/hooks/use-driver";
 import type { TDriverLicense } from "@/schemas/driver.schema";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import DriverLicenseDialog from "../components/driver-license-dialog";
@@ -8,6 +9,7 @@ import DriverDetailHeader from "./components/driver-detail-header";
 import DriverDetailInfo from "./components/driver-detail-info";
 import DriverLicenseCard from "./components/driver-license-card";
 import DriverStatusCard from "./components/driver-status-card";
+import DriverTripHistory from "./components/driver-trip-history";
 
 const DriverDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -44,26 +46,39 @@ const DriverDetailPage = () => {
         onEdit={() => setEditDriverOpen(true)}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <DriverDetailInfo driver={driver} />
-          <DriverLicenseCard
-            driverId={driver.driverId}
-            licenses={driver.licenses}
-            onCreate={() => {
-              setSelectedLicense(null);
-              setLicenseDialogOpen(true);
-            }}
-            onEdit={(license) => {
-              setSelectedLicense(license);
-              setLicenseDialogOpen(true);
-            }}
-          />
-        </div>
-        <div>
-          <DriverStatusCard driver={driver} />
-        </div>
-      </div>
+      <Tabs defaultValue="overview" className="space-y-5">
+        <TabsList>
+          <TabsTrigger value="overview">Thông tin</TabsTrigger>
+          <TabsTrigger value="trip-history">Lịch sử chuyến</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview" className="mt-0">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <div className="space-y-6 lg:col-span-2">
+              <DriverDetailInfo driver={driver} />
+              <DriverLicenseCard
+                driverId={driver.driverId}
+                licenses={driver.licenses}
+                onCreate={() => {
+                  setSelectedLicense(null);
+                  setLicenseDialogOpen(true);
+                }}
+                onEdit={(license) => {
+                  setSelectedLicense(license);
+                  setLicenseDialogOpen(true);
+                }}
+              />
+            </div>
+            <div>
+              <DriverStatusCard driver={driver} />
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="trip-history" className="mt-0">
+          <DriverTripHistory driverId={driver.driverId} />
+        </TabsContent>
+      </Tabs>
 
       <DriverUpsertDialog
         open={editDriverOpen}

@@ -6,6 +6,7 @@ import VehicleDetailInfo from "./components/vehicle-detail-info";
 import VehicleStatusCard from "./components/vehicle-status-card";
 import VehicleDocumentCard from "./components/vehicle-document-card";
 import VehicleMaintenanceCard from "./components/vehicle-maintenance-card";
+import VehicleTripHistory from "./components/vehicle-trip-history";
 
 const VehicleDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -39,6 +40,7 @@ const VehicleDetailPage = () => {
           <TabsTrigger value="overview">Tổng quan</TabsTrigger>
           <TabsTrigger value="documents">Giấy tờ</TabsTrigger>
           <TabsTrigger value="maintenance">Bảo dưỡng</TabsTrigger>
+          <TabsTrigger value="trip-history">Lịch sử chuyến</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-0">
@@ -61,6 +63,10 @@ const VehicleDetailPage = () => {
 
         <TabsContent value="maintenance" className="mt-0">
           <VehicleMaintenanceCard vehicle={vehicle} />
+        </TabsContent>
+
+        <TabsContent value="trip-history" className="mt-0">
+          <VehicleTripHistory truckPlate={vehicle.truckPlate} />
         </TabsContent>
       </Tabs>
     </div>

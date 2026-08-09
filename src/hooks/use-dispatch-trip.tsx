@@ -1,4 +1,5 @@
 import { dispatchTripApi } from "@/apis/dispatch-trip.api";
+import type { TDispatchTripListQuery } from "@/schemas/dispatch.schema";
 import {
   keepPreviousData,
   useMutation,
@@ -83,6 +84,14 @@ export const useDispatchTrips = () => {
       enabled: enabled && Boolean(tripId),
     });
 
+  const getTrips = (params: TDispatchTripListQuery, enabled = true) =>
+    useQuery({
+      queryKey: ["dispatch", "trips", "list", params],
+      queryFn: () => dispatchTripApi.getTrips(params),
+      enabled,
+      placeholderData: keepPreviousData,
+    });
+
   return {
     getCreatedTrips,
     getPickingTripDetail,
@@ -92,5 +101,6 @@ export const useDispatchTrips = () => {
     getTripDocuments,
     getTripRoute,
     getTripDetails,
+    getTrips,
   };
 };

@@ -378,3 +378,10 @@ export type TDispatchTripDetails = {
   lpns: TDispatchTripDetailsLpn[];
   summary: TDispatchTripDetailsSummary;
 };
+
+export type TDispatchTripListQuery = {
+  pageNumber: number;
+  pageSize: number;
+  status?: string;
+  search?: string;
+};

@@ -8,11 +8,7 @@ import { useIotDevice } from "@/hooks/use-iot-device";
 import { handleApiError } from "@/lib/error";
 import { PATH_ADMIN_DASHBOARD } from "@/routes/path";
 import type { TIotDevice } from "@/schemas/iot-device.schema";
-import {
-  getIotDeviceConnectionLabel,
-  getIotDeviceDisplayStatus,
-  getIotDeviceStatusLabel,
-} from "@/types/enums/iot-device-status.enum";
+import { getIotDeviceUnifiedStatusLabel } from "@/types/enums/iot-device-status.enum";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Eye, Pencil, Trash2 } from "lucide-react";
 import type { MouseEvent } from "react";
@@ -28,16 +24,9 @@ const formatDate = (value?: string | null) => {
   return date.toLocaleString("vi-VN");
 };
 
-const getStatusBadge = (device: TIotDevice) => {
-  const statusLabel = getIotDeviceStatusLabel(
-    getIotDeviceDisplayStatus(device)
-  );
-  return <Badge className={statusLabel.className}>{statusLabel.label}</Badge>;
-};
-
-const getConnectionBadge = (device: TIotDevice) => {
-  const connection = getIotDeviceConnectionLabel(device);
-  return <Badge className={connection.className}>{connection.label}</Badge>;
+const getDeviceStatusBadge = (device: TIotDevice) => {
+  const status = getIotDeviceUnifiedStatusLabel(device);
+  return <Badge className={status.className}>{status.label}</Badge>;
 };
 
 const ActionCell = ({ device }: { device: TIotDevice }) => {
@@ -144,14 +133,14 @@ export const columns: ColumnDef<TIotDevice>[] = [
     size: 190,
   },
   {
-    id: "connection",
+    id: "deviceStatus",
     header: ({ column }) =>
-      createFormattedHeader("Kết nối", column, { align: "center" }),
+      createFormattedHeader("Tình trạng thiết bị", column, { align: "center" }),
     cell: ({ row }) =>
-      createFormattedCell(getConnectionBadge(row.original), {
+      createFormattedCell(getDeviceStatusBadge(row.original), {
         align: "center",
       }),
-    size: 150,
+    size: 180,
   },
   {
     accessorKey: "batteryLevel",
@@ -168,16 +157,6 @@ export const columns: ColumnDef<TIotDevice>[] = [
         { align: "center" }
       ),
     size: 100,
-  },
-  {
-    accessorKey: "status",
-    header: ({ column }) =>
-      createFormattedHeader("Trạng thái", column, { align: "center" }),
-    cell: ({ row }) =>
-      createFormattedCell(getStatusBadge(row.original), {
-        align: "center",
-      }),
-    size: 160,
   },
   {
     accessorKey: "lastPingTime",

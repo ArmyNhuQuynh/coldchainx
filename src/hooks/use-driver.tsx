@@ -30,6 +30,19 @@ export const useDriver = () => {
     });
   };
 
+  const getDriverTrips = (
+    driverId?: string,
+    status = "COMPLETED",
+    enabled = true
+  ) => {
+    return useQuery({
+      queryKey: ["driver", driverId, "trips", status],
+      queryFn: () => driverApi.getDriverTrips(driverId!, status),
+      enabled: enabled && Boolean(driverId),
+      placeholderData: keepPreviousData,
+    });
+  };
+
   const getDriverLicenses = (driverId?: string) => {
     return useQuery({
       queryKey: ["driver-licenses", driverId],
@@ -126,6 +139,7 @@ export const useDriver = () => {
   return {
     getDrivers,
     getDriverById,
+    getDriverTrips,
     getDriverLicenses,
     createDriver,
     updateDriver,

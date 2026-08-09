@@ -5,6 +5,7 @@ import type {
   TDriverImportResult,
   TDriverLicense,
   TDriverLicenseRequest,
+  TDriverTripHistory,
   TDriverUpdateRequest,
 } from "@/schemas/driver.schema";
 import type { BaseResponse } from "@/types/response.type";
@@ -21,6 +22,15 @@ const getDriverById = async (id: string) => {
   const response = await apiRequest.baseApi.get<BaseResponse<TDriver>>(
     `${API_SUFFIX.DRIVERS_API}/${id}`
   );
+  return response.data;
+};
+
+const getDriverTrips = async (driverId: string, status = "COMPLETED") => {
+  const response = await apiRequest.baseApi.get<
+    BaseResponse<TDriverTripHistory[]>
+  >(`${API_SUFFIX.DRIVERS_API}/${driverId}/trips`, {
+    params: { status },
+  });
   return response.data;
 };
 
@@ -109,6 +119,7 @@ const importDriverLicenses = async (file: File) => {
 export const driverApi = {
   getDrivers,
   getDriverById,
+  getDriverTrips,
   createDriver,
   updateDriver,
   deleteDriver,

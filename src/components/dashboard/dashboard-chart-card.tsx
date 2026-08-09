@@ -19,8 +19,8 @@ const DashboardChartCard = ({
   isEmpty,
   emptyText = "Chưa có dữ liệu trong khoảng thời gian này.",
 }: Props) => (
-  <Card className="h-full gap-4 rounded-lg py-5 shadow-sm">
-    <CardHeader className="px-5">
+  <Card className="h-full gap-0 overflow-hidden rounded-lg border py-0 shadow-sm transition-shadow duration-200 hover:shadow-md">
+    <CardHeader className="border-b bg-muted/15 px-5 py-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <CardTitle className="text-base">{title}</CardTitle>
@@ -33,7 +33,7 @@ const DashboardChartCard = ({
         {action && <div className="shrink-0">{action}</div>}
       </div>
     </CardHeader>
-    <CardContent className="min-h-72 px-5">
+    <CardContent className="min-h-72 p-5">
       {isEmpty ? (
         <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed text-center">
           <BarChart3 className="mb-3 h-7 w-7 text-muted-foreground" />

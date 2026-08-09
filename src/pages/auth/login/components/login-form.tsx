@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -6,19 +6,22 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Input, PasswordInput } from "@/components/ui/input"
-// import { useSignalRContext } from "@/context/signalr-provider"
-import { handleApiError } from "@/lib/error"
-import { cn } from "@/lib/utils"
-import { setUser } from "@/redux/User/user-slice"
-import { useMemo, useEffect, useRef, useState } from "react"
-import { useForm } from "react-hook-form"
-import { useDispatch } from "react-redux"
+} from "@/components/ui/form";
+import { Input, PasswordInput } from "@/components/ui/input";
+import { useAuth } from "@/hooks/use-auth";
+import { handleApiError } from "@/lib/error";
+import { cn } from "@/lib/utils";
+import { setUser } from "@/redux/User/user-slice";
+import {
+  LoginRequestSchema,
+  type TAuthResponse,
+  type TLoginRequest,
+} from "@/schemas/auth.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useAuth } from "@/hooks/use-auth"
-import { authApi } from "@/apis/auth.api"
-import { LoginRequestSchema, type TAuthResponse, type TLoginRequest } from "@/schemas/auth.schema"
+import { LoaderCircle, LogIn, Snowflake } from "lucide-react";
+import type { ComponentProps } from "react";
+import { useForm } from "react-hook-form";
+import { useDispatch } from "react-redux";
 
 const getAuthResponseData = (responseData: unknown): TAuthResponse | null => {
   const maybeAuthResponse = responseData as TAuthResponse | undefined;
@@ -27,21 +30,19 @@ const getAuthResponseData = (responseData: unknown): TAuthResponse | null => {
     return maybeAuthResponse;
   }
 
-  const maybeBaseResponse = responseData as { data?: TAuthResponse } | undefined;
+  const maybeBaseResponse = responseData as
+    | { data?: TAuthResponse }
+    | undefined;
 
   return maybeBaseResponse?.data?.accessToken ? maybeBaseResponse.data : null;
 };
 
-
 export function LoginForm({
   className,
   ...props
-}: React.ComponentProps<"div">) {
+}: ComponentProps<"section">) {
   const { loginMutation } = useAuth();
-  const [isGoogleRedirecting, setIsGoogleRedirecting] = useState(false);
-  // const { connect } = useSignalRContext();
   const dispatch = useDispatch();
-
   const form = useForm<TLoginRequest>({
     resolver: zodResolver(LoginRequestSchema),
     defaultValues: {
@@ -49,8 +50,10 @@ export function LoginForm({
       password: "",
     },
   });
+
   const onSubmit = async (data: TLoginRequest) => {
     if (loginMutation.isPending) return;
+
     try {
       const result = await loginMutation.mutateAsync(data);
       const authData = getAuthResponseData(result.data);
@@ -65,196 +68,110 @@ export function LoginForm({
     }
   };
 
-  const handleGoogleLogin = () => {
-    if (isGoogleRedirecting || loginMutation.isPending) return;
-
-    setIsGoogleRedirecting(true);
-    window.location.assign(authApi.getGoogleAuthorizationUrl());
-  };
-
-  const RandomIllustration = useMemo(() => {
-    // const illustrations = [
-    //   LoginFormIllustration1,
-    //   LoginFormIllustration2,
-    //   LoginFormIllustration3,
-    //   LoginFormIllustration4,
-    // ];
-    // const randomIndex = Math.floor( Math.random() * illustrations.length );
-    // return illustrations[ randomIndex ];
-  }, []);
-
-  const formRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    // Auto scroll to center the login form when component mounts
-    const scrollToCenter = () => {
-      if (formRef.current) {
-        formRef.current.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center',
-          inline: 'center'
-        });
-      }
-    };
-
-    // Small delay to ensure the component is fully rendered
-    const timer = setTimeout(scrollToCenter, 100);
-    return () => clearTimeout(timer);
-  }, []);
-
   return (
-    <div className="w-full" ref={formRef}>
-      <div className={cn("flex flex-col gap-6", className)} {...props}>
-        <div className="overflow-hidden rounded-2xl bg-card shadow-2xl border border-border">
-          <div className="grid p-0 md:grid-cols-2">
-            {/* Left side - Form */}
-            <div className="relative">
-              {/* Background overlay */}
-              <div className="absolute inset-0 bg-linear-to-br from-background via-card to-background" />
-
-              {/* Form content */}
-              <div className="relative z-10">
-                <Form {...form}>
-                  <form className="p-8 md:p-12 space-y-8" onSubmit={form.handleSubmit(onSubmit)} noValidate>
-                    {/* Header section with improved styling */}
-                    <div className="text-center space-y-4">
-                      <div className="mx-auto w-16 h-16 bg-linear-to-br from-primary/30 via-primary/60 to-primary rounded-2xl flex items-center justify-center mb-6 shadow-lg">
-                        <svg className="w-8 h-8 text-primary-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                        </svg>
-                      </div>
-                      <h1 className="text-3xl font-bold text-foreground">
-                        Chào mừng trở lại
-                      </h1>
-                      <p className="text-muted-foreground text-sm">
-                        Đăng nhập để truy cập hệ thống quản lý Cold Chain của bạn
-                      </p>
-                    </div>
-
-                    <div className="space-y-6">
-                      {/* Username/Email field with enhanced styling */}
-                      <FormField
-                        control={form.control}
-                        name="email"
-                        render={({ field }) => (
-                          <FormItem className="space-y-2">
-                            <FormLabel className="text-sm font-semibold text-foreground">
-                              Email
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                type="email"
-                                placeholder="Nhập email hoặc tên đăng nhập"
-                                disabled={loginMutation.isPending}
-                                className="h-12 px-4 border-2 rounded-xl transition-all duration-200"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage className="text-xs" />
-                          </FormItem>
-                        )}
-                      />
-
-                      {/* Password field with enhanced styling */}
-                      <FormField
-                        control={form.control}
-                        name="password"
-                        render={({ field }) => (
-                          <FormItem className="space-y-2">
-                            <FormLabel className="text-sm font-semibold text-foreground">
-                              Mật khẩu
-                            </FormLabel>
-                            <FormControl>
-                              <PasswordInput
-                                placeholder="Nhập mật khẩu"
-                                disabled={loginMutation.isPending}
-                                className="h-12 px-4 border-2 rounded-xl transition-all duration-200"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage className="text-xs" />
-                          </FormItem>
-                        )}
-                      />
-
-                      {/* Enhanced submit button */}
-                      <Button
-                        type="submit"
-                        className="w-full h-12 bg-linear-to-r from-primary/40 via-primary/80 to-primary hover:from-primary/40 hover:via-primary/80 hover:to-primary text-primary-foreground font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
-                        disabled={loginMutation.isPending || isGoogleRedirecting}
-                        size="lg"
-                      >
-                        <div className="flex items-center justify-center gap-2">
-                          {loginMutation.isPending && (
-                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-primary-foreground" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                          )}
-                          {loginMutation.isPending ? "Đang đăng nhập..." : "Đăng nhập"}
-                        </div>
-                      </Button>
-
-                      <div className="flex items-center gap-3">
-                        <div className="h-px flex-1 bg-border" />
-                        <span className="text-xs text-muted-foreground">
-                          hoặc
-                        </span>
-                        <div className="h-px flex-1 bg-border" />
-                      </div>
-
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="h-12 w-full rounded-xl border-2 font-semibold"
-                        disabled={loginMutation.isPending || isGoogleRedirecting}
-                        onClick={handleGoogleLogin}
-                      >
-                        <span className="mr-2 flex h-6 w-6 items-center justify-center rounded-full border bg-white text-sm font-bold text-blue-600">
-                          G
-                        </span>
-                        {isGoogleRedirecting
-                          ? "Đang chuyển đến Google..."
-                          : "Đăng nhập bằng Google"}
-                      </Button>
-                    </div>
-
-                    {/* Additional info section */}
-                    <div className="text-center pt-4">
-                      <p className="text-xs text-muted-foreground">
-                        Bằng cách đăng nhập, bạn đồng ý với{" "}
-                        <span className="text-primary hover:text-primary/80 cursor-pointer">
-                          điều khoản sử dụng
-                        </span>{" "}
-                        của chúng tôi
-                      </p>
-                    </div>
-                  </form>
-                </Form>
-              </div>
-            </div>
-
-            {/* Right side - Illustration with enhanced styling */}
-            <div className="relative bg-linear-to-br from-primary/30 via-primary/60 to-primary hidden md:flex items-center justify-center p-8 md:p-12">
-              {/* Decorative elements */}
-              <div className="absolute inset-0 bg-black/10" />
-              <div className="absolute top-4 right-4 w-32 h-32 bg-white/10 rounded-full blur-xl" />
-              <div className="absolute bottom-4 left-4 w-24 h-24 bg-white/10 rounded-full blur-xl" />
-
-              {/* Main illustration */}
-              <div className="relative z-10 text-center">
-                {/* <RandomIllustration className="w-80 h-80 mx-auto drop-shadow-2xl" /> */}
-                <div className="mt-8 text-primary-foreground">
-                  <h2 className="text-2xl font-bold mb-2">ColdchainX Management</h2>
-                  <p className="text-primary-foreground/80 text-sm leading-relaxed">
-                    Hệ thống quản lý hiện đại, dễ sử dụng và hiệu quả cho doanh nghiệp của bạn
-                  </p>
-                </div>
-              </div>
-            </div>
+    <section
+      className={cn(
+        "rounded-lg border border-white/55 bg-[rgba(237,247,255,0.52)] p-7 shadow-[0_24px_80px_rgba(2,32,71,0.3)] backdrop-blur-2xl sm:p-9",
+        className
+      )}
+      {...props}
+    >
+      <div className="mb-8">
+        <div className="mb-5 flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-md bg-[#0d5ca8] text-white shadow-sm">
+            <Snowflake className="h-6 w-6" strokeWidth={2} />
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase text-[#2878bf]">
+              Cold chain operations
+            </p>
+            <p className="text-sm font-medium text-[#244b70]">
+              Management portal
+            </p>
           </div>
         </div>
+
+        <h1 className="text-4xl font-bold text-[#082f57]">Login</h1>
+        <p className="mt-3 text-sm leading-6 text-[#496b88]">
+          Đăng nhập để truy cập hệ thống quản lý vận hành ColdchainX.
+        </p>
       </div>
-    </div>
+
+      <Form {...form}>
+        <form
+          className="space-y-5"
+          onSubmit={form.handleSubmit(onSubmit)}
+          noValidate
+        >
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem className="space-y-2">
+                <FormLabel className="text-sm font-semibold text-[#173f64]">
+                  Email
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    type="email"
+                    autoComplete="email"
+                    placeholder="Nhập email hoặc tên đăng nhập"
+                    disabled={loginMutation.isPending}
+                    className="h-12 rounded-md border-white/75 bg-[rgba(247,252,255,0.7)] px-4 text-[#0b355b] shadow-sm placeholder:text-[#7898b3] focus-visible:border-[#2476bd] focus-visible:ring-[#2476bd]/20"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage className="text-xs" />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem className="space-y-2">
+                <FormLabel className="text-sm font-semibold text-[#173f64]">
+                  Mật khẩu
+                </FormLabel>
+                <FormControl>
+                  <PasswordInput
+                    autoComplete="current-password"
+                    placeholder="Nhập mật khẩu"
+                    disabled={loginMutation.isPending}
+                    className="h-12 rounded-md border-white/75 bg-[rgba(247,252,255,0.7)] px-4 text-[#0b355b] shadow-sm placeholder:text-[#7898b3] focus-visible:border-[#2476bd] focus-visible:ring-[#2476bd]/20"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage className="text-xs" />
+              </FormItem>
+            )}
+          />
+
+          <Button
+            type="submit"
+            size="lg"
+            className="h-12 w-full rounded-md bg-[#0d5ca8] font-semibold text-white shadow-[0_10px_24px_rgba(13,92,168,0.24)] transition-colors hover:bg-[#084a89]"
+            disabled={loginMutation.isPending}
+          >
+            {loginMutation.isPending ? (
+              <>
+                <LoaderCircle className="h-4 w-4 animate-spin" />
+                Đang đăng nhập...
+              </>
+            ) : (
+              <>
+                <LogIn className="h-4 w-4" />
+                Đăng nhập
+              </>
+            )}
+          </Button>
+        </form>
+      </Form>
+
+      <p className="mt-7 border-t border-[#d5e5f2] pt-5 text-center text-xs leading-5 text-[#68839a]">
+        Bằng cách đăng nhập, bạn đồng ý với điều khoản sử dụng của chúng tôi.
+      </p>
+    </section>
   );
 }
