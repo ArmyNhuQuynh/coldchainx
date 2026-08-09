@@ -1,14 +1,10 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { handleApiError } from "@/lib/error";
-import { useDriver } from "@/hooks/use-driver";
 import type { TDriverLicense } from "@/schemas/driver.schema";
-import { Calendar, IdCard, Pencil, Plus, Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { Calendar, IdCard, Pencil, Plus } from "lucide-react";
 
 type Props = {
-  driverId: string;
   licenses: TDriverLicense[] | null;
   onCreate: () => void;
   onEdit: (license: TDriverLicense) => void;
@@ -62,27 +58,7 @@ const getLicenseStatusLabel = (status: string | null | undefined) => {
   }
 };
 
-const DriverLicenseCard = ({ driverId, licenses, onCreate, onEdit }: Props) => {
-  const { deleteDriverLicense } = useDriver();
-
-  const handleDelete = async (license: TDriverLicense) => {
-    const confirmed = window.confirm(
-      `Xóa GPLX ${license.licenseNumber}? Trạng thái tài xế sẽ được BE tính lại.`
-    );
-
-    if (!confirmed) return;
-
-    try {
-      await deleteDriverLicense.mutateAsync({
-        licenseId: license.licenseId,
-        driverId,
-      });
-      toast.success("Đã xóa GPLX");
-    } catch (error) {
-      handleApiError(error);
-    }
-  };
-
+const DriverLicenseCard = ({ licenses, onCreate, onEdit }: Props) => {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between gap-3 pb-2">
@@ -131,17 +107,6 @@ const DriverLicenseCard = ({ driverId, licenses, onCreate, onEdit }: Props) => {
                     >
                       <Pencil className="mr-2 h-4 w-4" />
                       Sửa
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="rounded-xl text-destructive hover:text-destructive"
-                      disabled={deleteDriverLicense.isPending}
-                      onClick={() => handleDelete(license)}
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Xóa
                     </Button>
                   </div>
                 </div>

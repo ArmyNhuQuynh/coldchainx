@@ -23,7 +23,7 @@ import {
   RouteStopFormSchema,
   type TRouteStop,
 } from "@/schemas/route.schema";
-import { ChevronLeft, ChevronRight, CirclePlus, Pencil, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, CirclePlus, Pencil } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -38,7 +38,6 @@ const RouteStopsCard = ({ routeId }: Props) => {
     getRouteStops,
     createRouteStop,
     updateRouteStop,
-    deleteRouteStop,
   } = useRoute();
   const [pageIndex, setPageIndex] = useState(1);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -112,18 +111,6 @@ const RouteStopsCard = ({ routeId }: Props) => {
     }
   };
 
-  const handleDelete = async (stop: TRouteStop) => {
-    const confirmed = window.confirm(`Xóa điểm dừng ${stop.stopName}?`);
-    if (!confirmed) return;
-
-    try {
-      await deleteRouteStop.mutateAsync({ routeId, stopId: stop.stopId });
-      toast.success("Xóa điểm dừng thành công");
-    } catch (error) {
-      handleApiError(error);
-    }
-  };
-
   return (
     <Card className="rounded-lg">
       <CardHeader className="border-b pb-4">
@@ -187,16 +174,6 @@ const RouteStopsCard = ({ routeId }: Props) => {
                           onClick={() => openEditDialog(stop)}
                         >
                           <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="text-destructive hover:text-destructive"
-                          disabled={deleteRouteStop.isPending}
-                          onClick={() => handleDelete(stop)}
-                        >
-                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </TableCell>

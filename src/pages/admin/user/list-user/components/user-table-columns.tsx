@@ -3,7 +3,6 @@ import {
   createFormattedHeader,
 } from "@/components/table/table-formatter";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import type { TUserProfile } from "@/schemas/user.schema";
 import { formatUserDate } from "../../components/user-formatters";
 import {
@@ -12,26 +11,6 @@ import {
 } from "@/types/enums/user-role.enum";
 import { getUserStatusLabel } from "@/types/enums/user-status.enum";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Eye } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-
-const UserActionCell = ({ user }: { user: TUserProfile }) => {
-  const navigate = useNavigate();
-
-  return (
-    <div className="flex justify-center">
-      <Button
-        type="button"
-        variant="outline"
-        className="h-9 rounded-xl px-3"
-        onClick={() => navigate(user.userId)}
-      >
-        <Eye className="mr-2 h-4 w-4" />
-        Chi tiết
-      </Button>
-    </div>
-  );
-};
 
 export const columns: ColumnDef<TUserProfile>[] = [
   {
@@ -105,12 +84,5 @@ export const columns: ColumnDef<TUserProfile>[] = [
         align: "center",
       }),
     size: 170,
-  },
-  {
-    id: "actions",
-    header: ({ column }) =>
-      createFormattedHeader("Hành động", column, { align: "center" }),
-    cell: ({ row }) => <UserActionCell user={row.original} />,
-    size: 150,
   },
 ];

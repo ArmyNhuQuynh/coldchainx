@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
@@ -89,8 +90,8 @@ const RouteScheduleUpsertDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl">
-        <DialogHeader>
+      <DialogContent className="max-h-[90dvh] w-[calc(100vw-2rem)] gap-0 overflow-hidden p-0 sm:max-w-2xl">
+        <DialogHeader className="border-b px-6 py-4">
           <DialogTitle>
             {editingSchedule ? "Chỉnh sửa lịch đi" : "Tạo lịch đi"}
           </DialogTitle>
@@ -99,117 +100,119 @@ const RouteScheduleUpsertDialog = ({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
-          <FormSection
-            title="Tuyến vận chuyển"
-            description={
-              editingSchedule
-                ? "Route của lịch đang sửa được giữ nguyên theo endpoint hiện tại."
-                : "Chọn route trước khi tạo lịch chạy mới."
-            }
-          >
-            <label className="space-y-2 text-sm">
-              <span className="font-medium">Route</span>
-              <Select
-                value={values.routeId || undefined}
-                onValueChange={(value) => onFieldChange("routeId", value)}
-                disabled={isSubmitting || !!editingSchedule}
-              >
-                <SelectTrigger className="h-11 w-full bg-card">
-                  <SelectValue placeholder="Chọn tuyến vận chuyển" />
-                </SelectTrigger>
-                <SelectContent className="max-h-80">
-                  {routes.map((route) => (
-                    <SelectItem key={route.routeId} value={route.routeId}>
-                      {getRouteLabel(route)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.routeId && (
-                <p className="text-sm text-destructive">{errors.routeId}</p>
-              )}
-            </label>
-          </FormSection>
-
-          <FormSection
-            title="Thời điểm xuất phát"
-            description="Ngày và giờ xe dự kiến bắt đầu chạy theo lịch."
-          >
-            <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_220px]">
-              <FormField
-                id="departure-date"
-                label="Ngày đi"
-                type="date"
-                value={values.departureDate}
-                error={errors.departureDate}
-                onChange={(value) => onFieldChange("departureDate", value)}
-              />
-
-              <TimeSelector
-                label="Giờ xuất phát"
-                value={values.departureTime}
-                error={errors.departureTime}
-                onChange={(value) => onFieldChange("departureTime", value)}
-              />
-            </div>
-          </FormSection>
-
-          <FormSection
-            title="Cut-off"
-            description="Thời điểm cuối cùng nhận gom hàng cho lịch này."
-          >
-            <div className="grid gap-4 md:grid-cols-[220px_minmax(0,1fr)]">
-              <TimeSelector
-                label="Giờ cut-off"
-                value={values.cutOffTime}
-                error={errors.cutOffTime}
-                onChange={(value) => onFieldChange("cutOffTime", value)}
-              />
-
-              <div className="rounded-lg border bg-muted/30 px-4 py-3 text-sm">
-                <p className="font-medium text-foreground">
-                  {getRouteLabel(selectedRoute)}
-                </p>
-                <p className="mt-1 text-muted-foreground">
-                  {departurePreview} · {cutOffPreview}
-                </p>
-              </div>
-            </div>
-          </FormSection>
-
-          {editingSchedule && (
+        <ScrollArea className="max-h-[calc(90dvh-148px)]">
+          <div className="space-y-3 px-6 py-4">
             <FormSection
-              title="Trạng thái nhận đơn"
-              description="Đóng nhận đơn chỉ ngăn đơn mới; các đơn đã đặt vẫn tiếp tục được vận hành."
+              title="Tuyến vận chuyển"
+              description={
+                editingSchedule
+                  ? "Route của lịch đang sửa được giữ nguyên theo endpoint hiện tại."
+                  : "Chọn route trước khi tạo lịch chạy mới."
+              }
             >
               <label className="space-y-2 text-sm">
-                <span className="font-medium">Nhận đơn cho lịch</span>
+                <span className="font-medium">Route</span>
                 <Select
-                  value={values.status}
-                  onValueChange={(value) => onFieldChange("status", value)}
-                  disabled={isSubmitting}
+                  value={values.routeId || undefined}
+                  onValueChange={(value) => onFieldChange("routeId", value)}
+                  disabled={isSubmitting || !!editingSchedule}
                 >
                   <SelectTrigger className="h-11 w-full bg-card">
-                    <SelectValue placeholder="Trạng thái" />
+                    <SelectValue placeholder="Chọn tuyến vận chuyển" />
                   </SelectTrigger>
-                  <SelectContent>
-                    {ROUTE_SCHEDULE_STATUS_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
+                  <SelectContent className="max-h-80">
+                    {routes.map((route) => (
+                      <SelectItem key={route.routeId} value={route.routeId}>
+                        {getRouteLabel(route)}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                {errors.status && (
-                  <p className="text-sm text-destructive">{errors.status}</p>
+                {errors.routeId && (
+                  <p className="text-sm text-destructive">{errors.routeId}</p>
                 )}
               </label>
             </FormSection>
-          )}
-        </div>
 
-        <DialogFooter>
+            <FormSection
+              title="Thời điểm xuất phát"
+              description="Ngày và giờ xe dự kiến bắt đầu chạy theo lịch."
+            >
+              <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_220px]">
+                <FormField
+                  id="departure-date"
+                  label="Ngày đi"
+                  type="date"
+                  value={values.departureDate}
+                  error={errors.departureDate}
+                  onChange={(value) => onFieldChange("departureDate", value)}
+                />
+
+                <TimeSelector
+                  label="Giờ xuất phát"
+                  value={values.departureTime}
+                  error={errors.departureTime}
+                  onChange={(value) => onFieldChange("departureTime", value)}
+                />
+              </div>
+            </FormSection>
+
+            <FormSection
+              title="Cut-off"
+              description="Thời điểm cuối cùng nhận gom hàng cho lịch này."
+            >
+              <div className="grid gap-4 md:grid-cols-[220px_minmax(0,1fr)]">
+                <TimeSelector
+                  label="Giờ cut-off"
+                  value={values.cutOffTime}
+                  error={errors.cutOffTime}
+                  onChange={(value) => onFieldChange("cutOffTime", value)}
+                />
+
+                <div className="rounded-lg border bg-muted/30 px-4 py-3 text-sm">
+                  <p className="font-medium text-foreground">
+                    {getRouteLabel(selectedRoute)}
+                  </p>
+                  <p className="mt-1 text-muted-foreground">
+                    {departurePreview} · {cutOffPreview}
+                  </p>
+                </div>
+              </div>
+            </FormSection>
+
+            {editingSchedule && (
+              <FormSection
+                title="Trạng thái nhận đơn"
+                description="Đóng nhận đơn chỉ ngăn đơn mới; các đơn đã đặt vẫn tiếp tục được vận hành."
+              >
+                <label className="space-y-2 text-sm">
+                  <span className="font-medium">Nhận đơn cho lịch</span>
+                  <Select
+                    value={values.status}
+                    onValueChange={(value) => onFieldChange("status", value)}
+                    disabled={isSubmitting}
+                  >
+                    <SelectTrigger className="h-11 w-full bg-card">
+                      <SelectValue placeholder="Trạng thái" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ROUTE_SCHEDULE_STATUS_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.status && (
+                    <p className="text-sm text-destructive">{errors.status}</p>
+                  )}
+                </label>
+              </FormSection>
+            )}
+          </div>
+        </ScrollArea>
+
+        <DialogFooter className="border-t px-6 py-4">
           <Button
             type="button"
             variant="outline"
@@ -234,8 +237,8 @@ type FormSectionProps = {
 };
 
 const FormSection = ({ title, description, children }: FormSectionProps) => (
-  <section className="rounded-xl border bg-muted/20 p-4">
-    <div className="mb-4">
+  <section className="rounded-xl border bg-muted/20 p-3.5">
+    <div className="mb-3">
       <h3 className="text-sm font-semibold">{title}</h3>
       <p className="mt-1 text-xs text-muted-foreground">{description}</p>
     </div>

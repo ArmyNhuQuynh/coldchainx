@@ -7,8 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Search, SlidersHorizontal } from "lucide-react";
 import { useState } from "react";
 import type { TVehicle } from "@/schemas/vehicle.schema";
+import { useNavigate } from "react-router-dom";
 
 const VehicleTable = () => {
+  const navigate = useNavigate();
   const { getVehicles } = useVehicle();
   const { data, isLoading } = getVehicles();
 
@@ -57,6 +59,7 @@ const VehicleTable = () => {
           isLoading={isLoading}
           onPageChange={() => {}}
           onPageSizeChange={() => {}}
+          onRowClick={(vehicle) => navigate(vehicle.vehicleId)}
           onSearchChange={() => {}}
           searchValues={[]}
           onSortChange={() => {}}

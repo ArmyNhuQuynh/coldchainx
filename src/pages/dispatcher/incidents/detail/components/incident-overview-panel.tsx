@@ -34,11 +34,13 @@ const IncidentOverviewPanel = ({ incident }: { incident: TIncident }) => {
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
-          <div className="rounded-lg border p-3">
+          <div className="min-w-0 overflow-hidden rounded-lg border p-3">
             <p className="flex items-center gap-2 text-sm text-muted-foreground">
-              <UserRound className="h-4 w-4" /> Người báo cáo
+              <UserRound className="h-4 w-4 shrink-0" /> Người báo cáo
             </p>
-            <p className="mt-2 font-medium">{incident.reportedByUsername || "—"}</p>
+            <p className="mt-2 break-all font-medium leading-5">
+              {incident.reportedByUsername || "—"}
+            </p>
           </div>
           <div className="rounded-lg border p-3">
             <p className="flex items-center gap-2 text-sm text-muted-foreground">

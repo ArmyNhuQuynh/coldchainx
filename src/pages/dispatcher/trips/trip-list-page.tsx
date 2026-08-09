@@ -11,6 +11,16 @@ import TripSummaryCards from "./components/trip-summary-cards";
 import TripTable from "./components/trip-table";
 import { ALL_TRIP_STATUS } from "./components/trip-helpers";
 
+const TRIP_STATUS_GROUPS: Record<string, string[]> = {
+  PLANNED: ["PLANNED"],
+  PICKING: ["PICKING", "LOADING"],
+  LOADING_COMPLETED: ["LOADED", "LOADING_COMPLETED"],
+};
+
+const matchesStatusFilter = (tripStatus: string, selectedStatus: string) =>
+  selectedStatus === ALL_TRIP_STATUS ||
+  TRIP_STATUS_GROUPS[selectedStatus]?.includes(tripStatus) === true;
+
 const matchTripSearch = (trip: TDispatchTrip, search: string) => {
   const keyword = search.trim().toLowerCase();
   if (!keyword) return true;
@@ -43,20 +53,24 @@ const TripListPage = () => {
     return trips.filter(
       (trip) =>
         matchTripSearch(trip, search) &&
-        (status === ALL_TRIP_STATUS || trip.status === status)
+        matchesStatusFilter(trip.status, status),
     );
   }, [search, status, trips]);
 
   const statusCounts = useMemo(
     () => ({
       [ALL_TRIP_STATUS]: trips.length,
-      PLANNED: trips.filter((trip) => trip.status === "PLANNED").length,
-      PICKING: trips.filter((trip) => trip.status === "PICKING").length,
-      LOADING_COMPLETED: trips.filter(
-        (trip) => trip.status === "LOADING_COMPLETED"
+      PLANNED: trips.filter((trip) =>
+        matchesStatusFilter(trip.status, "PLANNED"),
+      ).length,
+      PICKING: trips.filter((trip) =>
+        matchesStatusFilter(trip.status, "PICKING"),
+      ).length,
+      LOADING_COMPLETED: trips.filter((trip) =>
+        matchesStatusFilter(trip.status, "LOADING_COMPLETED"),
       ).length,
     }),
-    [trips]
+    [trips],
   );
 
   const handleConfirmCancel = async () => {
@@ -85,8 +99,8 @@ const TripListPage = () => {
       toast.success(
         `Đã bắt đầu bốc hàng cho ${result.lpnCount} LPN trong trip ${result.tripId.slice(
           0,
-          8
-        )}.`
+          8,
+        )}.`,
       );
       if (selectedTrip?.tripId === trip.tripId) {
         setSelectedTrip(null);
@@ -111,7 +125,8 @@ const TripListPage = () => {
           <div>
             <h1 className="text-3xl font-semibold">Trip đã tạo</h1>
             <p className="mt-1 text-muted-foreground">
-              Theo dõi các chuyến đã ghép, xem tiến độ bốc hàng và hủy trước khi xuất phát
+              Theo dõi các chuyến đã ghép, xem tiến độ bốc hàng và hủy trước khi
+              xuất phát
             </p>
           </div>
         </div>

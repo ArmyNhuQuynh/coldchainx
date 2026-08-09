@@ -57,7 +57,6 @@ const DriverDetailPage = () => {
             <div className="space-y-6 lg:col-span-2">
               <DriverDetailInfo driver={driver} />
               <DriverLicenseCard
-                driverId={driver.driverId}
                 licenses={driver.licenses}
                 onCreate={() => {
                   setSelectedLicense(null);

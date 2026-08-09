@@ -33,7 +33,6 @@ const SchedulePage = () => {
     getRouteSchedules,
     createRouteSchedule,
     updateRouteSchedule,
-    deleteRouteSchedule,
   } = useRouteSchedule();
 
   const [selectedRouteId, setSelectedRouteId] = useState(ALL_ROUTES_VALUE);
@@ -178,21 +177,6 @@ const SchedulePage = () => {
     }
   };
 
-  const handleDelete = async (schedule: TRouteSchedule) => {
-    const confirmed = window.confirm(`Xóa lịch ${schedule.scheduleName}?`);
-    if (!confirmed) return;
-
-    try {
-      await deleteRouteSchedule.mutateAsync({
-        routeId: schedule.routeId,
-        scheduleId: schedule.scheduleId,
-      });
-      toast.success("Xóa lịch đi thành công");
-    } catch (error) {
-      handleApiError(error);
-    }
-  };
-
   const handleRefresh = () => {
     routesQuery.refetch();
     if (isShowingAllRoutes) {
@@ -233,14 +217,12 @@ const SchedulePage = () => {
         schedules={schedules}
         routes={routes}
         isLoading={isSchedulesFetching}
-        isDeleting={deleteRouteSchedule.isPending}
         pageIndex={pageIndex}
         pageSize={pageSize}
         totalRecords={totalRecords}
         onPageChange={setPageIndex}
         onPageSizeChange={handlePageSizeChange}
         onEdit={openEditDialog}
-        onDelete={handleDelete}
       />
 
       <RouteScheduleUpsertDialog

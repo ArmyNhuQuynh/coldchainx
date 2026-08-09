@@ -3,54 +3,11 @@ import {
     createFormattedHeader,
 } from "@/components/table/table-formatter";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { getOrderCategoryLabel } from "@/types/enums/order-category.enum";
 import { getOrderStatusLabel } from "@/types/enums/order-status.enum";
 import type { TOrder } from "@/schemas/order.schema";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Eye, MoreHorizontal } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
-
-const ActionCell = ({ order }: { order: TOrder }) => {
-    const navigate = useNavigate();
-
-    return (
-        <div className="flex justify-center items-center gap-1.5">
-            <TooltipProvider>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button
-                            variant="outline"
-                            className="h-8 rounded-xl px-3 text-sm"
-                            onClick={() => navigate(order.orderId)}
-                        >
-                            <Eye className="h-4 w-4" />
-                            Chi tiết
-                        </Button>
-                    </TooltipTrigger>
-
-                    <TooltipContent>
-                        Xem chi tiết lô hàng
-                    </TooltipContent>
-                </Tooltip>
-            </TooltipProvider>
-
-            <Button
-                variant="ghost"
-                size="icon"
-            >
-                <MoreHorizontal className="h-5 w-5" />
-            </Button>
-        </div>
-    );
-};
 
 export const columns: ColumnDef<TOrder>[] = [
     {
@@ -182,15 +139,5 @@ export const columns: ColumnDef<TOrder>[] = [
         },
 
         size: 150,
-    },
-
-    {
-        id: "actions",
-        header: ({ column }) =>
-            createFormattedHeader("Hành động", column, { align: "center" }),
-
-        cell: ({ row }) => <ActionCell order={row.original} />,
-
-        size: 140,
     },
 ];

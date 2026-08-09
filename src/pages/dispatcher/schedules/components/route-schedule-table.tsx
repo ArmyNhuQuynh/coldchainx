@@ -10,28 +10,24 @@ type Props = {
   schedules: TRouteSchedule[];
   routes: TRoute[];
   isLoading?: boolean;
-  isDeleting?: boolean;
   pageIndex: number;
   pageSize: number;
   totalRecords: number;
   onPageChange: (pageIndex: number) => void;
   onPageSizeChange: (pageSize: number) => void;
   onEdit: (schedule: TRouteSchedule) => void;
-  onDelete: (schedule: TRouteSchedule) => void;
 };
 
 const RouteScheduleTable = ({
   schedules,
   routes,
   isLoading,
-  isDeleting,
   pageIndex,
   pageSize,
   totalRecords,
   onPageChange,
   onPageSizeChange,
   onEdit,
-  onDelete,
 }: Props) => {
   const routeLabels = new Map(
     routes.map((route) => [
@@ -49,7 +45,7 @@ const RouteScheduleTable = ({
     <DataTable
       data={rows}
       totalItems={totalRecords}
-      columns={getRouteScheduleColumns({ isDeleting, onEdit, onDelete })}
+      columns={getRouteScheduleColumns({ onEdit })}
       currentPage={pageIndex}
       pageSize={pageSize}
       isLoading={isLoading}

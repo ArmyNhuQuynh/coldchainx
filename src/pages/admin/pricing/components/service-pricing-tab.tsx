@@ -1,13 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { useServiceCatalog } from "@/hooks/use-service-catalog";
 import { handleApiError } from "@/lib/error";
 import {
@@ -33,14 +25,10 @@ const ServicePricingTab = () => {
     getServiceCatalogs,
     createServiceCatalog,
     updateServiceCatalog,
-    deleteServiceCatalog,
   } = useServiceCatalog();
   const servicesQuery = getServiceCatalogs();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingService, setEditingService] = useState<TServiceCatalog | null>(
-    null
-  );
-  const [deletingService, setDeletingService] = useState<TServiceCatalog | null>(
     null
   );
   const [formValues, setFormValues] = useState<ServiceCatalogFormState>(
@@ -129,18 +117,6 @@ const ServicePricingTab = () => {
     }
   };
 
-  const handleConfirmDelete = async () => {
-    if (!deletingService) return;
-
-    try {
-      await deleteServiceCatalog.mutateAsync(deletingService.serviceCatalogId);
-      toast.success("Xóa giá dịch vụ thành công");
-      setDeletingService(null);
-    } catch (error) {
-      handleApiError(error);
-    }
-  };
-
   return (
     <div className="space-y-4">
       <div className="grid gap-4 md:grid-cols-3">
@@ -168,9 +144,7 @@ const ServicePricingTab = () => {
           <ServiceCatalogTable
             services={services}
             isLoading={servicesQuery.isFetching}
-            isDeleting={deleteServiceCatalog.isPending}
             onEdit={openEditDialog}
-            onDelete={setDeletingService}
           />
         </CardContent>
       </Card>
@@ -186,38 +160,6 @@ const ServicePricingTab = () => {
         onCancel={resetDialog}
         onSubmit={handleSubmit}
       />
-
-      <Dialog
-        open={!!deletingService}
-        onOpenChange={(open) => !open && setDeletingService(null)}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Xóa giá dịch vụ?</DialogTitle>
-            <DialogDescription>
-              Dịch vụ {deletingService?.serviceName} sẽ bị xóa khỏi danh mục giá.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              disabled={deleteServiceCatalog.isPending}
-              onClick={() => setDeletingService(null)}
-            >
-              Hủy
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              disabled={deleteServiceCatalog.isPending}
-              onClick={handleConfirmDelete}
-            >
-              Xóa
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

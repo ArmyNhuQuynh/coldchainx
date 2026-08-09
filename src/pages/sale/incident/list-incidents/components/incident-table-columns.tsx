@@ -3,54 +3,14 @@ import {
   createFormattedHeader,
 } from "@/components/table/table-formatter";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import type { TDiscrepancyTableRow } from "@/schemas/discrepancy.schema";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Eye, MoreHorizontal } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 
 const statusMap: Record<string, { label: string; className: string }> = {
   DISCREPANCY_HOLD: {
     label: "Đang giữ",
     className: "text-rose-700 bg-rose-50 border border-rose-200",
   },
-};
-
-const ActionCell = ({ row }: { row: TDiscrepancyTableRow }) => {
-  const navigate = useNavigate();
-
-  return (
-    <div className="flex justify-center items-center gap-2">
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="outline"
-              className="h-9 px-3 rounded-xl"
-              onClick={(event) => {
-                event.stopPropagation();
-                navigate(row.lpnId);
-              }}
-            >
-              <Eye className="h-4 w-4 mr-2" />
-              Chi tiết
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Xem chi tiết sai lệch</TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-
-      <Button variant="ghost" size="icon" onClick={(event) => event.stopPropagation()}>
-        <MoreHorizontal className="h-5 w-5" />
-      </Button>
-    </div>
-  );
 };
 
 export const incidentColumns: ColumnDef<TDiscrepancyTableRow>[] = [
@@ -146,12 +106,5 @@ export const incidentColumns: ColumnDef<TDiscrepancyTableRow>[] = [
       );
     },
     size: 140,
-  },
-  {
-    id: "actions",
-    header: ({ column }) =>
-      createFormattedHeader("Hành động", column, { align: "center" }),
-    cell: ({ row }) => <ActionCell row={row.original} />,
-    size: 180,
   },
 ];

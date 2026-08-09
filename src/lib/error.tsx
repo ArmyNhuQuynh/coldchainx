@@ -6,22 +6,40 @@ type HandledApiError = {
   detail: string;
 };
 
+const INVALID_PASSWORD_HASH_MESSAGE =
+  "Không thể xác thực tài khoản. Vui lòng liên hệ quản trị viên để đặt lại mật khẩu.";
+
+const sanitizeApiMessage = (message: string) => {
+  const isInvalidPasswordHash =
+    /not a valid base-?64|string.*padding characters|non-base 64 character/i.test(
+      message,
+    );
+
+  if (isInvalidPasswordHash) {
+    return INVALID_PASSWORD_HASH_MESSAGE;
+  }
+
+  return message;
+};
+
 const getValidationMessage = (data: any) => {
   const directMessage = data?.message ?? data?.Message;
   if (typeof directMessage === "string" && directMessage.trim()) {
-    return directMessage;
+    return sanitizeApiMessage(directMessage);
   }
 
   const itemMessage = data?.data?.[0]?.errorMessage;
   if (typeof itemMessage === "string" && itemMessage.trim()) {
-    return itemMessage;
+    return sanitizeApiMessage(itemMessage);
   }
 
   const validationMessages = Object.values(data?.errors ?? {})
     .flat()
     .filter((value): value is string => typeof value === "string");
 
-  return validationMessages[0] || null;
+  return validationMessages[0]
+    ? sanitizeApiMessage(validationMessages[0])
+    : null;
 };
 
 export const handleApiError = (error: any): HandledApiError => {
@@ -47,7 +65,12 @@ export const handleApiError = (error: any): HandledApiError => {
         getValidationMessage(data) || "Một lỗi không xác định đã xảy ra.";
       handledError = {
         status,
-        message: status === 400 ? "Dữ liệu không hợp lệ." : apiMessage,
+        message:
+          apiMessage === INVALID_PASSWORD_HASH_MESSAGE
+            ? "Không thể đăng nhập."
+            : status === 400
+              ? "Dữ liệu không hợp lệ."
+              : apiMessage,
         detail: apiMessage,
       };
     }
@@ -58,7 +81,9 @@ export const handleApiError = (error: any): HandledApiError => {
       detail: "Vui lòng kiểm tra kết nối và thử lại.",
     };
   } else {
-    const message = error?.message || "Một lỗi không xác định đã xảy ra.";
+    const message = sanitizeApiMessage(
+      error?.message || "Một lỗi không xác định đã xảy ra.",
+    );
     handledError = {
       status: 0,
       message: "Không thể thực hiện thao tác.",

@@ -1,6 +1,8 @@
 import { DataTable } from "@/components/table/data-table";
 import type { TIotDevice } from "@/schemas/iot-device.schema";
 import { columns } from "./iot-device-table/columns";
+import { PATH_ADMIN_DASHBOARD } from "@/routes/path";
+import { useNavigate } from "react-router-dom";
 
 type Props = {
   devices: TIotDevice[];
@@ -8,6 +10,7 @@ type Props = {
 };
 
 const IotDeviceTable = ({ devices, isLoading = false }: Props) => {
+  const navigate = useNavigate();
   const pageSize = Math.max(devices.length, 1);
 
   return (
@@ -21,6 +24,9 @@ const IotDeviceTable = ({ devices, isLoading = false }: Props) => {
       isPagingProp={false}
       onPageChange={() => {}}
       onPageSizeChange={() => {}}
+      onRowClick={(device) =>
+        navigate(PATH_ADMIN_DASHBOARD.iotDevice.detail(device.deviceId))
+      }
       onSearchChange={() => {}}
       searchValues={[]}
       onSortChange={() => {}}

@@ -1,13 +1,10 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useRoute } from "@/hooks/use-route";
-import { handleApiError } from "@/lib/error";
 import { PATH_ADMIN_DASHBOARD } from "@/routes/path";
 import type { TRoute } from "@/schemas/route.schema";
 import { getRouteStatusLabel } from "@/types/enums/route-status.enum";
-import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, Pencil } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 
 type Props = {
   route: TRoute;
@@ -15,21 +12,7 @@ type Props = {
 
 const RouteDetailHeader = ({ route }: Props) => {
   const navigate = useNavigate();
-  const { deleteRoute } = useRoute();
   const status = getRouteStatusLabel(route.status);
-
-  const handleDelete = async () => {
-    const confirmed = window.confirm(`Xóa tuyến ${route.routeCode}?`);
-    if (!confirmed) return;
-
-    try {
-      await deleteRoute.mutateAsync(route.routeId);
-      toast.success("Xóa tuyến thành công");
-      navigate(PATH_ADMIN_DASHBOARD.route.root);
-    } catch (error) {
-      handleApiError(error);
-    }
-  };
 
   return (
     <div className="flex flex-wrap items-start justify-between gap-4">
@@ -56,15 +39,6 @@ const RouteDetailHeader = ({ route }: Props) => {
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Quay lại
-        </Button>
-        <Button
-          variant="outline"
-          className="text-destructive hover:text-destructive"
-          disabled={deleteRoute.isPending}
-          onClick={handleDelete}
-        >
-          <Trash2 className="mr-2 h-4 w-4" />
-          Xóa
         </Button>
         <Button
           onClick={() =>

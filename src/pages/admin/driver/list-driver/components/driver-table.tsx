@@ -7,6 +7,7 @@ import type { TDriver } from "@/schemas/driver.schema";
 import { Search, SlidersHorizontal } from "lucide-react";
 import { useState } from "react";
 import { columns } from "./driver-table/columns";
+import { useNavigate } from "react-router-dom";
 
 const getSearchableText = (driver: TDriver) => {
   const licenses = driver.licenses;
@@ -29,6 +30,7 @@ const getSearchableText = (driver: TDriver) => {
 };
 
 const DriverTable = () => {
+  const navigate = useNavigate();
   const { getDrivers } = useDriver();
   const { data, isLoading } = getDrivers();
   const [search, setSearch] = useState("");
@@ -67,6 +69,7 @@ const DriverTable = () => {
           isLoading={isLoading}
           onPageChange={() => {}}
           onPageSizeChange={() => {}}
+          onRowClick={(driver) => navigate(driver.driverId)}
           onSearchChange={() => {}}
           searchValues={[]}
           onSortChange={() => {}}

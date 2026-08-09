@@ -2,12 +2,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useVehicle } from "@/hooks/use-vehicle";
-import { handleApiError } from "@/lib/error";
 import type { TVehicleDocument } from "@/schemas/vehicle.schema";
 import { getVehicleDocumentTypeLabel } from "@/types/enums/vehicle-document-type.enum";
 import { Calendar, FileText, Plus } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
 import VehicleDocumentDialog from "./vehicle-document-dialog";
 
 type Props = {
@@ -25,7 +23,7 @@ const formatDate = (value: string | null) => {
 };
 
 const VehicleDocumentCard = ({ vehicleId, documents }: Props) => {
-  const { getVehicleDocuments, deleteVehicleDocument } = useVehicle();
+  const { getVehicleDocuments } = useVehicle();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingDocument, setEditingDocument] =
     useState<TVehicleDocument | null>(null);
@@ -40,20 +38,6 @@ const VehicleDocumentCard = ({ vehicleId, documents }: Props) => {
   const openEditDialog = (document: TVehicleDocument) => {
     setEditingDocument(document);
     setDialogOpen(true);
-  };
-
-  const handleDelete = async (document: TVehicleDocument) => {
-    if (!window.confirm("Xóa giấy tờ xe này?")) return;
-
-    try {
-      await deleteVehicleDocument.mutateAsync({
-        docId: document.docId,
-        vehicleId,
-      });
-      toast.success("Đã xóa giấy tờ xe");
-    } catch (error) {
-      handleApiError(error);
-    }
   };
 
   return (
@@ -110,16 +94,6 @@ const VehicleDocumentCard = ({ vehicleId, documents }: Props) => {
                     onClick={() => openEditDialog(document)}
                   >
                     Sửa
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="rounded-lg text-destructive hover:text-destructive"
-                    disabled={deleteVehicleDocument.isPending}
-                    onClick={() => handleDelete(document)}
-                  >
-                    Xóa
                   </Button>
                 </div>
               </div>

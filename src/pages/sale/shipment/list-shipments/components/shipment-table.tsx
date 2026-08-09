@@ -5,10 +5,12 @@ import { columns } from "./shipment-table/colum";
 import { useOrder } from "@/hooks/use-order";
 import { useRoute } from "@/hooks/use-route";
 import { ORDER_STATUS_FILTER_OPTIONS } from "@/types/enums/order-status.enum";
+import { useNavigate } from "react-router-dom";
 
 type Props = {};
 
 const ShipmentTable = (_: Props) => {
+  const navigate = useNavigate();
   const { getOrders } = useOrder();
   const { getRoutes } = useRoute();
 
@@ -52,6 +54,7 @@ const ShipmentTable = (_: Props) => {
         isLoading={isLoading || isFetching}
         onPageChange={setPage}
         onPageSizeChange={setPageSize}
+        onRowClick={(order) => navigate(order.orderId)}
         onSearchChange={setFilter}
         searchValues={[
           {

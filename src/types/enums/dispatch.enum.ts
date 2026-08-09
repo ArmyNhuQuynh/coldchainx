@@ -11,6 +11,8 @@ export const DISPATCH_TEMPERATURE_GROUP = {
 export const DISPATCH_TRIP_STATUS = {
   PLANNED: "PLANNED",
   PICKING: "PICKING",
+  LOADING: "LOADING",
+  LOADED: "LOADED",
   LOADING_COMPLETED: "LOADING_COMPLETED",
   SEALED: "SEALED",
   DISPATCHED: "DISPATCHED",
@@ -21,5 +23,5 @@ export type TDispatchTemperatureGroup =
   (typeof DISPATCH_TEMPERATURE_GROUP)[keyof typeof DISPATCH_TEMPERATURE_GROUP];
 
 export type TDispatchTripStatus =
-  (typeof DISPATCH_TRIP_STATUS)[keyof typeof DISPATCH_TRIP_STATUS] | string;
-
+  | (typeof DISPATCH_TRIP_STATUS)[keyof typeof DISPATCH_TRIP_STATUS]
+  | string;

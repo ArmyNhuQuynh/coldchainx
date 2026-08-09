@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import type { TDispatchTrip } from "@/schemas/dispatch.schema";
-import { Clock, Eye, PackageCheck, Play, Truck, User } from "lucide-react";
+import { Clock, PackageCheck, Play, Truck, User } from "lucide-react";
 import {
   canStartPickingTrip,
   formatShortTripId,
@@ -154,19 +154,6 @@ const TripTable = ({
                       </TableCell>
                       <TableCell className="pr-5">
                         <div className="flex justify-end gap-2">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            className="gap-1.5"
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              onSelect(trip);
-                            }}
-                          >
-                            <Eye className="h-3.5 w-3.5" />
-                            Chi tiết
-                          </Button>
                           {canStartPickingTrip(trip) && (
                             <Button
                               type="button"

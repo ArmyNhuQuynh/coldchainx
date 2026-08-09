@@ -16,13 +16,17 @@ const TripSummaryCards = ({ trips }: Props) => {
     },
     {
       title: "Đang bốc hàng",
-      value: trips.filter((trip) => trip.status === "PICKING").length,
+      value: trips.filter((trip) =>
+        ["PICKING", "LOADING"].includes(trip.status),
+      ).length,
       icon: Boxes,
       color: "text-amber-600",
     },
     {
-      title: "Chờ kẹp chì",
-      value: trips.filter((trip) => trip.status === "LOADING_COMPLETED").length,
+      title: "Đã bốc xong",
+      value: trips.filter((trip) =>
+        ["LOADED", "LOADING_COMPLETED"].includes(trip.status),
+      ).length,
       icon: ClipboardCheck,
       color: "text-emerald-600",
     },

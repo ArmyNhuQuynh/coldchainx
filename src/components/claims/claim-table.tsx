@@ -1,5 +1,4 @@
 import ClaimStatusBadge from "@/components/claims/claim-status-badge";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -10,7 +9,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { TClaim } from "@/schemas/claim.schema";
-import { Eye } from "lucide-react";
 
 type Props = {
   claims: TClaim[];
@@ -36,21 +34,20 @@ const ClaimTable = ({ claims, isLoading, onOpen }: Props) => (
           <TableHead>Loại khiếu nại</TableHead>
           <TableHead>Ngày tạo</TableHead>
           <TableHead>Trạng thái</TableHead>
-          <TableHead className="pr-5 text-right">Thao tác</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {isLoading &&
           Array.from({ length: 6 }).map((_, index) => (
             <TableRow key={index}>
-              <TableCell colSpan={6} className="px-5 py-3">
+              <TableCell colSpan={5} className="px-5 py-3">
                 <Skeleton className="h-12 w-full" />
               </TableCell>
             </TableRow>
           ))}
         {!isLoading && claims.length === 0 && (
           <TableRow>
-            <TableCell colSpan={6} className="h-48 text-center text-muted-foreground">
+            <TableCell colSpan={5} className="h-48 text-center text-muted-foreground">
               Không có hồ sơ phù hợp.
             </TableCell>
           </TableRow>
@@ -73,20 +70,6 @@ const ClaimTable = ({ claims, isLoading, onOpen }: Props) => (
               <TableCell>{formatDateTime(claim.createdAt)}</TableCell>
               <TableCell>
                 <ClaimStatusBadge status={claim.status} />
-              </TableCell>
-              <TableCell className="pr-5 text-right">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    onOpen(claim);
-                  }}
-                >
-                  <Eye className="mr-2 h-4 w-4" />
-                  Chi tiết
-                </Button>
               </TableCell>
             </TableRow>
           ))}

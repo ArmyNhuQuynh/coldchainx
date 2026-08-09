@@ -10,7 +10,7 @@ import type { TIncident } from "@/schemas/incident.schema";
 import { INCIDENT_EXPENSE_STATUS } from "@/types/enums/incident-expense-status.enum";
 import { INCIDENT_STATUS } from "@/types/enums/incident-status.enum";
 import { getIncidentTypeLabel } from "@/types/enums/incident-type.enum";
-import { CheckCircle2, Eye, ReceiptText, WalletCards } from "lucide-react";
+import { CheckCircle2, ReceiptText, WalletCards } from "lucide-react";
 
 type Props = {
   incidents: TIncident[];
@@ -105,13 +105,6 @@ const ExpenseTable = ({
                   )}
                   {!readyToResolve && incident.expenseStatus === INCIDENT_EXPENSE_STATUS.APPROVED && (
                     <Button type="button" size="sm" onClick={(event) => { event.stopPropagation(); onReimburse(incident); }}>Hoàn tiền</Button>
-                  )}
-                  {!readyToResolve &&
-                    incident.expenseStatus !== INCIDENT_EXPENSE_STATUS.PENDING_APPROVAL &&
-                    incident.expenseStatus !== INCIDENT_EXPENSE_STATUS.APPROVED && (
-                    <Button type="button" variant="outline" size="sm" className="gap-1.5" onClick={(event) => { event.stopPropagation(); onView(incident); }}>
-                      <Eye className="h-3.5 w-3.5" /> Chi tiết
-                    </Button>
                   )}
                 </TableCell>
               </TableRow>

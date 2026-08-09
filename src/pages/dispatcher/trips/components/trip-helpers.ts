@@ -32,7 +32,10 @@ export const getTripProgress = (trip: TDispatchTrip) => {
     };
   }
 
-  if (trip.status === DISPATCH_TRIP_STATUS.PICKING) {
+  if (
+    trip.status === DISPATCH_TRIP_STATUS.PICKING ||
+    trip.status === DISPATCH_TRIP_STATUS.LOADING
+  ) {
     return {
       done: trip.loadingCompletedLpns ?? 0,
       total: trip.totalLpns,
@@ -40,7 +43,10 @@ export const getTripProgress = (trip: TDispatchTrip) => {
     };
   }
 
-  if (trip.status === DISPATCH_TRIP_STATUS.LOADING_COMPLETED) {
+  if (
+    trip.status === DISPATCH_TRIP_STATUS.LOADED ||
+    trip.status === DISPATCH_TRIP_STATUS.LOADING_COMPLETED
+  ) {
     return {
       done: trip.releasedLpns ?? trip.totalLpns,
       total: trip.totalLpns,
@@ -60,9 +66,11 @@ export const getTripStatusLabel = (status?: TDispatchTripStatus | null) => {
     case DISPATCH_TRIP_STATUS.PLANNED:
       return "Sẵn sàng bốc hàng";
     case DISPATCH_TRIP_STATUS.PICKING:
+    case DISPATCH_TRIP_STATUS.LOADING:
       return "Đang bốc hàng";
+    case DISPATCH_TRIP_STATUS.LOADED:
     case DISPATCH_TRIP_STATUS.LOADING_COMPLETED:
-      return "Chờ kẹp chì";
+      return "Đã bốc xong";
     case DISPATCH_TRIP_STATUS.SEALED:
       return "Đã kẹp chì";
     case DISPATCH_TRIP_STATUS.DISPATCHED:

@@ -22,8 +22,9 @@ import type { PaginationResponse } from "@/types/response.type";
 const CREATED_TRIP_STATUSES = new Set([
   "PLANNED",
   "PICKING",
+  "LOADING",
+  "LOADED",
   "LOADING_COMPLETED",
-  "SEALED",
 ]);
 
 const getCreatedTripPage = async (pageNumber: number) => {
@@ -31,7 +32,7 @@ const getCreatedTripPage = async (pageNumber: number) => {
     `${API_SUFFIX.DISPATCH_API}/trips`,
     {
       params: { pageNumber, pageSize: 100 },
-    }
+    },
   );
   const page = unwrapData<Record<string, any>>(response.data);
 
@@ -45,8 +46,8 @@ const getCreatedTrips = async () => {
   const firstPage = await getCreatedTripPage(1);
   const remainingPages = await Promise.all(
     Array.from({ length: Math.max(firstPage.totalPages - 1, 0) }, (_, index) =>
-      getCreatedTripPage(index + 2)
-    )
+      getCreatedTripPage(index + 2),
+    ),
   );
   const trips = [firstPage, ...remainingPages]
     .flatMap((page) => page.data)
@@ -73,20 +74,20 @@ const startPicking = async (tripId: string) => {
 };
 
 const getTripDocuments = async (
-  tripId: string
+  tripId: string,
 ): Promise<TDispatchTripDocuments> => {
   const [lifoResult, waybillResult] = await Promise.allSettled([
     apiRequest.baseApi.get<Record<string, any>>(
-      `${API_SUFFIX.DISPATCH_API}/trip/${tripId}/lifo-url`
+      `${API_SUFFIX.DISPATCH_API}/trip/${tripId}/lifo-url`,
     ),
     apiRequest.baseApi.get<Record<string, any>>(
-      `${API_SUFFIX.DISPATCH_API}/trip/${tripId}/waybill-url`
+      `${API_SUFFIX.DISPATCH_API}/trip/${tripId}/waybill-url`,
     ),
   ]);
 
   return normalizeTripDocuments(
     lifoResult.status === "fulfilled" ? lifoResult.value.data : undefined,
-    waybillResult.status === "fulfilled" ? waybillResult.value.data : undefined
+    waybillResult.status === "fulfilled" ? waybillResult.value.data : undefined,
   );
 };
 
@@ -103,17 +104,15 @@ const getTripDetails = async (tripId: string) => {
     TDispatchLookupEnvelope<TDispatchTripDetails> | TDispatchTripDetails
   >(`${API_SUFFIX.DISPATCH_API}/trips/${tripId}`);
 
-  return normalizeTripDetails(
-    unwrapData<TDispatchTripDetails>(response.data)
-  );
+  return normalizeTripDetails(unwrapData<TDispatchTripDetails>(response.data));
 };
 
 const getTrips = async (
-  params: TDispatchTripListQuery
+  params: TDispatchTripListQuery,
 ): Promise<PaginationResponse<TDispatchTripDetails>> => {
   const response = await apiRequest.baseApi.get<Record<string, any>>(
     `${API_SUFFIX.DISPATCH_API}/trips`,
-    { params }
+    { params },
   );
   const page = unwrapData<Record<string, any>>(response.data);
   const rawTrips = read<unknown[]>(page, "data", "Data") ?? [];
@@ -124,7 +123,7 @@ const getTrips = async (
     totalRecords: Number(read(page, "totalRecords", "TotalRecords") ?? 0),
     totalPages: Number(read(page, "totalPages", "TotalPages") ?? 0),
     data: rawTrips.map((trip) =>
-      normalizeTripDetails(trip as Record<string, any>)
+      normalizeTripDetails(trip as Record<string, any>),
     ),
   };
 };

@@ -1,5 +1,4 @@
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,8 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { TIncident } from "@/schemas/incident.schema";
-import { INCIDENT_STATUS } from "@/types/enums/incident-status.enum";
-import { AlertTriangle, Eye, MapPin, Truck } from "lucide-react";
+import { AlertTriangle, Truck } from "lucide-react";
 import {
   IncidentExpenseBadge,
   IncidentSeverityBadge,
@@ -58,13 +56,12 @@ const IncidentTable = ({ incidents, isLoading, onSelect }: Props) => (
               <TableHead>Chi phí</TableHead>
               <TableHead>Trạng thái</TableHead>
               <TableHead>Thời điểm báo</TableHead>
-              <TableHead className="pr-5 text-right">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading && Array.from({ length: 8 }).map((_, index) => (
               <TableRow key={index}>
-                <TableCell colSpan={8} className="px-5 py-3">
+                <TableCell colSpan={7} className="px-5 py-3">
                   <Skeleton className="h-12 w-full" />
                 </TableCell>
               </TableRow>
@@ -72,7 +69,7 @@ const IncidentTable = ({ incidents, isLoading, onSelect }: Props) => (
 
             {!isLoading && incidents.length === 0 && (
               <TableRow>
-                <TableCell colSpan={8} className="h-56 text-center">
+                <TableCell colSpan={7} className="h-56 text-center">
                   <AlertTriangle className="mx-auto h-8 w-8 text-muted-foreground" />
                   <p className="mt-3 font-medium">Không có sự cố phù hợp</p>
                   <p className="mt-1 text-sm text-muted-foreground">
@@ -117,25 +114,6 @@ const IncidentTable = ({ incidents, isLoading, onSelect }: Props) => (
                   <p className="mt-1 max-w-40 truncate text-xs text-muted-foreground">
                     {incident.reportedByUsername}
                   </p>
-                </TableCell>
-                <TableCell className="pr-5 text-right">
-                  <Button
-                    type="button"
-                    variant={incident.status === INCIDENT_STATUS.REPORTED ? "default" : "outline"}
-                    size="sm"
-                    className="gap-1.5"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      onSelect(incident);
-                    }}
-                  >
-                    {incident.currentLatitude != null ? (
-                      <MapPin className="h-3.5 w-3.5" />
-                    ) : (
-                      <Eye className="h-3.5 w-3.5" />
-                    )}
-                    {incident.status === INCIDENT_STATUS.RESOLVED ? "Chi tiết" : "Xử lý"}
-                  </Button>
                 </TableCell>
               </TableRow>
             ))}

@@ -1,5 +1,4 @@
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -8,7 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ArrowRight, ClipboardCheck } from "lucide-react";
+import { ClipboardCheck } from "lucide-react";
 
 export type DashboardWorkRow = {
   id: string;
@@ -51,12 +50,15 @@ const DashboardWorkList = ({
             <TableHead>Thông tin</TableHead>
             <TableHead>Thời hạn</TableHead>
             <TableHead>Trạng thái</TableHead>
-            <TableHead className="text-right">Thao tác</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {rows.map((row) => (
-            <TableRow key={row.id}>
+            <TableRow
+              key={row.id}
+              className={row.onOpen ? "cursor-pointer" : undefined}
+              onClick={row.onOpen}
+            >
               <TableCell className="font-medium">{row.title}</TableCell>
               <TableCell>{row.referenceCode || "-"}</TableCell>
               <TableCell className="max-w-sm">
@@ -82,16 +84,6 @@ const DashboardWorkList = ({
                 >
                   {row.isOverdue ? "Quá hạn" : "Trong hạn"}
                 </Badge>
-              </TableCell>
-              <TableCell className="text-right">
-                {row.onOpen ? (
-                  <Button type="button" variant="outline" size="sm" onClick={row.onOpen}>
-                    Xem
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                ) : (
-                  <span className="text-xs text-muted-foreground">Chỉ xem</span>
-                )}
               </TableCell>
             </TableRow>
           ))}

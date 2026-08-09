@@ -3,18 +3,9 @@ import {
   createFormattedHeader,
 } from "@/components/table/table-formatter";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import type { TDriver, TDriverLicense } from "@/schemas/driver.schema";
 import { getDriverStatusLabel } from "@/types/enums/driver-status.enum";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Eye } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 
 const hasValue = (value: unknown) =>
   value !== null && value !== undefined && String(value).trim() !== "";
@@ -47,30 +38,6 @@ const getDriverStatusBadge = (status: string | number | null | undefined) => {
     <Badge className={statusLabel.className}>
       {status == null || status === "" ? "—" : statusLabel.label}
     </Badge>
-  );
-};
-
-const ActionCell = ({ driver }: { driver: TDriver }) => {
-  const navigate = useNavigate();
-
-  return (
-    <div className="flex justify-center items-center gap-2">
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="outline"
-              className="h-9 px-3 rounded-xl"
-              onClick={() => navigate(driver.driverId)}
-            >
-              <Eye className="h-4 w-4 mr-2" />
-              Chi tiết
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Xem chi tiết tài xế</TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    </div>
   );
 };
 
@@ -168,13 +135,6 @@ export const columns: ColumnDef<TDriver>[] = [
         align: "center",
       });
     },
-    size: 160,
-  },
-  {
-    id: "actions",
-    header: ({ column }) =>
-      createFormattedHeader("Hành động", column, { align: "center" }),
-    cell: ({ row }) => <ActionCell driver={row.original} />,
     size: 160,
   },
 ];

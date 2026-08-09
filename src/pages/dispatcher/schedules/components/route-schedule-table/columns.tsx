@@ -19,9 +19,7 @@ export type TRouteScheduleTableRow = TRouteSchedule & {
 };
 
 type ColumnHandlers = {
-  isDeleting?: boolean;
   onEdit: (schedule: TRouteSchedule) => void;
-  onDelete: (schedule: TRouteSchedule) => void;
 };
 
 const formatCreatedAt = (value?: string | null) => {
@@ -45,18 +43,11 @@ const StatusBadge = ({ status }: { status?: string | null }) => {
 
 const ActionCell = ({
   schedule,
-  isDeleting,
   onEdit,
-  onDelete,
 }: ColumnHandlers & { schedule: TRouteSchedule }) => {
   const handleEdit = (event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
     onEdit(schedule);
-  };
-
-  const handleDelete = (event: MouseEvent<HTMLButtonElement>) => {
-    event.stopPropagation();
-    onDelete(schedule);
   };
 
   return (
@@ -69,23 +60,12 @@ const ActionCell = ({
       >
         Sửa
       </Button>
-      <Button
-        type="button"
-        variant="ghost"
-        className="h-9 rounded-xl px-4 text-destructive hover:text-destructive"
-        disabled={isDeleting}
-        onClick={handleDelete}
-      >
-        Xóa
-      </Button>
     </div>
   );
 };
 
 export const getRouteScheduleColumns = ({
-  isDeleting,
   onEdit,
-  onDelete,
 }: ColumnHandlers): ColumnDef<TRouteScheduleTableRow>[] => [
   {
     accessorKey: "scheduleName",
@@ -189,9 +169,7 @@ export const getRouteScheduleColumns = ({
     cell: ({ row }) => (
       <ActionCell
         schedule={row.original}
-        isDeleting={isDeleting}
         onEdit={onEdit}
-        onDelete={onDelete}
       />
     ),
     size: 190,

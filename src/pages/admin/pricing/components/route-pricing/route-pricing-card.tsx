@@ -1,14 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { useWeightTier } from "@/hooks/use-weight-tier";
 import { handleApiError } from "@/lib/error";
 import {
@@ -43,11 +35,9 @@ const RoutePricingCard = ({ routeId, routeLabel, readOnly = false }: Props) => {
     getWeightTiersByRoute,
     createWeightTier,
     updateWeightTier,
-    deleteWeightTier,
   } = useWeightTier();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingTier, setEditingTier] = useState<TWeightTier | null>(null);
-  const [deletingTier, setDeletingTier] = useState<TWeightTier | null>(null);
   const [formValues, setFormValues] = useState<WeightTierFormState>(
     EMPTY_WEIGHT_TIER_FORM
   );
@@ -143,24 +133,6 @@ const RoutePricingCard = ({ routeId, routeLabel, readOnly = false }: Props) => {
     }
   };
 
-  const handleDelete = async (tier: TWeightTier) => {
-    if (readOnly) return;
-
-    setDeletingTier(tier);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!deletingTier) return;
-
-    try {
-      await deleteWeightTier.mutateAsync({ id: deletingTier.id, routeId });
-      toast.success("Xóa mức giá thành công");
-      setDeletingTier(null);
-    } catch (error) {
-      handleApiError(error);
-    }
-  };
-
   return (
     <Card className="rounded-lg">
       <CardHeader className="border-b pb-4">
@@ -199,59 +171,23 @@ const RoutePricingCard = ({ routeId, routeLabel, readOnly = false }: Props) => {
         <RoutePricingTable
           tiers={tiers}
           isLoading={tiersQuery.isFetching}
-          isDeleting={deleteWeightTier.isPending}
           readOnly={readOnly}
           onEdit={openEditDialog}
-          onDelete={handleDelete}
         />
       </CardContent>
 
       {!readOnly && (
-        <>
-          <RoutePricingDialog
-            open={dialogOpen}
-            editingTier={editingTier}
-            formValues={formValues}
-            formErrors={formErrors}
-            isSubmitting={isSubmitting}
-            onOpenChange={handleDialogOpenChange}
-            onFieldChange={handleFieldChange}
-            onCancel={resetDialog}
-            onSubmit={handleSubmit}
-          />
-
-          <Dialog
-            open={!!deletingTier}
-            onOpenChange={(open) => !open && setDeletingTier(null)}
-          >
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Xóa mức giá?</DialogTitle>
-                <DialogDescription>
-                  Mức giá {deletingTier ? formatWeightTierRange(deletingTier) : ""} sẽ bị xóa khỏi tuyến này.
-                </DialogDescription>
-              </DialogHeader>
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={deleteWeightTier.isPending}
-                  onClick={() => setDeletingTier(null)}
-                >
-                  Hủy
-                </Button>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  disabled={deleteWeightTier.isPending}
-                  onClick={handleConfirmDelete}
-                >
-                  Xóa
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </>
+        <RoutePricingDialog
+          open={dialogOpen}
+          editingTier={editingTier}
+          formValues={formValues}
+          formErrors={formErrors}
+          isSubmitting={isSubmitting}
+          onOpenChange={handleDialogOpenChange}
+          onFieldChange={handleFieldChange}
+          onCancel={resetDialog}
+          onSubmit={handleSubmit}
+        />
       )}
     </Card>
   );

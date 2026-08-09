@@ -8,7 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { TWeightTier } from "@/schemas/weight-tier.schema";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil } from "lucide-react";
 import {
   formatCurrency,
   formatWeightTierRange,
@@ -17,19 +17,15 @@ import {
 type Props = {
   tiers: TWeightTier[];
   isLoading: boolean;
-  isDeleting: boolean;
   readOnly?: boolean;
   onEdit?: (tier: TWeightTier) => void;
-  onDelete?: (tier: TWeightTier) => void;
 };
 
 const RoutePricingTable = ({
   tiers,
   isLoading,
-  isDeleting,
   readOnly,
   onEdit,
-  onDelete,
 }: Props) => {
   const colSpan = readOnly ? 2 : 3;
 
@@ -87,16 +83,6 @@ const RoutePricingTable = ({
                         onClick={() => onEdit?.(tier)}
                       >
                         <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="text-destructive hover:text-destructive"
-                        disabled={isDeleting}
-                        onClick={() => onDelete?.(tier)}
-                      >
-                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </TableCell>
