@@ -67,6 +67,10 @@ export type TRescueCandidate = {
   vehicleId: string;
   truckPlate: string;
   vehicleType: string;
+  warehouseId?: string | null;
+  warehouseName?: string | null;
+  warehouseAddress?: string | null;
+  distanceKm?: number | null;
   maxWeight: number;
   maxCbm: number;
   minTemp: number;

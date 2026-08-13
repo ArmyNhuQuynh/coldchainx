@@ -3,7 +3,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import type { TRescueCandidate } from "@/schemas/incident.schema";
-import { Snowflake, Truck } from "lucide-react";
+import { MapPin, Snowflake, Truck } from "lucide-react";
 import { getIncidentErrorMessage } from "@/components/incidents/incident-formatters";
 
 type Props = {
@@ -86,6 +86,15 @@ const RescueCandidateList = ({
               <p className="mt-2 text-sm text-muted-foreground">
                 {vehicle.vehicleType} · {NUMBER_FORMATTER.format(vehicle.maxWeight)} kg ·{" "}
                 {NUMBER_FORMATTER.format(vehicle.maxCbm)} m³
+              </p>
+              <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+                <MapPin className="h-3.5 w-3.5 shrink-0" />
+                <span className="min-w-0 truncate">
+                  {vehicle.warehouseName ?? "Chưa xác định kho"}
+                  {vehicle.distanceKm != null
+                    ? ` · cách hiện trường ${NUMBER_FORMATTER.format(vehicle.distanceKm)} km`
+                    : " · chưa xác định khoảng cách"}
+                </span>
               </p>
               <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Snowflake className="h-3.5 w-3.5" />

@@ -10,6 +10,8 @@ import type { RootState } from "@/redux/store";
 import { useSelector } from "react-redux";
 import {
   AlertTriangle,
+  Banknote,
+  BarChart3,
   BadgeDollarSign,
   CalendarClock,
   ClipboardList,
@@ -17,6 +19,7 @@ import {
   IdCard,
   MapPinned,
   MessageSquare,
+  FileSpreadsheet,
   ReceiptText,
   RadioTower,
   RouteIcon,
@@ -185,6 +188,31 @@ const accountantRoutes = {
         icon: HomeIcon,
       },
       {
+        title: "Hóa đơn",
+        url: PATH_ACCOUNTANT_DASHBOARD.invoice.root,
+        icon: ReceiptText,
+      },
+      {
+        title: "Giao dịch",
+        url: PATH_ACCOUNTANT_DASHBOARD.transaction.root,
+        icon: WalletCards,
+      },
+      {
+        title: "Báo cáo tài chính",
+        url: PATH_ACCOUNTANT_DASHBOARD.financialReport.root,
+        icon: BarChart3,
+      },
+      {
+        title: "Xuất bảng kê",
+        url: PATH_ACCOUNTANT_DASHBOARD.financialExport.root,
+        icon: FileSpreadsheet,
+      },
+    ],
+  },
+  expenses: {
+    mainTitle: "Chi phí",
+    items: [
+      {
         title: "Hoàn chi tài xế",
         url: PATH_ACCOUNTANT_DASHBOARD.driverReimbursement.root,
         icon: WalletCards,
@@ -261,6 +289,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             return (
               <SidebarContent>
                 <NavMain content={accountantRoutes.dashboard} />
+                <NavMain content={accountantRoutes.expenses} />
               </SidebarContent>
             );
 

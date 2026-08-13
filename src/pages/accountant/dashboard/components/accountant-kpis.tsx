@@ -19,7 +19,11 @@ type Props = {
   onOpenReimbursements: () => void;
 };
 
-const AccountantKpis = ({ kpis, onOpenClaims, onOpenReimbursements }: Props) => (
+const AccountantKpis = ({
+  kpis,
+  onOpenClaims,
+  onOpenReimbursements,
+}: Props) => (
   <DashboardKpiGrid
     columns="five"
     items={[

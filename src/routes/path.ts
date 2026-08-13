@@ -131,6 +131,19 @@ export const PATH_DISPATCHER_DASHBOARD = {
 
 export const PATH_ACCOUNTANT_DASHBOARD = {
   root: ROOTS_ACCOUNTANT_DASHBOARD,
+  invoice: {
+    root: path(ROOTS_ACCOUNTANT_DASHBOARD, "/invoices"),
+    detail: (id: string) => path(ROOTS_ACCOUNTANT_DASHBOARD, `/invoices/${id}`),
+  },
+  transaction: {
+    root: path(ROOTS_ACCOUNTANT_DASHBOARD, "/transactions"),
+  },
+  financialReport: {
+    root: path(ROOTS_ACCOUNTANT_DASHBOARD, "/financial-reports"),
+  },
+  financialExport: {
+    root: path(ROOTS_ACCOUNTANT_DASHBOARD, "/financial-exports"),
+  },
   driverReimbursement: {
     root: path(ROOTS_ACCOUNTANT_DASHBOARD, "/driver-reimbursements"),
   },

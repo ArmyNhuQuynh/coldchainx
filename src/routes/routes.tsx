@@ -143,6 +143,21 @@ const AccountantClaimPage = Loadable(
 const AccountantClaimDetailPage = Loadable(
   lazy(() => import("@/pages/accountant/claims/detail/claim-detail-page"))
 );
+const InvoiceListPage = Loadable(
+  lazy(() => import("@/pages/accountant/finance/invoices/invoice-list-page"))
+);
+const InvoiceDetailPage = Loadable(
+  lazy(() => import("@/pages/accountant/finance/invoices/invoice-detail-page"))
+);
+const PaymentTransactionPage = Loadable(
+  lazy(() => import("@/pages/accountant/finance/transactions/payment-transaction-page"))
+);
+const FinancialReportPage = Loadable(
+  lazy(() => import("@/pages/accountant/finance/reports/financial-report-page"))
+);
+const FinancialExportPage = Loadable(
+  lazy(() => import("@/pages/accountant/finance/exports/financial-export-page"))
+);
 const DispatchPage = Loadable(
   lazy(() => import("@/pages/dispatcher/dispatch"))
 );
@@ -423,6 +438,30 @@ export const AppRoutes = () =>
         {
           path: "driver-reimbursements",
           element: <ReimbursementPage />,
+        },
+        {
+          path: "invoices",
+          element: <InvoiceListPage />,
+        },
+        {
+          path: "invoices/by-order",
+          element: <Navigate to={PATH_ACCOUNTANT_DASHBOARD.invoice.root} replace />,
+        },
+        {
+          path: "invoices/:invoiceId",
+          element: <InvoiceDetailPage />,
+        },
+        {
+          path: "transactions",
+          element: <PaymentTransactionPage />,
+        },
+        {
+          path: "financial-reports",
+          element: <FinancialReportPage />,
+        },
+        {
+          path: "financial-exports",
+          element: <FinancialExportPage />,
         },
         {
           path: "claims",

@@ -75,7 +75,11 @@ const AccountantDashboardPage = () => {
         <DashboardErrorState message={getDashboardErrorMessage(query.error)} onRetry={() => query.refetch()} />
       ) : (
         <>
-          <AccountantKpis kpis={data.kpis} onOpenClaims={() => navigate(PATH_ACCOUNTANT_DASHBOARD.claim.root)} onOpenReimbursements={() => navigate(PATH_ACCOUNTANT_DASHBOARD.driverReimbursement.root)} />
+          <AccountantKpis
+            kpis={data.kpis}
+            onOpenClaims={() => navigate(PATH_ACCOUNTANT_DASHBOARD.claim.root)}
+            onOpenReimbursements={() => navigate(PATH_ACCOUNTANT_DASHBOARD.driverReimbursement.root)}
+          />
           <AccountantCharts data={data} />
           <DashboardChartCard title="Danh sách cần xử lý" description="Các nghiệp vụ tài chính được ưu tiên theo hạn xử lý.">
             <AccountantWorkList items={data.priorityWorkItems} onOpen={openWorkItem} />
