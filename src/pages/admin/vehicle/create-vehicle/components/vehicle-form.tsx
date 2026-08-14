@@ -8,6 +8,7 @@ import {
 } from "@/types/enums/vehicle-status.enum";
 import { getVehicleTypeLabel, VEHICLE_TYPE } from "@/types/enums/vehicle-type.enum";
 import { Gauge, MapPin, Ruler, Save, Snowflake, Truck } from "lucide-react";
+import { useWarehouse } from "@/hooks/use-warehouse";
 import type { BaseSyntheticEvent } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import {
@@ -45,6 +46,12 @@ const VehicleForm = ({
   onCancel,
   onSubmit,
 }: Props) => {
+  const { getWarehouses } = useWarehouse();
+  const warehousesQuery = getWarehouses();
+  const warehouseOptions = (warehousesQuery.data ?? []).map((warehouse) => ({
+    value: warehouse.warehouseId,
+    label: warehouse.label ?? warehouse.warehouseName,
+  }));
   const submitLabel = mode === "create" ? "Tạo xe" : "Lưu thay đổi";
   const submittingLabel = mode === "create" ? "Đang tạo..." : "Đang lưu...";
   const currentVehicleType = form.watch("vehicleType");
@@ -219,11 +226,14 @@ const VehicleForm = ({
             title="Vận hành ban đầu"
             description="Vị trí và số kilomet ban đầu theo API Fleet hiện tại."
           >
-            <VehicleTextField
+            <VehicleSelectField
               control={form.control}
               name="currentLocation"
-              label="Vị trí hiện tại"
-              placeholder="VD: Kho Bình Thạnh"
+              label="Kho hiện tại"
+              placeholder={warehousesQuery.isLoading ? "Đang tải danh sách kho..." : "Chọn kho ban đầu"}
+              options={warehouseOptions}
+              emptyLabel="Chưa chọn kho"
+              description="Xe sẽ được đưa vào danh sách điều phối của kho đã chọn."
             />
             <VehicleNumberField
               control={form.control}

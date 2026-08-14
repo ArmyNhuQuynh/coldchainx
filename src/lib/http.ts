@@ -11,6 +11,7 @@ import axios, {
   type AxiosInstance,
   type InternalAxiosRequestConfig,
 } from "axios";
+import { translateApiMessage } from "@/lib/error";
 
 type RetriableRequestConfig = InternalAxiosRequestConfig & {
   _retry?: boolean;
@@ -123,8 +124,25 @@ const request = (apiUrl: string): AxiosInstance => {
   });
 
   axiosInstance.interceptors.response.use(
-    (response) => response,
+    (response) => {
+      if (response.data && typeof response.data === "object") {
+        const data = response.data as Record<string, unknown>;
+        if (typeof data.message === "string") {
+          data.message = translateApiMessage(
+            data.message,
+            "Thao tác đã hoàn tất."
+          );
+        }
+      }
+      return response;
+    },
     async (error: AxiosError) => {
+      if (error.response?.data && typeof error.response.data === "object") {
+        const data = error.response.data as Record<string, unknown>;
+        if (typeof data.message === "string") {
+          data.message = translateApiMessage(data.message);
+        }
+      }
       const originalRequest = error.config as RetriableRequestConfig | undefined;
       const isRefreshRequest = originalRequest?.url?.includes(
         `${API_AUTH_PREFIX}/refresh-tokens`

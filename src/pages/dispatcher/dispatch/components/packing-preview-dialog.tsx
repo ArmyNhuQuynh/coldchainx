@@ -11,6 +11,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import type { TDispatchPackingResult } from "@/schemas/dispatch.schema";
 import { AlertTriangle, X } from "lucide-react";
+import { useMemo } from "react";
 import { getPackingBlockingMessages } from "./dispatch-helpers";
 
 type Props = {
@@ -29,6 +30,33 @@ const PackingPreviewDialog = ({
   const canCreate =
     Boolean(preview?.canCreateTrip) && (preview?.unplacedLpnIds.length ?? 0) === 0;
   const blockingMessages = preview ? getPackingBlockingMessages(preview) : [];
+  const embeddedViewerUrl = useMemo(() => {
+    if (!preview?.shareableLink) return null;
+
+    try {
+      const url = new URL(preview.shareableLink);
+      url.searchParams.set("embedded", "1");
+      return url.toString();
+    } catch {
+      return preview.shareableLink;
+    }
+  }, [preview?.shareableLink]);
+
+  const sendPreviewToViewer = (frame: HTMLIFrameElement) => {
+    if (!preview || !frame.contentWindow) return;
+
+    let targetOrigin = "*";
+    try {
+      targetOrigin = new URL(frame.src).origin;
+    } catch {
+      targetOrigin = "*";
+    }
+
+    frame.contentWindow.postMessage(
+      { type: "COLDCHAINX_PACKING_PREVIEW", payload: preview },
+      targetOrigin
+    );
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -80,12 +108,13 @@ const PackingPreviewDialog = ({
 
         <div className="min-h-0 bg-muted/20">
           {isLoading && <Skeleton className="h-full w-full rounded-none" />}
-          {!isLoading && preview?.shareableLink && (
+          {!isLoading && embeddedViewerUrl && (
             <iframe
-              key={preview.shareableLink}
-              src={preview.shareableLink}
+              key={embeddedViewerUrl}
+              src={embeddedViewerUrl}
               title="Mô phỏng xếp hàng 3D"
               className="h-full w-full border-0"
+              onLoad={(event) => sendPreviewToViewer(event.currentTarget)}
             />
           )}
           {!isLoading && !preview?.shareableLink && (

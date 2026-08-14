@@ -1,4 +1,7 @@
-import type { TTrackingPoint } from "@/schemas/monitoring.schema";
+import type {
+  TTrackingIncidentPoint,
+  TTrackingPoint,
+} from "@/schemas/monitoring.schema";
 
 export type MapCoordinate = [number, number];
 
@@ -119,6 +122,24 @@ export const buildPointFeatureCollection = (points: TTrackingPoint[]) => ({
     geometry: {
       type: "Point",
       coordinates: [point.lon, point.lat],
+    },
+  })),
+});
+
+export const buildIncidentFeatureCollection = (
+  incidents: TTrackingIncidentPoint[]
+) => ({
+  type: "FeatureCollection",
+  features: incidents.map((incident, index) => ({
+    type: "Feature",
+    properties: {
+      index,
+      incidentType: incident.incidentType,
+      status: incident.status,
+    },
+    geometry: {
+      type: "Point",
+      coordinates: [incident.lon, incident.lat],
     },
   })),
 });

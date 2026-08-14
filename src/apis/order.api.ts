@@ -3,7 +3,9 @@ import type { BaseResponse, PaginationResponse } from "@/types/response.type";
 import { API_SUFFIX } from "./util.api";
 import type {
   TGetOrdersQuery,
+  TGetOrderScheduleSummaryQuery,
   TOrder,
+  TOrderScheduleSummary,
   TReviewOrder,
   TReviewOrderResponse,
 } from "@/schemas/order.schema";
@@ -57,6 +59,16 @@ const getOrderById = async (id: string) => {
   return response.data;
 };
 
+const getOrderScheduleSummary = async (
+  params: TGetOrderScheduleSummaryQuery
+) => {
+  const response = await apiRequest.baseApi.get<
+    BaseResponse<PaginationResponse<TOrderScheduleSummary>>
+  >(`${API_SUFFIX.ORDERS_API}/schedule-summary`, { params });
+
+  return response.data;
+};
+
 const reviewOrder = async (id: string, data: TReviewOrder) => {
   const response = await apiRequest.baseApi.post<BaseResponse<TReviewOrderResponse>>(
     `${API_SUFFIX.ORDERS_API}/${id}/review`,
@@ -69,5 +81,6 @@ export const orderApi = {
     getOrders,
     getAllOrders,
     getOrderById,
+    getOrderScheduleSummary,
     reviewOrder
 };

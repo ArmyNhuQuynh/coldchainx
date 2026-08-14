@@ -7,9 +7,11 @@ import { useRoute } from "@/hooks/use-route";
 import { ORDER_STATUS_FILTER_OPTIONS } from "@/types/enums/order-status.enum";
 import { useNavigate } from "react-router-dom";
 
-type Props = {};
+type Props = {
+  scheduleId?: string;
+};
 
-const ShipmentTable = (_: Props) => {
+const ShipmentTable = ({ scheduleId }: Props) => {
   const navigate = useNavigate();
   const { getOrders } = useOrder();
   const { getRoutes } = useRoute();
@@ -38,6 +40,7 @@ const ShipmentTable = (_: Props) => {
     pageSize,
     status: status && status !== "ALL" ? status : undefined,
     routeId: routeId && routeId !== "ALL" ? routeId : undefined,
+    scheduleId,
   });
 
   const orders = data?.data.data ?? [];

@@ -9,6 +9,52 @@ type HandledApiError = {
 const INVALID_PASSWORD_HASH_MESSAGE =
   "Không thể xác thực tài khoản. Vui lòng liên hệ quản trị viên để đặt lại mật khẩu.";
 
+const API_MESSAGE_TRANSLATIONS: Array<[RegExp, string]> = [
+  [/orders retrieved successfully/i, "Đã tải danh sách đơn hàng."],
+  [/order retrieved successfully/i, "Đã tải thông tin đơn hàng."],
+  [/order not found/i, "Không tìm thấy đơn hàng."],
+  [/customer not found/i, "Không tìm thấy khách hàng."],
+  [/vehicle not found/i, "Không tìm thấy xe."],
+  [/schedule.*does not exist/i, "Không tìm thấy lịch vận chuyển."],
+  [/schedule.*invalid or inactive/i, "Lịch vận chuyển hoặc tuyến đã ngừng hoạt động."],
+  [/schedule is no longer accepting new orders/i, "Lịch vận chuyển đã đóng nhận đơn."],
+  [/scheduleid is required/i, "Vui lòng chọn lịch vận chuyển."],
+  [/at least one lpn is required/i, "Vui lòng chọn ít nhất một LPN."],
+  [/some lpns do not belong to the selected schedule/i, "Có LPN không thuộc lịch vận chuyển đã chọn."],
+  [/already assigned to an active trip/i, "Xe đã được gán cho một chuyến đang hoạt động."],
+  [/is not active/i, "Xe hiện không ở trạng thái sẵn sàng."],
+  [/total weight .* exceeds vehicle max weight/i, "Tổng khối lượng hàng vượt quá tải trọng của xe."],
+  [/total cbm .* exceeds vehicle max cbm/i, "Tổng thể tích hàng vượt quá sức chứa của xe."],
+  [/preview load plan successful/i, "Đã tạo mô phỏng xếp hàng."],
+  [/failed to simulate/i, "Không thể tạo mô phỏng xếp hàng."],
+  [/you do not have permission/i, "Bạn không có quyền thực hiện thao tác này."],
+  [/unauthorized/i, "Phiên đăng nhập không hợp lệ hoặc đã hết hạn."],
+  [/internal server error/i, "Máy chủ đang gặp sự cố. Vui lòng thử lại sau."],
+];
+
+const hasVietnameseText = (message: string) =>
+  /[ăâđêôơưáàảãạấầẩẫậắằẳẵặéèẻẽẹếềểễệíìỉĩịóòỏõọốồổỗộớờởỡợúùủũụứừửữựýỳỷỹỵ]/i.test(
+    message
+  ) || /\b(không|vui lòng|đã|đang|chưa|thành công|thất bại|dữ liệu|tài khoản)\b/i.test(message);
+
+export const translateApiMessage = (
+  message: unknown,
+  fallback = "Yêu cầu chưa thể được xử lý."
+) => {
+  if (typeof message !== "string" || !message.trim()) return fallback;
+
+  const normalized = message.trim();
+  const translation = API_MESSAGE_TRANSLATIONS.find(([pattern]) =>
+    pattern.test(normalized)
+  );
+  if (translation) return translation[1];
+
+  if (/Ã|Ä|Æ|áº|á»|â€/.test(normalized)) return fallback;
+  if (hasVietnameseText(normalized)) return normalized;
+
+  return fallback;
+};
+
 const sanitizeApiMessage = (message: string) => {
   const isInvalidPasswordHash =
     /not a valid base-?64|string.*padding characters|non-base 64 character/i.test(
@@ -19,7 +65,7 @@ const sanitizeApiMessage = (message: string) => {
     return INVALID_PASSWORD_HASH_MESSAGE;
   }
 
-  return message;
+  return translateApiMessage(message);
 };
 
 const getValidationMessage = (data: any) => {

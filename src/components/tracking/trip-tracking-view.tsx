@@ -136,6 +136,7 @@ const TripTrackingView = ({
       <div className="grid gap-4 xl:grid-cols-[1.6fr_0.9fr]">
         <TrackingMap
           points={points}
+          incidents={chartQuery.data?.incidents ?? []}
           latestPoint={latestPoint}
           plannedEncodedPolyline={plannedEncodedPolyline}
           deviceCode={trip?.device?.deviceCode}

@@ -12,6 +12,8 @@ import {
     Layers,
     Thermometer,
     DollarSign,
+    CalendarClock,
+    Route,
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -86,6 +88,34 @@ const OrderDetailInfo = ({ order }: Props) => {
 
                     {/* Cột phải - Điểm giao hàng */}
                     <div>
+                        <p className="text-xs font-semibold uppercase text-muted-foreground mb-2">
+                            Lịch vận chuyển
+                        </p>
+                        <InfoRow
+                            icon={CalendarClock}
+                            label="Tên lịch"
+                            value={order.schedule?.scheduleName ?? "—"}
+                        />
+                        <InfoRow
+                            icon={Route}
+                            label="Tuyến"
+                            value={order.route
+                                ? `${order.route.routeCode} · ${order.route.originCity} → ${order.route.destCity}`
+                                : "—"}
+                        />
+                        <InfoRow
+                            icon={Calendar}
+                            label="Khởi hành"
+                            value={order.schedule
+                                ? `${format(new Date(order.schedule.departureDate), "dd/MM/yyyy")} ${order.schedule.departureTime.slice(0, 5)}`
+                                : "—"}
+                        />
+                        <InfoRow
+                            icon={CalendarClock}
+                            label="Cut-off"
+                            value={order.schedule?.cutOffTime.slice(0, 5) ?? "—"}
+                        />
+
                         <p className="text-xs font-semibold uppercase text-muted-foreground mb-2">
                             Điểm giao hàng
                         </p>

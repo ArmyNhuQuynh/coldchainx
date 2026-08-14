@@ -59,7 +59,11 @@ const getDocumentBadge = (status: string | null | undefined, hasFile: boolean) =
 const OrderDocuments = ({ order }: Props) => {
     const { getContractByOrderId } = useContract();
     const quotations = order.quotations ?? [];
-    const documents = order.documents ?? [];
+    const documents = (order.documents ?? []).filter(
+        (document) =>
+            document.docType.trim().toUpperCase() === "ITEM_IMAGE" &&
+            Boolean(document.imageUrl?.trim())
+    );
     const hasAcceptedQuotation = quotations.some(
         (quotation) => quotation.status === QUOTATION_STATUS.ACCEPTED
     );

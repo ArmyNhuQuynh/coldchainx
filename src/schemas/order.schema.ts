@@ -7,6 +7,15 @@ export interface TGetOrdersQuery {
   pageSize?: number;
   status?: string;
   routeId?: string;
+  scheduleId?: string;
+}
+
+export interface TGetOrderScheduleSummaryQuery {
+  fromDate?: string;
+  toDate?: string;
+  routeId?: string;
+  pageNumber?: number;
+  pageSize?: number;
 }
 
 // ===== ENUM =====
@@ -49,6 +58,31 @@ export const OrderRouteSchema = z.object({
   cutOffTime:  z.string({ message: "Thời gian cut-off không hợp lệ" }),
 });
 
+export const OrderScheduleSchema = z.object({
+  scheduleId:     z.string().uuid({ message: "ID lịch vận chuyển không hợp lệ" }),
+  scheduleName:   z.string({ message: "Tên lịch vận chuyển không hợp lệ" }),
+  departureDate:  z.string({ message: "Ngày khởi hành không hợp lệ" }),
+  departureTime:  z.string({ message: "Giờ khởi hành không hợp lệ" }),
+  cutOffTime:     z.string({ message: "Giờ cut-off không hợp lệ" }),
+  status:         z.string({ message: "Trạng thái lịch vận chuyển không hợp lệ" }),
+});
+
+export const OrderScheduleSummarySchema = z.object({
+  scheduleId:              z.string().uuid({ message: "ID lịch vận chuyển không hợp lệ" }),
+  scheduleName:            z.string({ message: "Tên lịch vận chuyển không hợp lệ" }),
+  routeId:                 z.string().uuid({ message: "ID tuyến không hợp lệ" }),
+  routeCode:               z.string({ message: "Mã tuyến không hợp lệ" }),
+  originCity:              z.string({ message: "Điểm đi không hợp lệ" }),
+  destCity:                z.string({ message: "Điểm đến không hợp lệ" }),
+  departureDate:           z.string({ message: "Ngày khởi hành không hợp lệ" }),
+  departureTime:           z.string({ message: "Giờ khởi hành không hợp lệ" }),
+  cutOffTime:              z.string({ message: "Giờ cut-off không hợp lệ" }),
+  totalOrders:             z.number().int().nonnegative(),
+  pendingReviewCount:      z.number().int().nonnegative(),
+  waitingQuotationCount:   z.number().int().nonnegative(),
+  waitingContractCount:    z.number().int().nonnegative(),
+});
+
 // ===== QUOTATION =====
 export const OrderQuotationSchema = z.object({
   quoteId:             z.string().uuid({ message: "ID báo giá không hợp lệ" }),
@@ -82,6 +116,7 @@ export const OrderSchema = z.object({
   masterTripId:     z.string().uuid({ message: "ID chuyến không hợp lệ" }).nullable(),
   createdAt:        z.string({ message: "Thời gian tạo không hợp lệ" }).nullable(),
   route:             OrderRouteSchema.nullable(),
+  schedule:          OrderScheduleSchema.nullable(),
   destination:      OrderDestinationSchema.nullable(),
   documents:        z.array(OrderDocumentSchema, { message: "Danh sách tài liệu không hợp lệ" }),
   quotations:       z.array(OrderQuotationSchema, { message: "Danh sách báo giá không hợp lệ" }).optional(),
@@ -130,3 +165,5 @@ export type TReviewOrder       = z.infer<typeof ReviewOrderSchema>;
 export type TReviewOrderResponse = z.infer<typeof ReviewOrderResponseSchema>;
 export type TOrderQuotation    = z.infer<typeof OrderQuotationSchema>;
 export type TOrderRoute        = z.infer<typeof OrderRouteSchema>;
+export type TOrderSchedule     = z.infer<typeof OrderScheduleSchema>;
+export type TOrderScheduleSummary = z.infer<typeof OrderScheduleSummarySchema>;

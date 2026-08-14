@@ -1,6 +1,10 @@
 import { orderApi } from "@/apis/order.api";
 import { useQuery, keepPreviousData, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { TGetOrdersQuery, TReviewOrder } from "@/schemas/order.schema";
+import type {
+  TGetOrderScheduleSummaryQuery,
+  TGetOrdersQuery,
+  TReviewOrder,
+} from "@/schemas/order.schema";
 
 export const useOrder = () => {
 
@@ -33,6 +37,14 @@ export const useOrder = () => {
     });
   };
 
+  const getOrderScheduleSummary = (params: TGetOrderScheduleSummaryQuery) => {
+    return useQuery({
+      queryKey: ["orders", "schedule-summary", params],
+      queryFn: () => orderApi.getOrderScheduleSummary(params),
+      placeholderData: keepPreviousData,
+    });
+  };
+
    const reviewOrder = useMutation({
     mutationFn: ({ id, data }: { id: string; data: TReviewOrder }) =>
       orderApi.reviewOrder(id, data),
@@ -46,6 +58,7 @@ export const useOrder = () => {
     getOrders,
     getAllOrders,
     getOrderById,
+    getOrderScheduleSummary,
     reviewOrder,
   };
 };

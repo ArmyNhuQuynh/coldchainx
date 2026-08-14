@@ -8,6 +8,7 @@ import type {
   TMonitoringTelemetry,
   TMonitoringVehicle,
   TTrackingPoint,
+  TTrackingIncidentPoint,
   TTrackingTrip,
   TTrackingTripListResponse,
   TTripChart,
@@ -229,10 +230,42 @@ export const normalizeAlert = (item: unknown): TMonitoringAlert => {
   };
 };
 
+const normalizeIncidentPoint = (item: unknown): TTrackingIncidentPoint | null => {
+  if (!item || typeof item !== "object") return null;
+  const raw = item as Record<string, any>;
+  const lat = toNumber(read(raw, "latitude", "Latitude"));
+  const lon = toNumber(read(raw, "longitude", "Longitude"));
+  const incidentId = read<string>(raw, "incidentId", "IncidentId");
+
+  if (!incidentId || !Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+
+  return {
+    incidentId,
+    incidentType: read<string | null>(raw, "incidentType", "IncidentType"),
+    status: read<string | null>(raw, "status", "Status"),
+    lat,
+    lon,
+    reportedAt: toStringValue(read(raw, "reportedAt", "ReportedAt")),
+    rescueDispatchedAt: toStringValue(
+      read(raw, "rescueDispatchedAt", "RescueDispatchedAt")
+    ),
+    transloadConfirmedAt: toStringValue(
+      read(raw, "transloadConfirmedAt", "TransloadConfirmedAt")
+    ),
+    brokenVehicleId: read<string | null>(raw, "brokenVehicleId", "BrokenVehicleId"),
+    replacementVehicleId: read<string | null>(
+      raw,
+      "replacementVehicleId",
+      "ReplacementVehicleId"
+    ),
+  };
+};
+
 export const normalizeTripChart = (item: unknown): TTripChart => {
   const raw = (item ?? {}) as Record<string, any>;
   const points = read<unknown>(raw, "points", "Points");
   const alerts = read<unknown>(raw, "alerts", "Alerts");
+  const incidents = read<unknown>(raw, "incidents", "Incidents");
 
   return {
     tripId: read<string>(raw, "tripId", "TripId"),
@@ -244,6 +277,9 @@ export const normalizeTripChart = (item: unknown): TTripChart => {
       ? (points.map(normalizePoint).filter(Boolean) as TTrackingPoint[])
       : [],
     alerts: Array.isArray(alerts) ? alerts.map(normalizeAlert) : [],
+    incidents: Array.isArray(incidents)
+      ? (incidents.map(normalizeIncidentPoint).filter(Boolean) as TTrackingIncidentPoint[])
+      : [],
   };
 };
 

@@ -10,8 +10,8 @@ type Props = {
 
 const OrderInfoCards = ({ order }: Props) => {
     const { label: categoryLabel } = getOrderCategoryLabel(order.category);
-    const formattedDate = order.createdAt
-        ? format(new Date(order.createdAt), "dd/MM HH:mm")
+    const formattedDate = order.schedule
+        ? `${format(new Date(order.schedule.departureDate), "dd/MM/yyyy")} · ${order.schedule.departureTime.slice(0, 5)}`
         : "—";
 
     return (
@@ -32,7 +32,11 @@ const OrderInfoCards = ({ order }: Props) => {
                         <MapPin className="h-4 w-4" />
                         Tuyến đường
                     </div>
-                    <p className="line-clamp-2 text-sm font-semibold">{order.destination?.address ?? "—"}</p>
+                    <p className="line-clamp-2 text-sm font-semibold">
+                        {order.route
+                            ? `${order.route.originCity} → ${order.route.destCity}`
+                            : "—"}
+                    </p>
                 </CardContent>
             </Card>
 
@@ -50,7 +54,7 @@ const OrderInfoCards = ({ order }: Props) => {
                 <CardContent className="p-3.5">
                     <div className="mb-1.5 flex items-center gap-2 text-[11px] uppercase text-muted-foreground">
                         <Calendar className="h-4 w-4" />
-                        Ngày lấy hàng
+                        Khởi hành theo lịch
                     </div>
                     <p className="text-sm font-semibold">{formattedDate}</p>
                 </CardContent>

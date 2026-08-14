@@ -1,10 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import envConfig from "@/schemas/config.schema";
-import type { TTrackingPoint } from "@/schemas/monitoring.schema";
+import type {
+  TTrackingIncidentPoint,
+  TTrackingPoint,
+} from "@/schemas/monitoring.schema";
 import { MapPinned } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   buildLineFeature,
+  buildIncidentFeatureCollection,
   buildPointFeatureCollection,
   decodePolyline,
   findNearestTrackingPoint,
@@ -24,6 +28,7 @@ declare global {
 
 type Props = {
   points: TTrackingPoint[];
+  incidents?: TTrackingIncidentPoint[];
   latestPoint?: TTrackingPoint | null;
   plannedEncodedPolyline?: string | null;
   deviceCode?: string | null;
@@ -103,6 +108,25 @@ const buildPopupHtml = (
   </div>
 `;
 
+const buildIncidentPopupHtml = (incident: TTrackingIncidentPoint) => `
+  <div style="min-width: 220px; font-family: Inter, system-ui, sans-serif;">
+    <div style="font-weight: 700; margin-bottom: 8px;">Điểm xảy ra sự cố</div>
+    <div style="font-size: 13px; line-height: 1.65;">
+      <div><b>Loại sự cố:</b> ${escapeHtml(incident.incidentType || "Chưa cập nhật")}</div>
+      <div><b>Trạng thái:</b> ${escapeHtml(incident.status || "Chưa cập nhật")}</div>
+      <div><b>Thời điểm báo:</b> ${escapeHtml(formatTrackingDateTime(incident.reportedAt))}</div>
+      <div><b>Vị trí:</b> ${escapeHtml(formatCoordinate(incident.lat))}, ${escapeHtml(formatCoordinate(incident.lon))}</div>
+      ${
+        incident.transloadConfirmedAt
+          ? `<div><b>Sang hàng lúc:</b> ${escapeHtml(
+              formatTrackingDateTime(incident.transloadConfirmedAt)
+            )}</div>`
+          : ""
+      }
+    </div>
+  </div>
+`;
+
 const setGeoJsonSource = (map: any, sourceId: string, data: unknown) => {
   const source = map.getSource(sourceId);
   if (source) {
@@ -118,6 +142,7 @@ const setGeoJsonSource = (map: any, sourceId: string, data: unknown) => {
 
 const TrackingMap = ({
   points,
+  incidents = [],
   latestPoint,
   plannedEncodedPolyline,
   deviceCode,
@@ -231,6 +256,25 @@ const TrackingMap = ({
       });
     }
 
+    setGeoJsonSource(
+      map,
+      "incident-points",
+      buildIncidentFeatureCollection(incidents)
+    );
+    if (!map.getLayer("incident-points-circle")) {
+      map.addLayer({
+        id: "incident-points-circle",
+        type: "circle",
+        source: "incident-points",
+        paint: {
+          "circle-radius": 9,
+          "circle-color": "#f97316",
+          "circle-stroke-color": "#ffffff",
+          "circle-stroke-width": 3,
+        },
+      });
+    }
+
     const currentData = buildPointFeatureCollection(currentPoint ? [currentPoint] : []);
     setGeoJsonSource(map, "current-position", currentData);
     if (!map.getLayer("current-position-circle")) {
@@ -250,6 +294,7 @@ const TrackingMap = ({
     const fitCoordinates = [
       ...plannedCoordinates,
       ...actualCoordinates,
+      ...incidents.map((incident) => [incident.lon, incident.lat] as [number, number]),
       ...(currentPoint ? [[currentPoint.lon, currentPoint.lat] as [number, number]] : []),
     ];
 
@@ -262,7 +307,7 @@ const TrackingMap = ({
         duration: 600,
       });
     }
-  }, [actualCoordinates, currentPoint, mapReady, plannedCoordinates, points]);
+  }, [actualCoordinates, currentPoint, incidents, mapReady, plannedCoordinates, points]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -283,8 +328,24 @@ const TrackingMap = ({
 
     const handleClick = (event: any) => {
       const feature = map.queryRenderedFeatures(event.point, {
-        layers: ["telemetry-points-circle", "current-position-circle"],
+        layers: [
+          "incident-points-circle",
+          "telemetry-points-circle",
+          "current-position-circle",
+        ],
       })?.[0];
+
+      if (feature?.layer?.id === "incident-points-circle") {
+        const incident = incidents[Number(feature.properties?.index)];
+        if (incident) {
+          popupRef.current?.remove();
+          popupRef.current = new goongjs.Popup({ closeButton: true })
+            .setLngLat([incident.lon, incident.lat])
+            .setHTML(buildIncidentPopupHtml(incident))
+            .addTo(map);
+          return;
+        }
+      }
 
       if (feature?.layer?.id === "current-position-circle" && currentPoint) {
         openPopup(currentPoint, null);
@@ -313,7 +374,7 @@ const TrackingMap = ({
     return () => {
       map.off("click", handleClick);
     };
-  }, [currentPoint, deviceCode, mapReady, onPointSelect, points]);
+  }, [currentPoint, deviceCode, incidents, mapReady, onPointSelect, points]);
 
   useEffect(() => {
     return () => {

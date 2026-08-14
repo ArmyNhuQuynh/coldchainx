@@ -95,12 +95,26 @@ export type TMonitoringAlert = {
   createdAt?: string | null;
 };
 
+export type TTrackingIncidentPoint = {
+  incidentId: string;
+  incidentType?: string | null;
+  status?: string | null;
+  lat: number;
+  lon: number;
+  reportedAt?: string | null;
+  rescueDispatchedAt?: string | null;
+  transloadConfirmedAt?: string | null;
+  brokenVehicleId?: string | null;
+  replacementVehicleId?: string | null;
+};
+
 export type TTripChart = {
   tripId: string;
   rawPointCount: number;
   sampledPointCount: number;
   points: TTrackingPoint[];
   alerts: TMonitoringAlert[];
+  incidents: TTrackingIncidentPoint[];
 };
 
 export type TTripRouteGoong = {
