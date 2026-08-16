@@ -36,6 +36,15 @@ const PackingPreviewDialog = ({
 
     try {
       const url = new URL(preview.shareableLink);
+      const isSecurePage =
+        typeof window !== "undefined" && window.location.protocol === "https:";
+      const isLocalViewer =
+        url.hostname === "localhost" || url.hostname === "127.0.0.1";
+
+      if (isSecurePage && url.protocol === "http:" && !isLocalViewer) {
+        url.protocol = "https:";
+      }
+
       return url.toString();
     } catch {
       return preview.shareableLink;
@@ -46,25 +55,18 @@ const PackingPreviewDialog = ({
     const frame = viewerFrameRef.current;
     if (!preview || !frame.contentWindow) return;
 
-    const targetOrigins = new Set<string>();
+    let targetOrigin = "*";
     try {
-      const url = new URL(frame.src);
-      targetOrigins.add(url.origin);
-
-      const alternateProtocolUrl = new URL(url.toString());
-      alternateProtocolUrl.protocol = url.protocol === "https:" ? "http:" : "https:";
-      targetOrigins.add(alternateProtocolUrl.origin);
+      targetOrigin = new URL(viewerUrl ?? frame.src).origin;
     } catch {
-      targetOrigins.add("*");
+      targetOrigin = "*";
     }
 
-    targetOrigins.forEach((origin) => {
-      frame.contentWindow?.postMessage(
-        { type: "COLDCHAINX_PACKING_PREVIEW", payload: preview },
-        origin
-      );
-    });
-  }, [preview]);
+    frame.contentWindow.postMessage(
+      { type: "COLDCHAINX_PACKING_PREVIEW", payload: preview },
+      targetOrigin
+    );
+  }, [preview, viewerUrl]);
 
   useEffect(() => {
     if (!open || isLoading || !preview || !viewerUrl) return;
