@@ -15,6 +15,7 @@ import {
   PATH_ADMIN_DASHBOARD,
   PATH_AUTH,
   PATH_DISPATCHER_DASHBOARD,
+  PATH_PAYMENT,
   PATH_SALE_DASHBOARD,
 } from "./path";
 
@@ -193,15 +194,32 @@ const DispatcherClaimDetailPage = Loadable(
 // );
 
 
-//System admin
 const Page404 = Loadable(lazy(() => import("@/pages/page-404")));
-
+const PaymentSuccessPage = Loadable(
+  lazy(() => import("@/pages/payment/payment-success-page"))
+);
+const PaymentCancelPage = Loadable(
+  lazy(() => import("@/pages/payment/payment-cancel-page"))
+);
 
 export const AppRoutes = () =>
   useRoutes([
     {
       path: "/",
       element: <Navigate to={PATH_AUTH.login} replace />,
+    },
+    {
+      path: PATH_PAYMENT.root,
+      children: [
+        {
+          path: "success",
+          element: <PaymentSuccessPage />,
+        },
+        {
+          path: "cancel",
+          element: <PaymentCancelPage />,
+        },
+      ],
     },
     {
       path: PATH_AUTH.root,

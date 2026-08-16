@@ -4,6 +4,7 @@ const path = (root: string, sublink: string) => {
 }
 
 const ROOTS_AUTH = '/auth';
+const ROOTS_PAYMENT = '/payment';
 const ROOTS_ADMIN_DASHBOARD = '/admin/dashboard';
 const ROOTS_SALE_DASHBOARD = '/sale/dashboard';
 const ROOTS_DISPATCHER_DASHBOARD = '/dispatcher/dashboard';
@@ -14,6 +15,12 @@ export const PATH_AUTH = {
   login: path(ROOTS_AUTH, '/login'),
   googleCallback: path(ROOTS_AUTH, '/google/callback'),
   logout: path(ROOTS_AUTH, '/logout'),
+};
+
+export const PATH_PAYMENT = {
+  root: ROOTS_PAYMENT,
+  success: path(ROOTS_PAYMENT, '/success'),
+  cancel: path(ROOTS_PAYMENT, '/cancel'),
 };
 
 export const PATH_ADMIN_DASHBOARD = {
