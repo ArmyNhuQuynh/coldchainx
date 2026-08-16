@@ -3,13 +3,33 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { TIncident } from "@/schemas/incident.schema";
+import type { TTrackingTrip } from "@/schemas/monitoring.schema";
 import { CheckCircle2 } from "lucide-react";
 import { useState } from "react";
 import TransloadConfirmDialog from "./transload-confirm-dialog";
 
-const RescueProgressPanel = ({ incident }: { incident: TIncident }) => {
+type Props = {
+  incident: TIncident;
+  trip?: TTrackingTrip | null;
+  isTripLoading?: boolean;
+};
+
+const sameId = (left?: string | null, right?: string | null) =>
+  Boolean(left && right && left.toLowerCase() === right.toLowerCase());
+
+const RescueProgressPanel = ({ incident, trip, isTripLoading }: Props) => {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const transloadDone = Boolean(incident.transloadConfirmedAt);
+  const replacementVehicleId = incident.replacementVehicleId;
+  const replacementVehicleLabel =
+    sameId(trip?.vehicle?.vehicleId, replacementVehicleId) &&
+    trip?.vehicle?.truckPlate
+      ? trip.vehicle.truckPlate
+      : isTripLoading && replacementVehicleId
+        ? "Đang tải biển số..."
+        : replacementVehicleId
+          ? `Mã xe ${formatIncidentId(replacementVehicleId)}`
+          : "—";
 
   return (
     <>
@@ -29,7 +49,7 @@ const RescueProgressPanel = ({ incident }: { incident: TIncident }) => {
         </CardHeader>
         <CardContent className="space-y-4 p-5">
           <div className="grid gap-3 sm:grid-cols-3">
-            <div className="rounded-lg border p-3"><p className="text-xs text-muted-foreground">Xe thay thế</p><p className="mt-2 font-semibold">{formatIncidentId(incident.replacementVehicleId)}</p></div>
+            <div className="rounded-lg border p-3"><p className="text-xs text-muted-foreground">Xe thay thế</p><p className="mt-2 font-semibold">{replacementVehicleLabel}</p></div>
             <div className="rounded-lg border p-3"><p className="text-xs text-muted-foreground">Điều động lúc</p><p className="mt-2 font-semibold">{formatIncidentDate(incident.rescueDispatchedAt)}</p></div>
             <div className="rounded-lg border p-3"><p className="text-xs text-muted-foreground">Xác nhận lúc</p><p className="mt-2 font-semibold">{formatIncidentDate(incident.transloadConfirmedAt)}</p></div>
           </div>

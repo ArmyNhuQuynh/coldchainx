@@ -11,7 +11,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import type { TDispatchPackingResult } from "@/schemas/dispatch.schema";
 import { AlertTriangle, X } from "lucide-react";
-import { useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { getPackingBlockingMessages } from "./dispatch-helpers";
 
 type Props = {
@@ -27,36 +27,65 @@ const PackingPreviewDialog = ({
   isLoading,
   onOpenChange,
 }: Props) => {
+  const viewerFrameRef = useRef<HTMLIFrameElement | null>(null);
   const canCreate =
     Boolean(preview?.canCreateTrip) && (preview?.unplacedLpnIds.length ?? 0) === 0;
   const blockingMessages = preview ? getPackingBlockingMessages(preview) : [];
-  const embeddedViewerUrl = useMemo(() => {
+  const viewerUrl = useMemo(() => {
     if (!preview?.shareableLink) return null;
 
     try {
       const url = new URL(preview.shareableLink);
-      url.searchParams.set("embedded", "1");
       return url.toString();
     } catch {
       return preview.shareableLink;
     }
   }, [preview?.shareableLink]);
 
-  const sendPreviewToViewer = (frame: HTMLIFrameElement) => {
+  const sendPreviewToViewer = useCallback(() => {
+    const frame = viewerFrameRef.current;
     if (!preview || !frame.contentWindow) return;
 
-    let targetOrigin = "*";
+    const targetOrigins = new Set<string>();
     try {
-      targetOrigin = new URL(frame.src).origin;
+      const url = new URL(frame.src);
+      targetOrigins.add(url.origin);
+
+      const alternateProtocolUrl = new URL(url.toString());
+      alternateProtocolUrl.protocol = url.protocol === "https:" ? "http:" : "https:";
+      targetOrigins.add(alternateProtocolUrl.origin);
     } catch {
-      targetOrigin = "*";
+      targetOrigins.add("*");
     }
 
-    frame.contentWindow.postMessage(
-      { type: "COLDCHAINX_PACKING_PREVIEW", payload: preview },
-      targetOrigin
+    targetOrigins.forEach((origin) => {
+      frame.contentWindow?.postMessage(
+        { type: "COLDCHAINX_PACKING_PREVIEW", payload: preview },
+        origin
+      );
+    });
+  }, [preview]);
+
+  useEffect(() => {
+    if (!open || isLoading || !preview || !viewerUrl) return;
+
+    const retryDelays = [0, 250, 750, 1500, 3000];
+    const timers = retryDelays.map((delay) =>
+      window.setTimeout(sendPreviewToViewer, delay)
     );
-  };
+    const handleViewerMessage = (event: MessageEvent) => {
+      if (event.data?.type === "COLDCHAINX_3D_VIEWER_READY") {
+        sendPreviewToViewer();
+      }
+    };
+
+    window.addEventListener("message", handleViewerMessage);
+
+    return () => {
+      timers.forEach((timer) => window.clearTimeout(timer));
+      window.removeEventListener("message", handleViewerMessage);
+    };
+  }, [viewerUrl, isLoading, open, preview, sendPreviewToViewer]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -108,13 +137,14 @@ const PackingPreviewDialog = ({
 
         <div className="min-h-0 bg-muted/20">
           {isLoading && <Skeleton className="h-full w-full rounded-none" />}
-          {!isLoading && embeddedViewerUrl && (
+          {!isLoading && viewerUrl && (
             <iframe
-              key={embeddedViewerUrl}
-              src={embeddedViewerUrl}
+              ref={viewerFrameRef}
+              key={viewerUrl}
+              src={viewerUrl}
               title="Mô phỏng xếp hàng 3D"
               className="h-full w-full border-0"
-              onLoad={(event) => sendPreviewToViewer(event.currentTarget)}
+              onLoad={sendPreviewToViewer}
             />
           )}
           {!isLoading && !preview?.shareableLink && (

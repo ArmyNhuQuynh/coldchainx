@@ -93,12 +93,12 @@ const LpnSelectionPanel = ({
               <div className="flex h-56 flex-col items-center justify-center rounded-lg border border-dashed text-center">
                 <Box className="h-8 w-8 text-muted-foreground" />
                 <p className="mt-3 font-medium">
-                  {hasSchedule ? "Không có LPN phù hợp" : "Chọn tuyến và giờ khởi hành"}
+                  Không có LPN phù hợp
                 </p>
                 <p className="mt-1 text-sm text-muted-foreground">
                   {hasSchedule
-                    ? "Không còn LPN nào có thể ghép với tập đang chọn"
-                    : "Danh sách LPN sẽ được tải theo lịch đã chọn"}
+                    ? "Không còn LPN nào phù hợp với lịch và tập đang chọn"
+                    : "Không có LPN IN_STOCK nào sẵn sàng để ghép chuyến"}
                 </p>
               </div>
             )}
@@ -223,7 +223,7 @@ const LpnSelectionPanel = ({
           </div>
         </ScrollArea>
 
-        {hasSchedule && totalPages > 1 && (
+        {totalPages > 1 && (
           <div className="flex items-center justify-between gap-3 border-t px-4 py-3">
             <p className="text-xs text-muted-foreground">
               Trang {currentPage}/{totalPages}

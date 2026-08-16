@@ -171,7 +171,9 @@ const normalizeCompatibleResult = (
       "Conflicts"
     ) ?? [];
   const items =
-    read<Array<TDispatchReadyLpn | Record<string, any>>>(raw, "items", "Items") ?? [];
+    read<Array<TDispatchReadyLpn | Record<string, any>>>(raw, "items", "Items") ??
+    read<Array<TDispatchReadyLpn | Record<string, any>>>(raw, "data", "Data") ??
+    [];
 
   return {
     selectedSetValid:
@@ -204,6 +206,21 @@ const searchCompatibleLpns = async (
   return normalizeCompatibleResult(
     unwrapData<TCompatibleLpnsSearchResult>(response.data)
   );
+};
+
+const getReadyLpns = async (
+  params: TCompatibleLpnsSearchParams & { warehouseId?: string | null }
+) => {
+  const response = await apiRequest.baseApi.get<
+    TDispatchLookupEnvelope<TCompatibleLpnsSearchResult> | TCompatibleLpnsSearchResult
+  >(`${API_SUFFIX.DISPATCH_API}/lookup/lpns-ready`, { params });
+  const data = unwrapData<TCompatibleLpnsSearchResult>(response.data);
+
+  return normalizeCompatibleResult({
+    ...data,
+    selectedSetValid: true,
+    conflicts: [],
+  });
 };
 
 const getAvailableVehicles = async (warehouseId: string) => {
@@ -244,6 +261,7 @@ const getAvailableDrivers = async (warehouseId: string) => {
 export const dispatchLookupApi = {
   getSchedules,
   searchCompatibleLpns,
+  getReadyLpns,
   getAvailableVehicles,
   getAvailableDrivers,
 };

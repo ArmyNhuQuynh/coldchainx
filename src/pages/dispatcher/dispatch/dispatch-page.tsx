@@ -54,6 +54,7 @@ const DispatchPage = () => {
   const {
     getSchedules,
     searchCompatibleLpns,
+    getReadyLpns,
     getAvailableVehicles,
     getAvailableDrivers,
   } = useDispatchLookup();
@@ -86,6 +87,17 @@ const DispatchPage = () => {
     () => selectedLpns.map((lpn) => lpn.lpnId),
     [selectedLpns]
   );
+  const selectedCargoTotals = useMemo(
+    () =>
+      selectedLpns.reduce(
+        (totals, lpn) => ({
+          weightKg: totals.weightKg + lpn.actualWeightKg,
+          cbm: totals.cbm + lpn.actualCbm,
+        }),
+        { weightKg: 0, cbm: 0 }
+      ),
+    [selectedLpns]
+  );
   const compatibilityRequest = useMemo(
     () =>
       selectedScheduleId
@@ -97,17 +109,27 @@ const DispatchPage = () => {
     pageNumber: candidatePage,
     pageSize: COMPATIBLE_LPN_PAGE_SIZE,
   });
+  const readyLpnsQuery = getReadyLpns(
+    {
+      pageNumber: candidatePage,
+      pageSize: COMPATIBLE_LPN_PAGE_SIZE,
+      warehouseId: selectedWarehouseId || undefined,
+    },
+    !selectedScheduleId
+  );
 
   const schedules = schedulesQuery.data ?? [];
   const vehicles = useMemo(
     () =>
       (vehiclesQuery.data ?? []).filter(
         (vehicle) =>
-          !selectedWarehouseName ||
-          vehicle.currentLocation?.trim().toLocaleLowerCase("vi-VN") ===
-            selectedWarehouseName.trim().toLocaleLowerCase("vi-VN")
+          (!selectedWarehouseName ||
+            vehicle.currentLocation?.trim().toLocaleLowerCase("vi-VN") ===
+              selectedWarehouseName.trim().toLocaleLowerCase("vi-VN")) &&
+          vehicle.maxWeight >= selectedCargoTotals.weightKg &&
+          vehicle.maxCbm >= selectedCargoTotals.cbm
       ),
-    [selectedWarehouseName, vehiclesQuery.data]
+    [selectedCargoTotals, selectedWarehouseName, vehiclesQuery.data]
   );
   const drivers = useMemo(
     () =>
@@ -120,8 +142,10 @@ const DispatchPage = () => {
       ),
     [driversQuery.data, selectedWarehouseName]
   );
-  const compatibility = compatibleLpnsQuery.data;
-  const candidateLpns = compatibility?.items ?? [];
+  const lpnQuery = selectedScheduleId ? compatibleLpnsQuery : readyLpnsQuery;
+  const compatibility = selectedScheduleId ? compatibleLpnsQuery.data : undefined;
+  const lpnResult = lpnQuery.data;
+  const candidateLpns = lpnResult?.items ?? [];
 
   const displayedLpns = useMemo(() => {
     const selectedIds = new Set(selectedLpnIds);
@@ -154,11 +178,11 @@ const DispatchPage = () => {
   }, []);
 
   useEffect(() => {
-    const totalPages = compatibility?.totalPages ?? 0;
+    const totalPages = lpnResult?.totalPages ?? 0;
     if (totalPages > 0 && candidatePage > totalPages) {
       setCandidatePage(totalPages);
     }
-  }, [candidatePage, compatibility?.totalPages]);
+  }, [candidatePage, lpnResult?.totalPages]);
 
   useEffect(() => {
     setSelectedVehicleId("");
@@ -209,7 +233,7 @@ const DispatchPage = () => {
 
   const handleToggleLpn = (lpn: TDispatchReadyLpn) => {
     const exists = selectedLpnIds.includes(lpn.lpnId);
-    if (!exists && compatibleLpnsQuery.isFetching) return;
+    if (!exists && lpnQuery.isFetching) return;
 
     setSelectedLpns((items) =>
       exists
@@ -237,9 +261,8 @@ const DispatchPage = () => {
   };
 
   const compatibilityValid =
-    Boolean(selectedScheduleId) &&
-    !compatibleLpnsQuery.isFetching &&
-    compatibility?.selectedSetValid === true;
+    !lpnQuery.isFetching &&
+    (!selectedScheduleId || compatibility?.selectedSetValid === true);
   const canPreviewPacking =
     compatibilityValid &&
     selectedLpnIds.length > 0 &&
@@ -251,14 +274,13 @@ const DispatchPage = () => {
     const start = new Date(plannedStartTime);
     const end = new Date(plannedEndTime);
 
-    if (!selectedScheduleId) messages.push("Chọn tuyến và giờ khởi hành trước.");
-    if (selectedScheduleId && selectedLpns.length === 0) {
+    if (selectedLpns.length === 0) {
       messages.push("Chọn ít nhất 1 LPN.");
     }
     if (selectedLpns.length > 0 && !selectedWarehouseId) {
       messages.push("LPN đã chọn chưa có thông tin kho xuất phát.");
     }
-    if (compatibleLpnsQuery.isFetching && selectedLpns.length > 0) {
+    if (lpnQuery.isFetching && selectedLpns.length > 0) {
       messages.push("Đang kiểm tra tính tương thích của tập LPN.");
     }
     if (compatibility && !compatibility.selectedSetValid) {
@@ -268,8 +290,8 @@ const DispatchPage = () => {
         )
       );
     }
-    if (compatibleLpnsQuery.isError) {
-      messages.push("Không tải được danh sách LPN tương thích từ BE.");
+    if (lpnQuery.isError) {
+      messages.push("Không tải được danh sách LPN sẵn sàng từ BE.");
     }
     if (selectedWarehouseId && vehiclesQuery.isError) {
       messages.push("Không tải được xe tại kho xuất phát.");
@@ -284,7 +306,6 @@ const DispatchPage = () => {
       messages.push("Thời gian bắt đầu phải nhỏ hơn thời gian kết thúc.");
     }
     if (
-      selectedScheduleId &&
       selectedLpns.length > 0 &&
       selectedVehicleId &&
       !hasCurrentPreview
@@ -297,8 +318,8 @@ const DispatchPage = () => {
 
     return [...new Set(messages)];
   }, [
-    compatibleLpnsQuery.isError,
-    compatibleLpnsQuery.isFetching,
+    lpnQuery.isError,
+    lpnQuery.isFetching,
     compatibility,
     hasCurrentPreview,
     packingPreview,
@@ -328,7 +349,7 @@ const DispatchPage = () => {
 
     try {
       const result = await simulatePacking.mutateAsync({
-        scheduleId: selectedScheduleId,
+        ...(selectedScheduleId ? { scheduleId: selectedScheduleId } : {}),
         vehicleId: selectedVehicleId,
         lpnIds: selectedLpnIds,
       });
@@ -345,7 +366,7 @@ const DispatchPage = () => {
 
     try {
       const result = await manualDispatch.mutateAsync({
-        scheduleId: selectedScheduleId,
+        ...(selectedScheduleId ? { scheduleId: selectedScheduleId } : {}),
         lpnIds: selectedLpnIds,
         vehicleId: selectedVehicleId,
         driverIds: selectedDriverIds,
@@ -373,7 +394,7 @@ const DispatchPage = () => {
         <div>
           <h1 className="text-3xl font-semibold">Điều phối & Ghép chuyến</h1>
           <p className="mt-1 text-muted-foreground">
-            Chọn tuyến, giờ khởi hành và ghép LPN tương thích trước khi tạo chuyến
+            Chọn LPN, xe, tài xế và thời gian vận hành trước khi tạo chuyến
           </p>
         </div>
       </div>
@@ -393,12 +414,12 @@ const DispatchPage = () => {
         <LpnSelectionPanel
           lpns={displayedLpns}
           selectedIds={selectedLpnIds}
-          totalRecords={compatibility?.totalRecords ?? 0}
-          currentPage={compatibility?.currentPage ?? candidatePage}
-          totalPages={compatibility?.totalPages ?? 0}
+          totalRecords={lpnResult?.totalRecords ?? 0}
+          currentPage={lpnResult?.currentPage ?? candidatePage}
+          totalPages={lpnResult?.totalPages ?? 0}
           hasSchedule={Boolean(selectedScheduleId)}
-          isLoading={compatibleLpnsQuery.isLoading}
-          isChecking={compatibleLpnsQuery.isFetching}
+          isLoading={lpnQuery.isLoading}
+          isChecking={lpnQuery.isFetching}
           panelHeight={vehicleDriverPanelHeight}
           onToggle={handleToggleLpn}
           onPageChange={setCandidatePage}
@@ -420,7 +441,7 @@ const DispatchPage = () => {
             isDriversError={driversQuery.isError}
             isSubmitting={manualDispatch.isPending}
             isPreviewing={simulatePacking.isPending}
-            isPlanningEnabled={Boolean(selectedScheduleId)}
+            isPlanningEnabled={selectedLpnIds.length > 0}
             canPreviewPacking={canPreviewPacking}
             hasCurrentPreview={hasCurrentPreview}
             canCreateTrip={canCreateTrip}

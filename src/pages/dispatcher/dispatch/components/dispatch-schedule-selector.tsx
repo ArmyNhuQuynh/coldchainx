@@ -116,7 +116,20 @@ const DispatchScheduleSelector = ({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-semibold">Khởi hành</label>
+            <div className="flex items-center justify-between gap-2">
+              <label className="text-sm font-semibold">Khởi hành (tùy chọn)</label>
+              {selectedScheduleId && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2 text-xs"
+                  onClick={() => onScheduleChange("")}
+                >
+                  Bỏ chọn lịch
+                </Button>
+              )}
+            </div>
             {isLoading ? (
               <Skeleton className="h-10 w-full" />
             ) : (
@@ -172,6 +185,11 @@ const DispatchScheduleSelector = ({
       {!isLoading && !isError && schedules.length === 0 && (
         <p className="mt-2 text-xs text-muted-foreground">
           Hiện không có tuyến và giờ khởi hành để điều phối.
+        </p>
+      )}
+      {!isLoading && !isError && (
+        <p className="mt-3 text-xs text-muted-foreground">
+          Có thể chọn lịch để lọc nhanh, hoặc ghép LPN linh hoạt không theo lịch.
         </p>
       )}
     </section>

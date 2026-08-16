@@ -26,6 +26,17 @@ export const useDispatchLookup = () => {
       enabled: Boolean(data?.scheduleId),
     });
 
+  const getReadyLpns = (
+    params: TCompatibleLpnsSearchParams & { warehouseId?: string | null },
+    enabled = true
+  ) =>
+    useQuery({
+      queryKey: ["dispatch", "ready-lpns", params],
+      queryFn: () => dispatchLookupApi.getReadyLpns(params),
+      enabled,
+      placeholderData: keepPreviousData,
+    });
+
   const getAvailableVehicles = (warehouseId?: string | null) =>
     useQuery({
       queryKey: ["dispatch", "vehicles", "warehouse", warehouseId],
@@ -43,6 +54,7 @@ export const useDispatchLookup = () => {
   return {
     getSchedules,
     searchCompatibleLpns,
+    getReadyLpns,
     getAvailableVehicles,
     getAvailableDrivers,
   };

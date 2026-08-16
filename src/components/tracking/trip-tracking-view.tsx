@@ -45,12 +45,34 @@ const TripTrackingView = ({
   const lastPoint = points.length > 0 ? points[points.length - 1] : null;
   const latestPoint = (trip ? getLatestPoint(trip) : null) ?? lastPoint;
   const allAlerts = useMemo<TMonitoringAlert[]>(
-    () => [
-      ...(chartQuery.data?.alerts ?? []),
-      ...(riskAlertsQuery.data ?? []),
-      ...(ssaAlertsQuery.data ?? []),
-      ...(smartAlertsQuery.data ?? []),
-    ],
+    () => {
+      const alerts = [
+        ...(chartQuery.data?.alerts ?? []),
+        ...(riskAlertsQuery.data ?? []),
+        ...(ssaAlertsQuery.data ?? []),
+        ...(smartAlertsQuery.data ?? []),
+      ];
+      const uniqueAlerts = new Map<string, TMonitoringAlert>();
+
+      alerts.forEach((alert, index) => {
+        const measuredValue =
+          alert.value ??
+          alert.actualTemperatureC ??
+          alert.forecastedSpikeTemp ??
+          alert.smartRiskScore;
+        const key =
+          alert.alertType && alert.createdAt
+            ? [alert.alertType, alert.createdAt, measuredValue].join("|")
+            : alert.alertId || `alert-${index}`;
+        uniqueAlerts.set(key, alert);
+      });
+
+      return Array.from(uniqueAlerts.values()).sort((left, right) => {
+        const leftTime = left.createdAt ? new Date(left.createdAt).getTime() : 0;
+        const rightTime = right.createdAt ? new Date(right.createdAt).getTime() : 0;
+        return rightTime - leftTime;
+      });
+    },
     [
       chartQuery.data?.alerts,
       riskAlertsQuery.data,

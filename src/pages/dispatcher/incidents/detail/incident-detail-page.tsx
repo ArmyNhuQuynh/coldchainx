@@ -30,6 +30,7 @@ const IncidentDetailPage = () => {
     },
     Boolean(tripId)
   );
+  const isTripLoading = trackingDetailQuery.isLoading || trackingListQuery.isLoading;
 
   const trip = useMemo<TTrackingTrip | null>(() => {
     const detail = trackingDetailQuery.data;
@@ -39,6 +40,7 @@ const IncidentDetailPage = () => {
     return {
       ...(listItem ?? detail!),
       ...(detail ?? {}),
+      vehicle: detail?.vehicle ?? listItem?.vehicle,
       drivers: listItem?.drivers ?? detail?.drivers ?? [],
       driver: listItem?.driver ?? detail?.driver,
       device: listItem?.device ?? detail?.device,
@@ -91,11 +93,15 @@ const IncidentDetailPage = () => {
         <TripContextPanel
           trip={trip}
           tripId={incident.tripId}
-          isLoading={trackingDetailQuery.isLoading || trackingListQuery.isLoading}
+          isLoading={isTripLoading}
         />
       </div>
 
-      <RescueOperationPanel incident={incident} trip={trip} />
+      <RescueOperationPanel
+        incident={incident}
+        trip={trip}
+        isTripLoading={isTripLoading}
+      />
       <IncidentEvidencePanel evidences={incident.evidences ?? []} />
     </div>
   );

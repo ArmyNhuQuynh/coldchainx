@@ -116,7 +116,7 @@ export type TCompatibleLpnsSearchResult = {
 };
 
 export type TDispatchPackingRequest = {
-  scheduleId: string;
+  scheduleId?: string | null;
   vehicleId: string;
   lpnIds: string[];
 };
@@ -155,7 +155,7 @@ export type TDispatchPackingResult = {
 };
 
 export type TManualDispatchRequest = {
-  scheduleId: string;
+  scheduleId?: string | null;
   lpnIds: string[];
   vehicleId: string;
   driverIds: string[];

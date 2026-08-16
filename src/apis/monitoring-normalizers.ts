@@ -28,10 +28,16 @@ const normalizeTelemetry = (item: unknown): TMonitoringTelemetry | null => {
 
   return {
     deviceId: read<string | null>(raw, "deviceId", "DeviceId"),
-    tempC: read<number | null>(raw, "tempC", "TempC"),
+    tempC:
+      read<number | null>(raw, "tempC", "TempC") ??
+      read<number | null>(raw, "temperature", "Temperature"),
     doorOpen: read<boolean | null>(raw, "doorOpen", "DoorOpen"),
-    lat: read<number | null>(raw, "lat", "Lat"),
-    lon: read<number | null>(raw, "lon", "Lon"),
+    lat:
+      read<number | null>(raw, "lat", "Lat") ??
+      read<number | null>(raw, "latitude", "Latitude"),
+    lon:
+      read<number | null>(raw, "lon", "Lon") ??
+      read<number | null>(raw, "longitude", "Longitude"),
     timestamp: toStringValue(read(raw, "timestamp", "Timestamp")),
   };
 };

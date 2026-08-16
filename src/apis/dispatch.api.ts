@@ -68,7 +68,9 @@ const simulatePacking = async (data: TDispatchPackingRequest) => {
 
 const manualDispatch = async (data: TManualDispatchRequest) => {
   const formData = new FormData();
-  formData.append("ScheduleId", data.scheduleId);
+  if (data.scheduleId) {
+    formData.append("ScheduleId", data.scheduleId);
+  }
   formData.append("VehicleId", data.vehicleId);
   formData.append("PlannedStartTime", data.plannedStartTime);
   formData.append("PlannedEndTime", data.plannedEndTime);

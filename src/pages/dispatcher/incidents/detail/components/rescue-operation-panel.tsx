@@ -10,9 +10,10 @@ import RescueProgressPanel from "./rescue-progress-panel";
 type Props = {
   incident: TIncident;
   trip?: TTrackingTrip | null;
+  isTripLoading?: boolean;
 };
 
-const RescueOperationPanel = ({ incident, trip }: Props) => {
+const RescueOperationPanel = ({ incident, trip, isTripLoading }: Props) => {
   if (incident.status === INCIDENT_STATUS.RESOLVED) {
     return (
       <Card className="gap-0 rounded-lg py-0">
@@ -94,7 +95,13 @@ const RescueOperationPanel = ({ incident, trip }: Props) => {
   }
 
   if (incident.status === INCIDENT_STATUS.RESCUE_DISPATCHED) {
-    return <RescueProgressPanel incident={incident} />;
+    return (
+      <RescueProgressPanel
+        incident={incident}
+        trip={trip}
+        isTripLoading={isTripLoading}
+      />
+    );
   }
 
   return <RescueDispatchForm incident={incident} trip={trip} />;
