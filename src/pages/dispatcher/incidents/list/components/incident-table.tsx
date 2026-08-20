@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -34,7 +34,7 @@ type Props = {
 };
 
 const IncidentTable = ({ incidents, isLoading, onSelect }: Props) => (
-  <Card className="gap-0 rounded-lg py-0">
+  <Card className="min-w-0 gap-0 overflow-hidden rounded-lg py-0">
     <CardHeader className="border-b px-5 py-4">
       <div className="flex items-center justify-between gap-3">
         <div>
@@ -48,9 +48,9 @@ const IncidentTable = ({ incidents, isLoading, onSelect }: Props) => (
         </Badge>
       </div>
     </CardHeader>
-    <CardContent className="p-0">
-      <ScrollArea className="h-[610px]">
-        <Table>
+    <CardContent className="min-w-0 p-0">
+      <ScrollArea className="h-[610px] w-full min-w-0 max-w-full">
+        <Table className="w-max min-w-full">
           <TableHeader className="bg-background">
             <TableRow>
               <TableHead className="pl-5">Sự cố / Trip</TableHead>
@@ -138,6 +138,7 @@ const IncidentTable = ({ incidents, isLoading, onSelect }: Props) => (
             ))}
           </TableBody>
         </Table>
+        <ScrollBar orientation="horizontal" />
       </ScrollArea>
     </CardContent>
   </Card>

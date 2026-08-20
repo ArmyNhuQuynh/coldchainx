@@ -45,8 +45,8 @@ const IncidentFilterBar = ({
   onRescueChange,
   onRefresh,
 }: Props) => (
-  <div className="grid gap-3 rounded-lg border bg-background p-4 xl:grid-cols-[minmax(220px,1fr)_180px_150px_180px_190px_160px_auto]">
-    <div className="relative">
+  <div className="grid min-w-0 gap-3 rounded-lg border bg-background p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="relative min-w-0 sm:col-span-2">
       <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
       <Input
         value={search}
@@ -57,7 +57,7 @@ const IncidentFilterBar = ({
     </div>
 
     <Select value={status} onValueChange={onStatusChange}>
-      <SelectTrigger><SelectValue placeholder="Trạng thái" /></SelectTrigger>
+      <SelectTrigger className="w-full"><SelectValue placeholder="Trạng thái" /></SelectTrigger>
       <SelectContent>
         <SelectItem value="UNRESOLVED">Đang xử lý</SelectItem>
         <SelectItem value="ALL">Tất cả trạng thái</SelectItem>
@@ -70,7 +70,7 @@ const IncidentFilterBar = ({
     </Select>
 
     <Select value={risk} onValueChange={onRiskChange}>
-      <SelectTrigger><SelectValue placeholder="Risk" /></SelectTrigger>
+      <SelectTrigger className="w-full"><SelectValue placeholder="Risk" /></SelectTrigger>
       <SelectContent>
         <SelectItem value="ALL">Tất cả risk</SelectItem>
         {INCIDENT_RISK_OPTIONS.map((option) => (
@@ -82,7 +82,7 @@ const IncidentFilterBar = ({
     </Select>
 
     <Select value={incidentType} onValueChange={onIncidentTypeChange}>
-      <SelectTrigger><SelectValue placeholder="Loại sự cố" /></SelectTrigger>
+      <SelectTrigger className="w-full"><SelectValue placeholder="Loại sự cố" /></SelectTrigger>
       <SelectContent>
         <SelectItem value="ALL">Tất cả loại</SelectItem>
         {INCIDENT_TYPE_OPTIONS.map((option) => (
@@ -92,7 +92,7 @@ const IncidentFilterBar = ({
     </Select>
 
     <Select value={queue} onValueChange={onQueueChange}>
-      <SelectTrigger><SelectValue placeholder="Hàng đợi" /></SelectTrigger>
+      <SelectTrigger className="w-full"><SelectValue placeholder="Hàng đợi" /></SelectTrigger>
       <SelectContent>
         <SelectItem value="ALL">Tất cả hàng đợi</SelectItem>
         <SelectItem value="DISPATCHER_ACTION">Chờ Dispatcher xử lý</SelectItem>
@@ -100,7 +100,7 @@ const IncidentFilterBar = ({
     </Select>
 
     <Select value={rescue} onValueChange={onRescueChange}>
-      <SelectTrigger><SelectValue placeholder="Cứu hộ" /></SelectTrigger>
+      <SelectTrigger className="w-full"><SelectValue placeholder="Cứu hộ" /></SelectTrigger>
       <SelectContent>
         <SelectItem value="ALL">Tất cả yêu cầu</SelectItem>
         <SelectItem value="REQUIRED">Cần điều xe</SelectItem>
@@ -112,6 +112,7 @@ const IncidentFilterBar = ({
       type="button"
       variant="outline"
       size="icon"
+      className="justify-self-start xl:justify-self-end"
       title="Tải lại dữ liệu"
       disabled={isRefreshing}
       onClick={onRefresh}
