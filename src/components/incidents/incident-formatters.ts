@@ -27,6 +27,7 @@ export const formatIncidentId = (value?: string | null) =>
 type IncidentApiError = {
   message?: string;
   response?: {
+    status?: number;
     data?: {
       message?: string;
       Message?: string;
@@ -59,4 +60,29 @@ export const getIncidentErrorMessage = (
     apiError.message ||
     fallback
   );
+};
+
+const RESOLVE_INCIDENT_ERROR_MESSAGES: Record<string, string> = {
+  "Vehicle/reefer breakdown can only be resolved after the new warehouse trip is sealed and dispatched to customers.":
+    "Chỉ được đóng Incident sau khi chuyến mới đã kẹp seal và xuất phát giao khách.",
+  "Driver expense must be approved and reimbursed before resolving the incident.":
+    "Chưa thể đóng Incident vì khoản Driver ứng trước chưa được hoàn trả.",
+  "Incident is already resolved.": "Incident đã được đóng.",
+  "Resolution note is required.": "Ghi chú đóng Incident là bắt buộc.",
+};
+
+export const getResolveIncidentErrorMessage = (error: unknown) => {
+  const apiError = error as IncidentApiError;
+  if (apiError.response?.status === 401) {
+    return "Phiên đăng nhập không hợp lệ hoặc đã hết hạn.";
+  }
+  if (apiError.response?.status === 403) {
+    return "Bạn không có quyền đóng Incident.";
+  }
+
+  const backendMessage = getIncidentErrorMessage(
+    error,
+    "Không thể đóng Incident."
+  );
+  return RESOLVE_INCIDENT_ERROR_MESSAGES[backendMessage] ?? backendMessage;
 };

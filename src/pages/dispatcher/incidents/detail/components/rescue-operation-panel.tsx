@@ -181,7 +181,7 @@ const RescueOperationPanel = ({ incident, trip, isTripLoading }: Props) => {
   if (incident.status === INCIDENT_STATUS.RESOLVED) {
     return (
       <StatusCard
-        title="Sự cố đã được giải quyết"
+        title="Incident đã đóng"
         description={incident.resolutionNote || "Không có ghi chú kết thúc."}
         icon={CheckCircle2}
       >

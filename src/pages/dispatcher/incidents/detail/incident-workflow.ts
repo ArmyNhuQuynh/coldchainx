@@ -76,7 +76,7 @@ export const getExpenseResolutionBlocker = (
     incident.expenseStatus !== INCIDENT_EXPENSE_STATUS.REIMBURSED ||
     incident.reimbursedAmount == null
   ) {
-    return "Chờ Accountant/Admin hoàn ứng đầy đủ trước khi đóng Incident.";
+    return "Chưa thể đóng Incident vì khoản Driver ứng trước chưa được hoàn trả.";
   }
   return null;
 };
@@ -91,14 +91,16 @@ export const getResolutionBlocker = (
     | "reimbursedAmount"
   >
 ) => {
+  if (isMandatoryExternalReeferIncident(incident)) {
+    if (incident.status !== INCIDENT_STATUS.REDISPATCHED_TO_CUSTOMER) {
+      return "Chỉ được đóng Incident sau khi chuyến mới đã kẹp seal và xuất phát giao khách.";
+    }
+  }
+
   const expenseBlocker = getExpenseResolutionBlocker(incident);
   if (expenseBlocker) return expenseBlocker;
 
-  if (isMandatoryExternalReeferIncident(incident)) {
-    return incident.status === INCIDENT_STATUS.REDISPATCHED_TO_CUSTOMER
-      ? null
-      : "Incident breakdown chỉ được đóng sau khi trip mới đã rời kho giao khách.";
-  }
+  if (isMandatoryExternalReeferIncident(incident)) return null;
 
   const allowedStatuses = new Set<string>([
     INCIDENT_STATUS.CONTINUED,

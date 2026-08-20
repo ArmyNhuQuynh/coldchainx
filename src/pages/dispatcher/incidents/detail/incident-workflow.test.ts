@@ -13,7 +13,10 @@ import {
   sortIncidentsByDispatcherPriority,
 } from "./incident-workflow";
 import { extractIncidentIdFromRealtimePayload, INCIDENT_REALTIME_EVENTS } from "@/lib/incident-notification-events";
-import { getIncidentErrorMessage } from "@/components/incidents/incident-formatters";
+import {
+  getIncidentErrorMessage,
+  getResolveIncidentErrorMessage,
+} from "@/components/incidents/incident-formatters";
 
 const incident = (overrides: Partial<TIncident> = {}): TIncident => ({
   incidentId: "incident-1",
@@ -107,7 +110,9 @@ describe("Dispatcher Incident acceptance state machine", () => {
     expect(getResolutionBlocker(incident({
       incidentType: INCIDENT_TYPE.VEHICLE_BREAKDOWN,
       status: INCIDENT_STATUS.REDISPATCH_PLANNED,
-    }))).toContain("trip mới đã rời kho");
+    }))).toBe(
+      "Chỉ được đóng Incident sau khi chuyến mới đã kẹp seal và xuất phát giao khách."
+    );
   });
 
   it("15. REDISPATCHED_TO_CUSTOMER và expense hợp lệ mới cho resolve", () => {
@@ -123,7 +128,40 @@ describe("Dispatcher Incident acceptance state machine", () => {
       status: INCIDENT_STATUS.REDISPATCHED_TO_CUSTOMER,
       driverPaidAmount: 100_000,
       expenseStatus: INCIDENT_EXPENSE_STATUS.APPROVED,
-    }))).toContain("hoàn ứng");
+    }))).toBe(
+      "Chưa thể đóng Incident vì khoản Driver ứng trước chưa được hoàn trả."
+    );
+  });
+
+  it("không cho breakdown đóng tại external transit, ready hoặc redispatch planned", () => {
+    for (const status of [
+      INCIDENT_STATUS.EXTERNAL_REEFER_IN_TRANSIT,
+      INCIDENT_STATUS.READY_FOR_REDISPATCH,
+      INCIDENT_STATUS.REDISPATCH_PLANNED,
+    ]) {
+      expect(getResolutionBlocker(incident({
+        incidentType: INCIDENT_TYPE.VEHICLE_BREAKDOWN,
+        status,
+      }))).toBe(
+        "Chỉ được đóng Incident sau khi chuyến mới đã kẹp seal và xuất phát giao khách."
+      );
+    }
+  });
+
+  it("dịch lỗi resolve backend và quyền sang message Dispatcher", () => {
+    expect(getResolveIncidentErrorMessage({
+      response: {
+        data: {
+          message:
+            "Vehicle/reefer breakdown can only be resolved after the new warehouse trip is sealed and dispatched to customers.",
+        },
+      },
+    })).toBe(
+      "Chỉ được đóng Incident sau khi chuyến mới đã kẹp seal và xuất phát giao khách."
+    );
+    expect(getResolveIncidentErrorMessage({
+      response: { status: 403 },
+    })).toBe("Bạn không có quyền đóng Incident.");
   });
 
   it("16. SignalR inbound urgent lấy đúng Incident để refetch và hiện CTA", () => {

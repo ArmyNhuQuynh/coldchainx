@@ -105,7 +105,7 @@ export const getIncidentStatusLabel = (status?: string | null) => {
       };
     case INCIDENT_STATUS.RESOLVED:
       return {
-        label: "Đã giải quyết",
+        label: "Đã đóng",
         className: "border-emerald-500 bg-transparent text-emerald-700",
       };
     default:

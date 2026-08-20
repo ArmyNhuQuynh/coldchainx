@@ -1,4 +1,4 @@
-import { getIncidentErrorMessage } from "@/components/incidents/incident-formatters";
+import { getResolveIncidentErrorMessage } from "@/components/incidents/incident-formatters";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -31,14 +31,19 @@ const ResolveIncidentDialog = ({ open, incident, onOpenChange }: Props) => {
   const handleSubmit = async () => {
     if (blocker || !resolutionNote.trim()) return;
     try {
-      await resolveIncident.mutateAsync({
+      const resolved = await resolveIncident.mutateAsync({
         incidentId: incident.incidentId,
         data: { resolutionNote: resolutionNote.trim() },
       });
-      toast.success("Incident đã được đóng.");
+      if (!resolved) {
+        toast.error("Backend chưa xác nhận Incident đã được đóng.");
+        return;
+      }
+      toast.success("Đã đóng Incident thành công.");
+      setResolutionNote("");
       onOpenChange(false);
     } catch (error: unknown) {
-      toast.error(getIncidentErrorMessage(error, "Không thể đóng Incident."));
+      toast.error(getResolveIncidentErrorMessage(error));
     }
   };
 
@@ -63,7 +68,7 @@ const ResolveIncidentDialog = ({ open, incident, onOpenChange }: Props) => {
             rows={4}
             value={resolutionNote}
             onChange={(event) => setResolutionNote(event.target.value)}
-            placeholder="Đã hoàn tất xử lý và tiếp tục giao hàng..."
+            placeholder="Hàng đã được nhập lại kho, tạo chuyến mới và tiếp tục giao cho khách..."
           />
         </div>
         <DialogFooter>
