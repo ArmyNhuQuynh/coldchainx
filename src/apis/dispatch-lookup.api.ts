@@ -7,6 +7,7 @@ import type {
   TDispatchCompatibilityConflict,
   TDispatchDriverLookup,
   TDispatchLookupEnvelope,
+  TDispatchPackageLine,
   TDispatchReadyLpn,
   TDispatchScheduleLookup,
   TDispatchVehicleLookup,
@@ -18,10 +19,64 @@ import {
 import { read, toNumber, unwrapData, unwrapLookup } from "./dispatch-api.helpers";
 import { API_SUFFIX } from "./util.api";
 
+const toArray = <T>(value: T[] | null | undefined): T[] =>
+  Array.isArray(value) ? value : [];
+
+const normalizePackageLine = (
+  item: TDispatchPackageLine | Record<string, any>
+): TDispatchPackageLine => {
+  const raw = item as Record<string, any>;
+
+  return {
+    packageLineId: read<string | null>(raw, "packageLineId", "PackageLineId"),
+    orderPackageLineId: read<string | null>(
+      raw,
+      "orderPackageLineId",
+      "OrderPackageLineId"
+    ),
+    inboundQcPackageLineId: read<string | null>(
+      raw,
+      "inboundQcPackageLineId",
+      "InboundQcPackageLineId"
+    ),
+    label: read<string | null>(raw, "label", "Label"),
+    capacityKg: read<number | null>(raw, "capacityKg", "CapacityKg"),
+    quantity: toNumber(read(raw, "quantity", "Quantity")),
+    lengthCm: read<number | null>(raw, "lengthCm", "LengthCm"),
+    widthCm: read<number | null>(raw, "widthCm", "WidthCm"),
+    heightCm: read<number | null>(raw, "heightCm", "HeightCm"),
+    actualWeightKg: read<number | null>(raw, "actualWeightKg", "ActualWeightKg"),
+  };
+};
+
 const normalizeLpn = (
   item: TDispatchReadyLpn | Record<string, any>
 ): TDispatchReadyLpn => {
   const raw = item as Record<string, any>;
+  const packageLines =
+    read<Array<TDispatchPackageLine | Record<string, any>>>(
+      raw,
+      "packageLines",
+      "PackageLines"
+    ) ??
+    read<Array<TDispatchPackageLine | Record<string, any>>>(
+      raw,
+      "orderPackageLines",
+      "OrderPackageLines"
+    ) ??
+    [];
+  const actualPackageLines =
+    read<Array<TDispatchPackageLine | Record<string, any>>>(
+      raw,
+      "actualPackageLines",
+      "ActualPackageLines"
+    ) ??
+    read<Array<TDispatchPackageLine | Record<string, any>>>(
+      raw,
+      "inboundQcPackageLines",
+      "InboundQcPackageLines"
+    ) ??
+    [];
 
   return {
     lpnId: read<string>(raw, "lpnId", "LpnId"),
@@ -51,6 +106,19 @@ const normalizeLpn = (
     routeName: read<string | null>(raw, "routeName", "RouteName"),
     scheduleId: read<string | null>(raw, "scheduleId", "ScheduleId"),
     scheduleName: read<string | null>(raw, "scheduleName", "ScheduleName"),
+    orderCode:
+      read<string | null>(raw, "orderCode", "OrderCode") ??
+      read<string | null>(raw, "orderTrackingCode", "OrderTrackingCode") ??
+      read<string | null>(raw, "trackingCode", "TrackingCode"),
+    senderName:
+      read<string | null>(raw, "senderName", "SenderName") ??
+      read<string | null>(raw, "customerName", "CustomerName"),
+    receiverName: read<string | null>(raw, "receiverName", "ReceiverName"),
+    receiverPhone: read<string | null>(raw, "receiverPhone", "ReceiverPhone"),
+    state: read<string | null>(raw, "state", "State"),
+    tripId: read<string | null>(raw, "tripId", "TripId"),
+    packageLines: toArray(packageLines).map(normalizePackageLine),
+    actualPackageLines: toArray(actualPackageLines).map(normalizePackageLine),
     category: read<string | null>(raw, "category", "Category"),
     requiredTemperature: read<number | null>(
       raw,

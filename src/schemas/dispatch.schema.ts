@@ -59,6 +59,33 @@ export type TDispatchScheduleLookup = {
   label?: string | null;
 };
 
+export type TDispatchPackageLine = {
+  packageLineId?: string | null;
+  orderPackageLineId?: string | null;
+  inboundQcPackageLineId?: string | null;
+  label?: string | null;
+  capacityKg?: number | null;
+  quantity: number;
+  lengthCm?: number | null;
+  widthCm?: number | null;
+  heightCm?: number | null;
+  actualWeightKg?: number | null;
+};
+
+export type TDispatchOrderDimension = {
+  expectedWeightKg?: number | null;
+  actualWeightKg?: number | null;
+  expectedCbm?: number | null;
+  actualCbm?: number | null;
+  lengthCm?: number | null;
+  widthCm?: number | null;
+  heightCm?: number | null;
+  cbmEstimationMethod?: string | null;
+  cbmEstimationConfidence?: string | null;
+  customerProvidedTotalCbm?: number | null;
+  totalPackageQuantity?: number | null;
+};
+
 export type TDispatchReadyLpn = {
   lpnId: string;
   label?: string;
@@ -79,6 +106,14 @@ export type TDispatchReadyLpn = {
   routeName?: string | null;
   scheduleId?: string | null;
   scheduleName?: string | null;
+  orderCode?: string | null;
+  senderName?: string | null;
+  receiverName?: string | null;
+  receiverPhone?: string | null;
+  state?: string | null;
+  tripId?: string | null;
+  packageLines?: TDispatchPackageLine[];
+  actualPackageLines?: TDispatchPackageLine[];
   category?: string | null;
   requiredTemperature?: number | null;
   hasStrongOdor?: boolean | null;
@@ -342,6 +377,10 @@ export type TDispatchTripDetailsOrder = {
   deliveryStopSequence?: number | null;
   status: string;
   customerName?: string | null;
+  receiverName?: string | null;
+  receiverPhone?: string | null;
+  dimension?: TDispatchOrderDimension | null;
+  packageLines?: TDispatchPackageLine[];
   lpnIds: string[];
   lpnCodes: string[];
   deliveryEpods: TDispatchTripDeliveryEpod[];
@@ -351,6 +390,15 @@ export type TDispatchTripDetailsLpn = {
   lpnId: string;
   lpnCode: string;
   orderId: string;
+  orderCode?: string | null;
+  itemName?: string | null;
+  quantity?: number | null;
+  actualWeightKg?: number | null;
+  actualCbm?: number | null;
+  lengthCm?: number | null;
+  widthCm?: number | null;
+  heightCm?: number | null;
+  actualPackageLines?: TDispatchPackageLine[];
   state: string;
   deliveryStopSequence?: number | null;
 };

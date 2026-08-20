@@ -1,4 +1,6 @@
 import type {
+  TDispatchOrderDimension,
+  TDispatchPackageLine,
   TDispatchTripDeliveryEpod,
   TDispatchTripDetails,
   TDispatchTripDetailsLocation,
@@ -10,6 +12,66 @@ import { read, toNumber } from "./dispatch-api.helpers";
 
 const toArray = (value: unknown): unknown[] =>
   Array.isArray(value) ? value : [];
+
+const normalizePackageLine = (item: unknown): TDispatchPackageLine => {
+  const raw = (item ?? {}) as Record<string, any>;
+
+  return {
+    packageLineId: read<string | null>(raw, "packageLineId", "PackageLineId"),
+    orderPackageLineId: read<string | null>(
+      raw,
+      "orderPackageLineId",
+      "OrderPackageLineId"
+    ),
+    inboundQcPackageLineId: read<string | null>(
+      raw,
+      "inboundQcPackageLineId",
+      "InboundQcPackageLineId"
+    ),
+    label: read<string | null>(raw, "label", "Label"),
+    capacityKg: read<number | null>(raw, "capacityKg", "CapacityKg"),
+    quantity: toNumber(read(raw, "quantity", "Quantity")),
+    lengthCm: read<number | null>(raw, "lengthCm", "LengthCm"),
+    widthCm: read<number | null>(raw, "widthCm", "WidthCm"),
+    heightCm: read<number | null>(raw, "heightCm", "HeightCm"),
+    actualWeightKg: read<number | null>(raw, "actualWeightKg", "ActualWeightKg"),
+  };
+};
+
+const normalizeDimension = (item: unknown): TDispatchOrderDimension | null => {
+  if (!item || typeof item !== "object") return null;
+  const raw = item as Record<string, any>;
+
+  return {
+    expectedWeightKg: read<number | null>(raw, "expectedWeightKg", "ExpectedWeightKg"),
+    actualWeightKg: read<number | null>(raw, "actualWeightKg", "ActualWeightKg"),
+    expectedCbm: read<number | null>(raw, "expectedCbm", "ExpectedCbm"),
+    actualCbm: read<number | null>(raw, "actualCbm", "ActualCbm"),
+    lengthCm: read<number | null>(raw, "lengthCm", "LengthCm"),
+    widthCm: read<number | null>(raw, "widthCm", "WidthCm"),
+    heightCm: read<number | null>(raw, "heightCm", "HeightCm"),
+    cbmEstimationMethod: read<string | null>(
+      raw,
+      "cbmEstimationMethod",
+      "CbmEstimationMethod"
+    ),
+    cbmEstimationConfidence: read<string | null>(
+      raw,
+      "cbmEstimationConfidence",
+      "CbmEstimationConfidence"
+    ),
+    customerProvidedTotalCbm: read<number | null>(
+      raw,
+      "customerProvidedTotalCbm",
+      "CustomerProvidedTotalCbm"
+    ),
+    totalPackageQuantity: read<number | null>(
+      raw,
+      "totalPackageQuantity",
+      "TotalPackageQuantity"
+    ),
+  };
+};
 
 const normalizeLocation = (
   item: unknown
@@ -76,6 +138,12 @@ const normalizeOrder = (item: unknown): TDispatchTripDetailsOrder => {
     customerName: customer
       ? read<string | null>(customer, "companyName", "CompanyName")
       : null,
+    receiverName: read<string | null>(raw, "receiverName", "ReceiverName"),
+    receiverPhone: read<string | null>(raw, "receiverPhone", "ReceiverPhone"),
+    dimension: normalizeDimension(read(raw, "dimension", "Dimension")),
+    packageLines: toArray(read(raw, "packageLines", "PackageLines")).map(
+      normalizePackageLine
+    ),
     lpnIds: toArray(read(raw, "lpnIds", "LpnIds")).map(String),
     lpnCodes: toArray(read(raw, "lpnCodes", "LpnCodes")).map(String),
     deliveryEpods: toArray(
@@ -91,6 +159,17 @@ const normalizeLpn = (item: unknown): TDispatchTripDetailsLpn => {
     lpnId: read<string>(raw, "lpnId", "LpnId"),
     lpnCode: read<string>(raw, "lpnCode", "LpnCode") || "",
     orderId: read<string>(raw, "orderId", "OrderId"),
+    orderCode: read<string | null>(raw, "orderTrackingCode", "OrderTrackingCode"),
+    itemName: read<string | null>(raw, "orderItemName", "OrderItemName"),
+    quantity: read<number | null>(raw, "quantity", "Quantity"),
+    actualWeightKg: read<number | null>(raw, "actualWeightKg", "ActualWeightKg"),
+    actualCbm: read<number | null>(raw, "actualCbm", "ActualCbm"),
+    lengthCm: read<number | null>(raw, "lengthCm", "LengthCm"),
+    widthCm: read<number | null>(raw, "widthCm", "WidthCm"),
+    heightCm: read<number | null>(raw, "heightCm", "HeightCm"),
+    actualPackageLines: toArray(
+      read(raw, "actualPackageLines", "ActualPackageLines")
+    ).map(normalizePackageLine),
     state: read<string>(raw, "state", "State") || "UNKNOWN",
     deliveryStopSequence: read<number | null>(
       raw,

@@ -15,17 +15,38 @@ const WeightCard = ({
     value: string | null;
     isActual?: boolean;
 }) => (
-    <Card>
-        <CardContent className="p-3.5">
-            <p className="mb-1 text-[11px] uppercase text-muted-foreground">{label}</p>
-            <p className={`text-lg font-bold ${isActual && value ? "text-green-600" : ""}`}>
-                {value ?? <span className="text-sm font-normal italic text-muted-foreground">Chưa cập nhật</span>}
-            </p>
-        </CardContent>
-    </Card>
+    <div className="rounded-lg border bg-background p-3.5">
+        <p className="mb-1 text-[11px] uppercase text-muted-foreground">{label}</p>
+        <p className={`text-lg font-bold ${isActual && value ? "text-green-600" : ""}`}>
+            {value ?? <span className="text-sm font-normal italic text-muted-foreground">Chưa cập nhật</span>}
+        </p>
+    </div>
 );
 
+const formatNumber = (value?: number | null, suffix = "") => {
+    if (value === null || value === undefined) return null;
+    return `${value.toLocaleString("vi-VN", { maximumFractionDigits: 3 })}${suffix}`;
+};
+
+const getCbmMethodLabel = (method?: string | null) => {
+    switch (method) {
+        case "CUSTOMER_PROVIDED_TOTAL_CBM":
+            return "Khách cung cấp tổng CBM";
+        case "DENSITY_FACTOR":
+            return "Ước tính theo loại hàng";
+        case "LEGACY_DIMENSION":
+            return "Theo kích thước D x R x C";
+        default:
+            return null;
+    }
+};
+
 const OrderWeightSection = ({ order }: Props) => {
+    const dimension =
+        order.lengthCm && order.widthCm && order.heightCm
+            ? `${order.lengthCm} x ${order.widthCm} x ${order.heightCm} cm`
+            : null;
+
     return (
         <Card>
             <CardHeader className="flex flex-row items-center gap-2 p-4 pb-2 text-base font-semibold">
@@ -36,21 +57,37 @@ const OrderWeightSection = ({ order }: Props) => {
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
                     <WeightCard
                         label="Expected Weight"
-                        value={order.expectedWeightKg ? `${order.expectedWeightKg} kg` : null}
+                        value={formatNumber(order.expectedWeightKg, " kg")}
                     />
                     <WeightCard
                         label="Actual Weight"
-                        value={order.actualWeightKg ? `${order.actualWeightKg} kg` : null}
+                        value={formatNumber(order.actualWeightKg, " kg")}
                         isActual
                     />
                     <WeightCard
                         label="Expected CBM"
-                        value={order.expectedCbm ? `${order.expectedCbm} m³` : null}
+                        value={formatNumber(order.expectedCbm, " m³")}
                     />
                     <WeightCard
                         label="Actual CBM"
-                        value={order.actualCbm ? `${order.actualCbm} m³` : null}
+                        value={formatNumber(order.actualCbm, " m³")}
                         isActual
+                    />
+                    <WeightCard
+                        label="Tổng số kiện"
+                        value={formatNumber(order.totalPackageQuantity ?? order.quantity, " kiện")}
+                    />
+                    <WeightCard
+                        label="Kích thước"
+                        value={dimension}
+                    />
+                    <WeightCard
+                        label="CBM khách gửi"
+                        value={formatNumber(order.customerProvidedTotalCbm, " m³")}
+                    />
+                    <WeightCard
+                        label="Cách tính CBM"
+                        value={getCbmMethodLabel(order.cbmEstimationMethod)}
                     />
                 </div>
             </CardContent>

@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import type { TOrder } from "@/schemas/order.schema";
-import { MapPin } from "lucide-react";
+import { MapPin, Phone, User } from "lucide-react";
 
 type Props = {
   order: TOrder;
@@ -30,6 +30,20 @@ const OrderDestination = ({ order }: Props) => {
         Điểm giao hàng
       </CardHeader>
       <CardContent className="space-y-2 p-4 pt-2">
+        <div className="flex items-start justify-between gap-3 text-sm">
+          <span className="flex items-center gap-1.5 text-muted-foreground">
+            <User className="h-3.5 w-3.5" />
+            Người nhận
+          </span>
+          <span className="text-right font-semibold">{order.receiverName ?? "—"}</span>
+        </div>
+        <div className="flex items-start justify-between gap-3 text-sm">
+          <span className="flex items-center gap-1.5 text-muted-foreground">
+            <Phone className="h-3.5 w-3.5" />
+            SĐT
+          </span>
+          <span className="text-right font-semibold">{order.receiverPhone ?? "—"}</span>
+        </div>
         <div className="flex items-start justify-between gap-3 text-sm">
           <span className="text-muted-foreground">Address</span>
           <span className="text-right font-semibold">{destination.address}</span>

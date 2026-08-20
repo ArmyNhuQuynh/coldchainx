@@ -14,8 +14,10 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { INCIDENT_STATUS } from "@/types/enums/incident-status.enum";
 import DispatchScheduleSelector from "./components/dispatch-schedule-selector";
 import {
+  getBlockingCompatibilityConflicts,
   getDefaultPlanningWindow,
   getPackingBlockingMessages,
+  isScheduleConflict,
 } from "./components/dispatch-helpers";
 import LpnSelectionPanel from "./components/lpn-selection-panel";
 import PackingPreviewDialog from "./components/packing-preview-dialog";
@@ -144,10 +146,10 @@ const DispatchPage = () => {
   );
   const compatibilityRequest = useMemo(
     () =>
-      !incidentMode && selectedScheduleId
+      !incidentMode && selectedScheduleId && selectedLpnIds.length > 0
         ? { scheduleId: selectedScheduleId, selectedLpnIds }
         : undefined,
-    [incidentMode, selectedLpnIds, selectedScheduleId]
+    [incidentMode, selectedLpnIds, selectedLpnIds.length, selectedScheduleId]
   );
   const compatibleLpnsQuery = searchCompatibleLpns(compatibilityRequest, {
     pageNumber: candidatePage,
@@ -159,7 +161,7 @@ const DispatchPage = () => {
       pageSize: COMPATIBLE_LPN_PAGE_SIZE,
       warehouseId: selectedWarehouseId || undefined,
     },
-    !incidentMode && !selectedScheduleId
+    !incidentMode
   );
 
   const schedules = schedulesQuery.data ?? [];
@@ -193,10 +195,40 @@ const DispatchPage = () => {
       ),
     [driversQuery.data, incidentMode, selectedWarehouseName]
   );
-  const lpnQuery = selectedScheduleId ? compatibleLpnsQuery : readyLpnsQuery;
+  const lpnQuery = readyLpnsQuery;
   const compatibility = selectedScheduleId ? compatibleLpnsQuery.data : undefined;
+  const blockingCompatibilityConflicts = useMemo(
+    () => getBlockingCompatibilityConflicts(compatibility?.conflicts ?? []),
+    [compatibility?.conflicts]
+  );
+  const allowedScheduleConflictCount = useMemo(
+    () =>
+      compatibility?.conflicts.filter((conflict) => isScheduleConflict(conflict))
+        .length ?? 0,
+    [compatibility?.conflicts]
+  );
   const lpnResult = lpnQuery.data;
   const candidateLpns = lpnResult?.items ?? [];
+  const isCheckingLpnSelection =
+    lpnQuery.isFetching || compatibleLpnsQuery.isFetching;
+  const selectedScheduleIds = useMemo(
+    () =>
+      new Set(
+        selectedLpns
+          .map((lpn) => lpn.scheduleId)
+          .filter((scheduleId): scheduleId is string => Boolean(scheduleId))
+      ),
+    [selectedLpns]
+  );
+  const hasMixedScheduleSelection = selectedScheduleIds.size > 1;
+  const hasScheduleMismatchSelection =
+    Boolean(selectedScheduleId) &&
+    selectedLpns.some((lpn) => (lpn.scheduleId || "") !== selectedScheduleId);
+  const usesFlexibleSchedule =
+    !incidentMode && (hasMixedScheduleSelection || hasScheduleMismatchSelection);
+  const dispatchScheduleId = usesFlexibleSchedule
+    ? undefined
+    : selectedScheduleId || undefined;
 
   const displayedLpns = useMemo(() => {
     const selectedIds = new Set(selectedLpnIds);
@@ -214,10 +246,12 @@ const DispatchPage = () => {
 
   const selectionKey = useMemo(
     () =>
-      [selectedScheduleId, selectedVehicleId, [...selectedLpnIds].sort().join(",")].join(
-        "|"
-      ),
-    [selectedLpnIds, selectedScheduleId, selectedVehicleId]
+      [
+        dispatchScheduleId ?? (usesFlexibleSchedule ? "flexible" : ""),
+        selectedVehicleId,
+        [...selectedLpnIds].sort().join(","),
+      ].join("|"),
+    [dispatchScheduleId, selectedLpnIds, selectedVehicleId, usesFlexibleSchedule]
   );
   const hasCurrentPreview =
     Boolean(packingPreview) && packingPreviewKey === selectionKey;
@@ -291,7 +325,7 @@ const DispatchPage = () => {
   const handleToggleLpn = (lpn: TDispatchReadyLpn) => {
     if (incidentMode) return;
     const exists = selectedLpnIds.includes(lpn.lpnId);
-    if (!exists && lpnQuery.isFetching) return;
+    if (!exists && isCheckingLpnSelection) return;
 
     setSelectedLpns((items) =>
       exists
@@ -319,8 +353,7 @@ const DispatchPage = () => {
   };
 
   const compatibilityValid =
-    !lpnQuery.isFetching &&
-    (!selectedScheduleId || compatibility?.selectedSetValid === true);
+    !isCheckingLpnSelection && blockingCompatibilityConflicts.length === 0;
   const canPreviewPacking =
     !incidentMode &&
     compatibilityValid &&
@@ -351,12 +384,12 @@ const DispatchPage = () => {
     if (selectedLpns.length > 0 && !selectedWarehouseId) {
       messages.push("LPN đã chọn chưa có thông tin kho xuất phát.");
     }
-    if (!incidentMode && lpnQuery.isFetching && selectedLpns.length > 0) {
+    if (!incidentMode && isCheckingLpnSelection && selectedLpns.length > 0) {
       messages.push("Đang kiểm tra tính tương thích của tập LPN.");
     }
-    if (!incidentMode && compatibility && !compatibility.selectedSetValid) {
+    if (!incidentMode && blockingCompatibilityConflicts.length > 0) {
       messages.push(
-        ...compatibility.conflicts.map(
+        ...blockingCompatibilityConflicts.map(
           (conflict) => conflict.message || "Tập LPN đang chọn không tương thích."
         )
       );
@@ -391,8 +424,8 @@ const DispatchPage = () => {
     return [...new Set(messages)];
   }, [
     lpnQuery.isError,
-    lpnQuery.isFetching,
-    compatibility,
+    isCheckingLpnSelection,
+    blockingCompatibilityConflicts,
     hasCurrentPreview,
     packingPreview,
     plannedEndTime,
@@ -400,7 +433,6 @@ const DispatchPage = () => {
     selectedDriverIds.length,
     selectedLpns.length,
     selectedLpnIds,
-    selectedScheduleId,
     selectedVehicleId,
     selectedWarehouseId,
     driversQuery.isError,
@@ -430,7 +462,7 @@ const DispatchPage = () => {
 
     try {
       const result = await simulatePacking.mutateAsync({
-        ...(selectedScheduleId ? { scheduleId: selectedScheduleId } : {}),
+        ...(dispatchScheduleId ? { scheduleId: dispatchScheduleId } : {}),
         vehicleId: selectedVehicleId,
         lpnIds: selectedLpnIds,
       });
@@ -448,7 +480,7 @@ const DispatchPage = () => {
     try {
       const result = await manualDispatch.mutateAsync({
         incidentId: incidentMode ? incidentId : undefined,
-        ...(selectedScheduleId ? { scheduleId: selectedScheduleId } : {}),
+        ...(dispatchScheduleId ? { scheduleId: dispatchScheduleId } : {}),
         lpnIds: selectedLpnIds,
         vehicleId: selectedVehicleId,
         driverIds: selectedDriverIds,
@@ -522,11 +554,13 @@ const DispatchPage = () => {
           currentPage={lpnResult?.currentPage ?? candidatePage}
           totalPages={lpnResult?.totalPages ?? 0}
           hasSchedule={incidentMode || Boolean(selectedScheduleId)}
+          schedules={schedules}
+          allowsMixedSchedules={usesFlexibleSchedule || allowedScheduleConflictCount > 0}
           isLoading={
             incidentMode ? incidentLpnsQuery.isLoading : lpnQuery.isLoading
           }
           isChecking={
-            incidentMode ? incidentLpnsQuery.isFetching : lpnQuery.isFetching
+            incidentMode ? incidentLpnsQuery.isFetching : isCheckingLpnSelection
           }
           locked={incidentMode}
           panelHeight={vehicleDriverPanelHeight}

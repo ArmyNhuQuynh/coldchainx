@@ -25,6 +25,7 @@ export const OrderStatusSchema = z.string({ message: "Trạng thái đơn hàng 
 
 export const OrderCategoryEnum = z.union([
   z.literal(ORDER_CATEGORY.MEAT_SEAFOOD,          { message: "Loại hàng không hợp lệ" }),
+  z.literal(ORDER_CATEGORY.FRUITS_VEGGIES,        { message: "Loại hàng không hợp lệ" }),
   z.literal(ORDER_CATEGORY.FROZEN_FRUITS_VEGGIES, { message: "Loại hàng không hợp lệ" }),
   z.literal(ORDER_CATEGORY.ICE_CREAM_BEVERAGES,   { message: "Loại hàng không hợp lệ" }),
   z.literal(ORDER_CATEGORY.PHARMACEUTICALS,       { message: "Loại hàng không hợp lệ" }),
@@ -37,6 +38,13 @@ export const OrderDestinationSchema = z.object({
   address:    z.string({ message: "Địa chỉ không hợp lệ" }),
   latitude:   z.number({ message: "Vĩ độ không hợp lệ" }).optional(),
   longitude:  z.number({ message: "Kinh độ không hợp lệ" }).optional(),
+});
+
+export const OrderPackageLineSchema = z.object({
+  orderPackageLineId: z.string().uuid({ message: "ID dòng thùng không hợp lệ" }).optional(),
+  label:              z.string({ message: "Tên loại thùng không hợp lệ" }).nullable().optional(),
+  capacityKg:         z.number({ message: "Sức chứa thùng không hợp lệ" }).nullable().optional(),
+  quantity:           z.number({ message: "Số lượng thùng không hợp lệ" }).int(),
 });
 
 // ===== DOCUMENT =====
@@ -111,7 +119,19 @@ export const OrderSchema = z.object({
   actualWeightKg:   z.number({ message: "Cân nặng thực tế không hợp lệ" }),
   expectedCbm:      z.number({ message: "Thể tích dự kiến không hợp lệ" }),
   actualCbm:        z.number({ message: "Thể tích thực tế không hợp lệ" }).nullable(),
+  lengthCm:         z.number({ message: "Chiều dài không hợp lệ" }).nullable().optional(),
+  widthCm:          z.number({ message: "Chiều rộng không hợp lệ" }).nullable().optional(),
+  heightCm:         z.number({ message: "Chiều cao không hợp lệ" }).nullable().optional(),
+  cbmEstimationMethod: z.string({ message: "Cách tính CBM không hợp lệ" }).nullable().optional(),
+  cbmEstimationConfidence: z.string({ message: "Độ tin cậy CBM không hợp lệ" }).nullable().optional(),
+  customerProvidedTotalCbm: z.number({ message: "CBM khách cung cấp không hợp lệ" }).nullable().optional(),
+  totalPackageQuantity: z.number({ message: "Tổng số kiện không hợp lệ" }).int().nullable().optional(),
+  packageLines:     z.array(OrderPackageLineSchema, { message: "Danh sách loại thùng không hợp lệ" }).optional(),
   cargoValue:       z.number({ message: "Giá trị hàng hóa không hợp lệ" }).nullable().optional(),
+  receiverName:     z.string({ message: "Tên người nhận không hợp lệ" }).nullable().optional(),
+  receiverPhone:    z.string({ message: "SĐT người nhận không hợp lệ" }).nullable().optional(),
+  customerContactName: z.string({ message: "Tên liên hệ khách hàng không hợp lệ" }).nullable().optional(),
+  customerPhone:    z.string({ message: "SĐT khách hàng không hợp lệ" }).nullable().optional(),
   status:           OrderStatusSchema,
   masterTripId:     z.string().uuid({ message: "ID chuyến không hợp lệ" }).nullable(),
   createdAt:        z.string({ message: "Thời gian tạo không hợp lệ" }).nullable(),
@@ -160,6 +180,7 @@ export const ReviewOrderResponseSchema = z.object({
 export type TOrder             = z.infer<typeof OrderSchema>;
 export type TOrderListResponse = z.infer<typeof OrderListResponseSchema>;
 export type TOrderDestination  = z.infer<typeof OrderDestinationSchema>;
+export type TOrderPackageLine  = z.infer<typeof OrderPackageLineSchema>;
 export type TOrderDocument     = z.infer<typeof OrderDocumentSchema>;
 export type TReviewOrder       = z.infer<typeof ReviewOrderSchema>;
 export type TReviewOrderResponse = z.infer<typeof ReviewOrderResponseSchema>;

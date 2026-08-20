@@ -5,11 +5,16 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import type { TDispatchReadyLpn } from "@/schemas/dispatch.schema";
+import type {
+  TDispatchReadyLpn,
+  TDispatchScheduleLookup,
+} from "@/schemas/dispatch.schema";
 import { DISPATCH_TEMPERATURE_GROUP } from "@/types/enums/dispatch.enum";
 import type { CSSProperties } from "react";
 import {
+  AlertTriangle,
   Box,
+  CalendarClock,
   ChevronLeft,
   ChevronRight,
   MapPin,
@@ -20,10 +25,13 @@ import {
   UserRound,
 } from "lucide-react";
 import {
+  formatPackageSummary,
+  formatScheduleDeadline,
   formatNumber,
   getLpnWarehouseName,
   getTemperatureGroup,
   getTemperatureGroupLabel,
+  isLpnPastSchedule,
 } from "./dispatch-helpers";
 
 type Props = {
@@ -33,6 +41,8 @@ type Props = {
   currentPage: number;
   totalPages: number;
   hasSchedule: boolean;
+  schedules?: TDispatchScheduleLookup[];
+  allowsMixedSchedules?: boolean;
   isLoading?: boolean;
   isChecking?: boolean;
   panelHeight?: number | null;
@@ -48,6 +58,8 @@ const LpnSelectionPanel = ({
   currentPage,
   totalPages,
   hasSchedule,
+  schedules = [],
+  allowsMixedSchedules,
   isLoading,
   isChecking,
   panelHeight,
@@ -60,6 +72,18 @@ const LpnSelectionPanel = ({
         "--dispatch-lpn-panel-height": `${panelHeight}px`,
       } as CSSProperties)
     : undefined;
+  const overdueCount = lpns.filter((lpn) =>
+    isLpnPastSchedule(lpn, schedules)
+  ).length;
+  const orderedLpns = [...lpns].sort((left, right) => {
+    const leftSelected = selectedIds.includes(left.lpnId) ? 1 : 0;
+    const rightSelected = selectedIds.includes(right.lpnId) ? 1 : 0;
+    if (leftSelected !== rightSelected) return rightSelected - leftSelected;
+
+    const leftOverdue = isLpnPastSchedule(left, schedules) ? 1 : 0;
+    const rightOverdue = isLpnPastSchedule(right, schedules) ? 1 : 0;
+    return rightOverdue - leftOverdue;
+  });
 
   return (
     <Card
@@ -71,16 +95,26 @@ const LpnSelectionPanel = ({
           <div>
             <CardTitle className="flex items-center gap-2 text-lg">
               <PackageCheck className="h-5 w-5 text-emerald-700" />
-              LPN đã ở trong kho
+              LPN chờ ghép chuyến
             </CardTitle>
             <p className="mt-1 text-sm text-muted-foreground">
               {locked
                 ? `Đã chọn ${selectedIds.length}/${totalRecords} LPN · Không thể bỏ chọn`
-                : `${selectedIds.length} LPN đang được chọn`}
+                : `${selectedIds.length} LPN đang được chọn · ${overdueCount} quá lịch trên trang`}
             </p>
+            {allowsMixedSchedules && (
+              <p className="mt-1 text-xs font-medium text-emerald-700">
+                Đang ghép linh hoạt nhiều lịch
+              </p>
+            )}
+            {!locked && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                Tồn kho chỉ tính các LPN đã quá lịch giao mà chưa được ghép chuyến
+              </p>
+            )}
           </div>
           <Badge variant="outline">
-            {isChecking ? "Đang kiểm tra..." : `${totalRecords} LPN phù hợp`}
+            {isChecking ? "Đang kiểm tra..." : `${totalRecords} LPN sẵn sàng`}
           </Badge>
         </div>
       </CardHeader>
@@ -101,17 +135,19 @@ const LpnSelectionPanel = ({
                 </p>
                 <p className="mt-1 text-sm text-muted-foreground">
                   {hasSchedule
-                    ? "Không còn LPN nào phù hợp với lịch và tập đang chọn"
+                    ? "Không còn LPN IN_STOCK chưa ghép chuyến cho bộ lọc hiện tại"
                     : "Không có LPN IN_STOCK nào sẵn sàng để ghép chuyến"}
                 </p>
               </div>
             )}
 
             {!isLoading &&
-              lpns.map((lpn) => {
+              orderedLpns.map((lpn) => {
                 const checked = selectedIds.includes(lpn.lpnId);
                 const tempGroup = getTemperatureGroup(lpn.tempCondition);
                 const disabled = Boolean(locked) || (!checked && Boolean(isChecking));
+                const isOverdue = isLpnPastSchedule(lpn, schedules);
+                const packageSummary = formatPackageSummary(lpn);
 
                 return (
                   <div
@@ -145,11 +181,28 @@ const LpnSelectionPanel = ({
                             <Badge
                               variant="outline"
                               className="max-w-[180px] truncate"
-                              title={lpn.trackingCode}
+                              title={`Mã order: ${lpn.trackingCode}`}
                             >
-                              {lpn.trackingCode}
+                              Order {lpn.trackingCode}
                             </Badge>
                           )}
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              isOverdue
+                                ? "border-amber-300 bg-amber-50 text-amber-800"
+                                : "border-slate-200 bg-slate-50 text-slate-700"
+                            )}
+                          >
+                            {isOverdue ? (
+                              <>
+                                <AlertTriangle className="mr-1 h-3 w-3" />
+                                Tồn kho quá lịch
+                              </>
+                            ) : (
+                              "Theo lịch"
+                            )}
+                          </Badge>
                           {checked && (
                             <Badge className="bg-emerald-700 text-white">
                               {locked ? "Bắt buộc" : "Đã chọn"}
@@ -197,7 +250,7 @@ const LpnSelectionPanel = ({
                           <span className="flex min-w-0 items-center gap-1.5">
                             <UserRound className="h-3.5 w-3.5 shrink-0" />
                             <span className="truncate">
-                              {lpn.customerName || "Chưa có khách hàng"}
+                              {lpn.senderName || lpn.customerName || "Chưa có người gửi"}
                             </span>
                           </span>
                           <span className="flex min-w-0 items-center gap-1.5">
@@ -210,6 +263,19 @@ const LpnSelectionPanel = ({
                           <span className="flex min-w-0 items-center gap-1.5">
                             <Snowflake className="h-3.5 w-3.5 shrink-0" />
                             <span className="truncate">{lpn.tempCondition || "—"}</span>
+                          </span>
+                          <span className="flex min-w-0 items-center gap-1.5">
+                            <CalendarClock className="h-3.5 w-3.5 shrink-0" />
+                            <span className="truncate">
+                              {lpn.scheduleName || "Chưa có lịch"} ·{" "}
+                              {formatScheduleDeadline(lpn, schedules)}
+                            </span>
+                          </span>
+                          <span className="flex min-w-0 items-center gap-1.5">
+                            <PackageCheck className="h-3.5 w-3.5 shrink-0" />
+                            <span className="truncate" title={packageSummary}>
+                              {packageSummary}
+                            </span>
                           </span>
                         </div>
 

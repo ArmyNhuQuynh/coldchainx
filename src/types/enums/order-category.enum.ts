@@ -1,5 +1,6 @@
 export const ORDER_CATEGORY = {
   MEAT_SEAFOOD: "MEAT_SEAFOOD",
+  FRUITS_VEGGIES: "FRUITS_VEGGIES",
   FROZEN_FRUITS_VEGGIES: "FROZEN_FRUITS_VEGGIES",
   ICE_CREAM_BEVERAGES: "ICE_CREAM_BEVERAGES",
   PHARMACEUTICALS: "PHARMACEUTICALS",
@@ -17,6 +18,11 @@ export function getOrderCategoryLabel(category: TOrderCategory): {
       return {
         label: "Thịt & Hải sản",
         className: "border-red-400 text-red-700 bg-transparent",
+      };
+    case ORDER_CATEGORY.FRUITS_VEGGIES:
+      return {
+        label: "Rau củ & Trái cây mát",
+        className: "border-emerald-400 text-emerald-700 bg-transparent",
       };
     case ORDER_CATEGORY.FROZEN_FRUITS_VEGGIES:
       return {
