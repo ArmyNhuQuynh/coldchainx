@@ -8,9 +8,8 @@ import { IncidentExpenseBadge } from "@/components/incidents/incident-badges";
 import { formatIncidentDate, formatIncidentId, formatIncidentMoney } from "@/components/incidents/incident-formatters";
 import type { TIncident } from "@/schemas/incident.schema";
 import { INCIDENT_EXPENSE_STATUS } from "@/types/enums/incident-expense-status.enum";
-import { INCIDENT_STATUS } from "@/types/enums/incident-status.enum";
 import { getIncidentTypeLabel } from "@/types/enums/incident-type.enum";
-import { CheckCircle2, ReceiptText, WalletCards } from "lucide-react";
+import { ReceiptText, WalletCards } from "lucide-react";
 
 type Props = {
   incidents: TIncident[];
@@ -18,7 +17,6 @@ type Props = {
   onView: (incident: TIncident) => void;
   onReview: (incident: TIncident) => void;
   onReimburse: (incident: TIncident) => void;
-  onResolve: (incident: TIncident) => void;
   title?: string;
   description?: string;
 };
@@ -29,7 +27,6 @@ const ExpenseTable = ({
   onView,
   onReview,
   onReimburse,
-  onResolve,
   title = "Đề nghị hoàn chi phí",
   description = "Đối chiếu hóa đơn trước khi duyệt và tải chứng từ sau khi hoàn tiền",
 }: Props) => (
@@ -70,14 +67,7 @@ const ExpenseTable = ({
                 </TableCell>
               </TableRow>
             )}
-            {!isLoading && incidents.map((incident) => {
-              const readyToResolve =
-                (incident.status === INCIDENT_STATUS.CONTINUED ||
-                  incident.status === INCIDENT_STATUS.TRANSLOAD_COMPLETED) &&
-                (incident.expenseStatus === INCIDENT_EXPENSE_STATUS.NOT_REQUIRED ||
-                  incident.expenseStatus === INCIDENT_EXPENSE_STATUS.REIMBURSED);
-
-              return (
+            {!isLoading && incidents.map((incident) => (
               <TableRow key={incident.incidentId} className="cursor-pointer" onClick={() => onView(incident)}>
                 <TableCell className="pl-5">
                   <p className="font-semibold">SC-{formatIncidentId(incident.incidentId)}</p>
@@ -95,21 +85,15 @@ const ExpenseTable = ({
                 </TableCell>
                 <TableCell><IncidentExpenseBadge status={incident.expenseStatus} /></TableCell>
                 <TableCell className="pr-5 text-right">
-                  {readyToResolve && (
-                    <Button type="button" size="sm" className="gap-1.5" onClick={(event) => { event.stopPropagation(); onResolve(incident); }}>
-                      <CheckCircle2 className="h-3.5 w-3.5" /> Đóng sự cố
-                    </Button>
-                  )}
-                  {!readyToResolve && incident.expenseStatus === INCIDENT_EXPENSE_STATUS.PENDING_APPROVAL && (
+                  {incident.expenseStatus === INCIDENT_EXPENSE_STATUS.PENDING_APPROVAL && (
                     <Button type="button" size="sm" onClick={(event) => { event.stopPropagation(); onReview(incident); }}>Duyệt chi phí</Button>
                   )}
-                  {!readyToResolve && incident.expenseStatus === INCIDENT_EXPENSE_STATUS.APPROVED && (
+                  {incident.expenseStatus === INCIDENT_EXPENSE_STATUS.APPROVED && (
                     <Button type="button" size="sm" onClick={(event) => { event.stopPropagation(); onReimburse(incident); }}>Hoàn tiền</Button>
                   )}
                 </TableCell>
               </TableRow>
-              );
-            })}
+            ))}
           </TableBody>
         </Table>
       </ScrollArea>

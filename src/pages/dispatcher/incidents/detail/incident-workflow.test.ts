@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import type { TIncident } from "@/schemas/incident.schema";
-import { INCIDENT_STATUS } from "@/types/enums/incident-status.enum";
+import {
+  getIncidentStatusLabel,
+  INCIDENT_STATUS,
+} from "@/types/enums/incident-status.enum";
 import { INCIDENT_TYPE } from "@/types/enums/incident-type.enum";
 import { INCIDENT_EXPENSE_STATUS } from "@/types/enums/incident-expense-status.enum";
 import {
@@ -162,6 +165,15 @@ describe("Dispatcher Incident acceptance state machine", () => {
     expect(getResolveIncidentErrorMessage({
       response: { status: 403 },
     })).toBe("Bạn không có quyền đóng Incident.");
+  });
+
+  it("RESOLVED đổi badge thành Đã đóng và không còn action xử lý", () => {
+    expect(getIncidentStatusLabel(INCIDENT_STATUS.RESOLVED).label).toBe(
+      "Đã đóng"
+    );
+    expect(getIncidentPrimaryAction(INCIDENT_STATUS.RESOLVED)).toBe(
+      "READ_ONLY"
+    );
   });
 
   it("16. SignalR inbound urgent lấy đúng Incident để refetch và hiện CTA", () => {
