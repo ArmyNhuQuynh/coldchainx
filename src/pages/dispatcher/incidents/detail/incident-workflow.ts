@@ -2,6 +2,7 @@ import type { TIncident } from "@/schemas/incident.schema";
 import { INCIDENT_EXPENSE_STATUS } from "@/types/enums/incident-expense-status.enum";
 import { INCIDENT_STATUS } from "@/types/enums/incident-status.enum";
 import { INCIDENT_TYPE } from "@/types/enums/incident-type.enum";
+import { normalizeUserRole, USER_ROLE } from "@/types/enums/user-role.enum";
 
 export type TIncidentPrimaryAction =
   | "ASSESS_RISK"
@@ -18,7 +19,7 @@ export type TIncidentPrimaryAction =
   | "READ_ONLY";
 
 export const isMandatoryExternalReeferIncident = (
-  incidentOrType: Pick<TIncident, "incidentType"> | string
+  incidentOrType: Pick<TIncident, "incidentType"> | string,
 ) => {
   const type =
     typeof incidentOrType === "string"
@@ -31,7 +32,7 @@ export const isMandatoryExternalReeferIncident = (
 };
 
 export const getIncidentPrimaryAction = (
-  status?: string | null
+  status?: string | null,
 ): TIncidentPrimaryAction => {
   switch (status) {
     case INCIDENT_STATUS.REPORTED:
@@ -69,7 +70,7 @@ export const getExpenseResolutionBlocker = (
   incident: Pick<
     TIncident,
     "driverPaidAmount" | "expenseStatus" | "reimbursedAmount"
-  >
+  >,
 ) => {
   if (Number(incident.driverPaidAmount ?? 0) <= 0) return null;
   if (
@@ -81,40 +82,73 @@ export const getExpenseResolutionBlocker = (
   return null;
 };
 
-export const getResolutionBlocker = (
-  incident: Pick<
-    TIncident,
-    | "incidentType"
-    | "status"
-    | "driverPaidAmount"
-    | "expenseStatus"
-    | "reimbursedAmount"
-  >
-) => {
-  if (isMandatoryExternalReeferIncident(incident)) {
-    if (incident.status !== INCIDENT_STATUS.REDISPATCHED_TO_CUSTOMER) {
-      return "Chỉ được đóng Incident sau khi chuyến mới đã kẹp seal và xuất phát giao khách.";
-    }
+export type TIncidentResolveEligibility = {
+  allowed: boolean;
+  reason?: string;
+};
+
+export const getIncidentResolveEligibility = (
+  incident: TIncident,
+  currentRole?: string | null,
+): TIncidentResolveEligibility => {
+  const role = normalizeUserRole(currentRole);
+  if (role !== USER_ROLE.DISPATCHER && role !== USER_ROLE.ADMIN) {
+    return { allowed: false, reason: "Bạn không có quyền đóng Incident." };
+  }
+
+  if (incident.status === INCIDENT_STATUS.RESOLVED) {
+    return { allowed: false, reason: "Incident đã được đóng." };
   }
 
   const expenseBlocker = getExpenseResolutionBlocker(incident);
-  if (expenseBlocker) return expenseBlocker;
+  if (expenseBlocker) {
+    return { allowed: false, reason: expenseBlocker };
+  }
 
-  if (isMandatoryExternalReeferIncident(incident)) return null;
+  if (!incident.requiresRescue) {
+    return incident.status === INCIDENT_STATUS.CONTINUED
+      ? { allowed: true }
+      : {
+          allowed: false,
+          reason: "Chuyến phải được tiếp tục trước khi đóng Incident.",
+        };
+  }
 
-  const allowedStatuses = new Set<string>([
-    INCIDENT_STATUS.CONTINUED,
-    INCIDENT_STATUS.TRANSLOAD_COMPLETED,
-    INCIDENT_STATUS.REDISPATCHED_TO_CUSTOMER,
-  ]);
-  return allowedStatuses.has(incident.status)
-    ? null
-    : "Trạng thái hiện tại chưa đủ điều kiện đóng Incident.";
+  if (isMandatoryExternalReeferIncident(incident)) {
+    const hasRedispatchVehicle =
+      Boolean(incident.replacementVehicleId) &&
+      (incident.status === INCIDENT_STATUS.REDISPATCH_PLANNED ||
+        incident.status === INCIDENT_STATUS.REDISPATCHED_TO_CUSTOMER);
+
+    return hasRedispatchVehicle
+      ? { allowed: true }
+      : {
+          allowed: false,
+          reason:
+            "Cần tạo chuyến mới bằng xe ColdChainX trước khi đóng Incident.",
+        };
+  }
+
+  const replacementDispatched =
+    Boolean(incident.replacementVehicleId) &&
+    Boolean(incident.rescueDispatchedAt);
+
+  return replacementDispatched
+    ? { allowed: true }
+    : {
+        allowed: false,
+        reason: "Cần điều xe thay thế trước khi đóng Incident.",
+      };
 };
+
+export const getResolutionBlocker = (
+  incident: TIncident,
+  currentRole: string | null = USER_ROLE.DISPATCHER,
+) => getIncidentResolveEligibility(incident, currentRole).reason ?? null;
 
 export const isSlaOverdue = (
   incident: Pick<TIncident, "slaDueAt" | "status">,
-  now = new Date()
+  now = new Date(),
 ) => {
   if (!incident.slaDueAt || incident.status === INCIDENT_STATUS.RESOLVED) {
     return false;
@@ -125,7 +159,7 @@ export const isSlaOverdue = (
 
 export const hasExactLockedLpnSelection = (
   requiredLpnIds: string[],
-  selectedLpnIds: string[]
+  selectedLpnIds: string[],
 ) => {
   const required = new Set(requiredLpnIds);
   const selected = new Set(selectedLpnIds);
@@ -161,7 +195,7 @@ const STATUS_PRIORITY: Record<string, number> = {
 
 export const sortIncidentsByDispatcherPriority = (
   incidents: TIncident[],
-  now = new Date()
+  now = new Date(),
 ) =>
   [...incidents].sort((left, right) => {
     const leftPriority =

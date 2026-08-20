@@ -1,16 +1,19 @@
 import { Button } from "@/components/ui/button";
 import IncidentLoadError from "@/components/incidents/incident-load-error";
 import { useIncident } from "@/hooks/use-incident";
+import type { RootState } from "@/redux/store";
 import { PATH_DISPATCHER_DASHBOARD } from "@/routes/path";
 import type { TIncident } from "@/schemas/incident.schema";
 import { INCIDENT_STATUS } from "@/types/enums/incident-status.enum";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import IncidentFilterBar from "./components/incident-filter-bar";
 import IncidentSummaryStrip from "./components/incident-summary-strip";
 import IncidentTable from "./components/incident-table";
 import { sortIncidentsByDispatcherPriority } from "../detail/incident-workflow";
+import ResolveIncidentDialog from "../detail/components/resolve-incident-dialog";
 
 const matchesSearch = (incident: TIncident, search: string) => {
   const keyword = search.trim().toLowerCase();
@@ -32,6 +35,7 @@ const matchesSearch = (incident: TIncident, search: string) => {
 
 const IncidentListPage = () => {
   const navigate = useNavigate();
+  const currentRole = useSelector((state: RootState) => state.user.role);
   const { getAllIncidents } = useIncident();
   const incidentsQuery = getAllIncidents();
   const incidents = incidentsQuery.data ?? [];
@@ -41,38 +45,56 @@ const IncidentListPage = () => {
   const [incidentType, setIncidentType] = useState("ALL");
   const [queue, setQueue] = useState("ALL");
   const [rescue, setRescue] = useState("ALL");
+  const [resolveIncidentId, setResolveIncidentId] = useState<string | null>(
+    null,
+  );
+  const resolveTarget = resolveIncidentId
+    ? incidents.find((incident) => incident.incidentId === resolveIncidentId)
+    : null;
 
   const filteredIncidents = useMemo(
     () =>
-      sortIncidentsByDispatcherPriority(incidents.filter((incident) => {
-        const matchesStatus =
-          status === "ALL" ||
-          (status === "UNRESOLVED"
-            ? incident.status !== INCIDENT_STATUS.RESOLVED
-            : incident.status === status);
-        const matchesRisk = risk === "ALL" || incident.riskLevel === risk;
-        const matchesType = incidentType === "ALL" || incident.incidentType === incidentType;
-        const matchesQueue =
-          queue === "ALL" ||
-          (queue === "DISPATCHER_ACTION" &&
-            new Set<string>([
-              INCIDENT_STATUS.REPORTED,
-              INCIDENT_STATUS.TRIAGED,
-              INCIDENT_STATUS.MONITORING,
-              INCIDENT_STATUS.CONTAINMENT_REQUIRED,
-              INCIDENT_STATUS.RESCUE_PLANNING,
-              INCIDENT_STATUS.READY_FOR_REDISPATCH,
-              INCIDENT_STATUS.REDISPATCHED_TO_CUSTOMER,
-              INCIDENT_STATUS.CONTINUED,
-              INCIDENT_STATUS.TRANSLOAD_COMPLETED,
-            ]).has(incident.status));
-        const matchesRescue =
-          rescue === "ALL" ||
-          (rescue === "REQUIRED" ? incident.requiresRescue : !incident.requiresRescue);
+      sortIncidentsByDispatcherPriority(
+        incidents.filter((incident) => {
+          const matchesStatus =
+            status === "ALL" ||
+            (status === "UNRESOLVED"
+              ? incident.status !== INCIDENT_STATUS.RESOLVED
+              : incident.status === status);
+          const matchesRisk = risk === "ALL" || incident.riskLevel === risk;
+          const matchesType =
+            incidentType === "ALL" || incident.incidentType === incidentType;
+          const matchesQueue =
+            queue === "ALL" ||
+            (queue === "DISPATCHER_ACTION" &&
+              new Set<string>([
+                INCIDENT_STATUS.REPORTED,
+                INCIDENT_STATUS.TRIAGED,
+                INCIDENT_STATUS.MONITORING,
+                INCIDENT_STATUS.CONTAINMENT_REQUIRED,
+                INCIDENT_STATUS.RESCUE_PLANNING,
+                INCIDENT_STATUS.READY_FOR_REDISPATCH,
+                INCIDENT_STATUS.REDISPATCHED_TO_CUSTOMER,
+                INCIDENT_STATUS.CONTINUED,
+                INCIDENT_STATUS.TRANSLOAD_COMPLETED,
+              ]).has(incident.status));
+          const matchesRescue =
+            rescue === "ALL" ||
+            (rescue === "REQUIRED"
+              ? incident.requiresRescue
+              : !incident.requiresRescue);
 
-        return matchesSearch(incident, search) && matchesStatus && matchesRisk && matchesType && matchesQueue && matchesRescue;
-      })),
-    [incidentType, incidents, queue, rescue, risk, search, status]
+          return (
+            matchesSearch(incident, search) &&
+            matchesStatus &&
+            matchesRisk &&
+            matchesType &&
+            matchesQueue &&
+            matchesRescue
+          );
+        }),
+      ),
+    [incidentType, incidents, queue, rescue, risk, search, status],
   );
 
   return (
@@ -96,7 +118,9 @@ const IncidentListPage = () => {
           disabled={incidentsQuery.isFetching}
           onClick={() => incidentsQuery.refetch()}
         >
-          <RefreshCw className={`h-4 w-4 ${incidentsQuery.isFetching ? "animate-spin" : ""}`} />
+          <RefreshCw
+            className={`h-4 w-4 ${incidentsQuery.isFetching ? "animate-spin" : ""}`}
+          />
           Đồng bộ sự cố
         </Button>
       </div>
@@ -129,9 +153,23 @@ const IncidentListPage = () => {
         <IncidentTable
           incidents={filteredIncidents}
           isLoading={incidentsQuery.isLoading}
+          currentRole={currentRole}
           onSelect={(incident) =>
-            navigate(PATH_DISPATCHER_DASHBOARD.incident.detail(incident.incidentId))
+            navigate(
+              PATH_DISPATCHER_DASHBOARD.incident.detail(incident.incidentId),
+            )
           }
+          onResolve={(incident) => setResolveIncidentId(incident.incidentId)}
+        />
+      )}
+      {resolveTarget && (
+        <ResolveIncidentDialog
+          open={Boolean(resolveIncidentId)}
+          incident={resolveTarget}
+          currentRole={currentRole}
+          onOpenChange={(open) => {
+            if (!open) setResolveIncidentId(null);
+          }}
         />
       )}
     </div>

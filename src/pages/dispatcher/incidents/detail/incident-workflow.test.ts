@@ -10,12 +10,16 @@ import {
   buildExternalReeferConfirmationRequest,
   getExternalReeferConfigurationBlocker,
   getIncidentPrimaryAction,
+  getIncidentResolveEligibility,
   getResolutionBlocker,
   hasExactLockedLpnSelection,
   isMandatoryExternalReeferIncident,
   sortIncidentsByDispatcherPriority,
 } from "./incident-workflow";
-import { extractIncidentIdFromRealtimePayload, INCIDENT_REALTIME_EVENTS } from "@/lib/incident-notification-events";
+import {
+  extractIncidentIdFromRealtimePayload,
+  INCIDENT_REALTIME_EVENTS,
+} from "@/lib/incident-notification-events";
 import {
   getIncidentErrorMessage,
   getResolveIncidentErrorMessage,
@@ -41,48 +45,74 @@ const incident = (overrides: Partial<TIncident> = {}): TIncident => ({
 
 describe("Dispatcher Incident acceptance state machine", () => {
   it("1. REPORTED hiển thị CTA đánh giá risk", () => {
-    expect(getIncidentPrimaryAction(INCIDENT_STATUS.REPORTED)).toBe("ASSESS_RISK");
+    expect(getIncidentPrimaryAction(INCIDENT_STATUS.REPORTED)).toBe(
+      "ASSESS_RISK",
+    );
   });
 
   it("2. LOW sửa tại chỗ: TRIAGED cho phép continue trip", () => {
-    expect(getIncidentPrimaryAction(INCIDENT_STATUS.TRIAGED)).toBe("CONTINUE_TRIP");
+    expect(getIncidentPrimaryAction(INCIDENT_STATUS.TRIAGED)).toBe(
+      "CONTINUE_TRIP",
+    );
   });
 
   it("3. WARNING có reading tin cậy: MONITORING cho phép continue/reassess", () => {
-    expect(getIncidentPrimaryAction(INCIDENT_STATUS.MONITORING)).toBe("CONTINUE_TRIP");
+    expect(getIncidentPrimaryAction(INCIDENT_STATUS.MONITORING)).toBe(
+      "CONTINUE_TRIP",
+    );
   });
 
   it("4. UI theo response CRITICAL thay vì WARNING người dùng đã chọn", () => {
-    expect(getIncidentPrimaryAction(INCIDENT_STATUS.CONTAINMENT_REQUIRED)).toBe("CONFIRM_CONTAINMENT");
+    expect(getIncidentPrimaryAction(INCIDENT_STATUS.CONTAINMENT_REQUIRED)).toBe(
+      "CONFIRM_CONTAINMENT",
+    );
   });
 
   it("5. CRITICAL chưa containment không mở rescue form", () => {
-    expect(getIncidentPrimaryAction(INCIDENT_STATUS.CONTAINMENT_REQUIRED)).not.toBe("PLAN_RESCUE");
+    expect(
+      getIncidentPrimaryAction(INCIDENT_STATUS.CONTAINMENT_REQUIRED),
+    ).not.toBe("PLAN_RESCUE");
   });
 
   it("6. CRITICAL đã containment mở rescue planning", () => {
-    expect(getIncidentPrimaryAction(INCIDENT_STATUS.RESCUE_PLANNING)).toBe("PLAN_RESCUE");
+    expect(getIncidentPrimaryAction(INCIDENT_STATUS.RESCUE_PLANNING)).toBe(
+      "PLAN_RESCUE",
+    );
   });
 
   it("7. VEHICLE_BREAKDOWN luôn được nhận diện là nhánh external bắt buộc", () => {
-    expect(isMandatoryExternalReeferIncident(INCIDENT_TYPE.VEHICLE_BREAKDOWN)).toBe(true);
-    expect(isMandatoryExternalReeferIncident(INCIDENT_TYPE.REEFER_BREAKDOWN)).toBe(true);
+    expect(
+      isMandatoryExternalReeferIncident(INCIDENT_TYPE.VEHICLE_BREAKDOWN),
+    ).toBe(true);
+    expect(
+      isMandatoryExternalReeferIncident(INCIDENT_TYPE.REEFER_BREAKDOWN),
+    ).toBe(true);
   });
 
   it("8. Breakdown ẩn toàn bộ legacy Quality/LPN/kho lạnh ngoài bằng một nhánh bắt buộc", () => {
-    expect(isMandatoryExternalReeferIncident(incident({ incidentType: INCIDENT_TYPE.VEHICLE_BREAKDOWN }))).toBe(true);
-    expect(isMandatoryExternalReeferIncident(INCIDENT_TYPE.TEMP_EXCURSION)).toBe(false);
+    expect(
+      isMandatoryExternalReeferIncident(
+        incident({ incidentType: INCIDENT_TYPE.VEHICLE_BREAKDOWN }),
+      ),
+    ).toBe(true);
+    expect(
+      isMandatoryExternalReeferIncident(INCIDENT_TYPE.TEMP_EXCURSION),
+    ).toBe(false);
   });
 
   it("9. Xe ngoài gửi payload tối giản và để backend tự xác định kho đích", () => {
-    expect(getExternalReeferConfigurationBlocker({
-      recommendedAction: "EXTERNAL_REEFER_TO_ROUTE_WAREHOUSE",
-      requiresExternalVehicleRental: true,
-    })).toBeNull();
-    expect(getExternalReeferConfigurationBlocker({
-      recommendedAction: "EXTERNAL_REEFER_TO_ROUTE_WAREHOUSE",
-      requiresExternalVehicleRental: true,
-    })).toBeNull();
+    expect(
+      getExternalReeferConfigurationBlocker({
+        recommendedAction: "EXTERNAL_REEFER_TO_ROUTE_WAREHOUSE",
+        requiresExternalVehicleRental: true,
+      }),
+    ).toBeNull();
+    expect(
+      getExternalReeferConfigurationBlocker({
+        recommendedAction: "EXTERNAL_REEFER_TO_ROUTE_WAREHOUSE",
+        requiresExternalVehicleRental: true,
+      }),
+    ).toBeNull();
     expect(buildExternalReeferConfirmationRequest()).toEqual({
       externalVehicleConfirmed: true,
     });
@@ -92,11 +122,15 @@ describe("Dispatcher Incident acceptance state machine", () => {
   });
 
   it("10. EXTERNAL_REEFER_IN_TRANSIT chỉ theo dõi Warehouse inbound", () => {
-    expect(getIncidentPrimaryAction(INCIDENT_STATUS.EXTERNAL_REEFER_IN_TRANSIT)).toBe("TRACK_EXTERNAL_REEFER");
+    expect(
+      getIncidentPrimaryAction(INCIDENT_STATUS.EXTERNAL_REEFER_IN_TRANSIT),
+    ).toBe("TRACK_EXTERNAL_REEFER");
   });
 
   it("11. READY_FOR_REDISPATCH mở manual dispatch Incident", () => {
-    expect(getIncidentPrimaryAction(INCIDENT_STATUS.READY_FOR_REDISPATCH)).toBe("CREATE_REDISPATCH_TRIP");
+    expect(getIncidentPrimaryAction(INCIDENT_STATUS.READY_FOR_REDISPATCH)).toBe(
+      "CREATE_REDISPATCH_TRIP",
+    );
   });
 
   it("12. Thiếu hoặc bớt LPN bị chặn", () => {
@@ -106,123 +140,281 @@ describe("Dispatcher Incident acceptance state machine", () => {
   });
 
   it("13. Manual dispatch thành công chuyển UI sang CTA mở trip mới", () => {
-    expect(getIncidentPrimaryAction(INCIDENT_STATUS.REDISPATCH_PLANNED)).toBe("OPEN_REDISPATCH_TRIP");
+    expect(getIncidentPrimaryAction(INCIDENT_STATUS.REDISPATCH_PLANNED)).toBe(
+      "OPEN_REDISPATCH_TRIP",
+    );
   });
 
-  it("14. REDISPATCH_PLANNED chưa cho resolve", () => {
-    expect(getResolutionBlocker(incident({
-      incidentType: INCIDENT_TYPE.VEHICLE_BREAKDOWN,
-      status: INCIDENT_STATUS.REDISPATCH_PLANNED,
-    }))).toBe(
-      "Chỉ được đóng Incident sau khi chuyến mới đã kẹp seal và xuất phát giao khách."
-    );
+  it("14. REDISPATCH_PLANNED có xe ColdChainX cho phép resolve", () => {
+    expect(
+      getIncidentResolveEligibility(
+        incident({
+          incidentType: INCIDENT_TYPE.VEHICLE_BREAKDOWN,
+          requiresRescue: true,
+          replacementVehicleId: "vehicle-coldchainx",
+          status: INCIDENT_STATUS.REDISPATCH_PLANNED,
+        }),
+        "Dispatcher",
+      ),
+    ).toEqual({ allowed: true });
   });
 
   it("15. REDISPATCHED_TO_CUSTOMER và expense hợp lệ mới cho resolve", () => {
-    expect(getResolutionBlocker(incident({
-      incidentType: INCIDENT_TYPE.REEFER_BREAKDOWN,
-      status: INCIDENT_STATUS.REDISPATCHED_TO_CUSTOMER,
-      driverPaidAmount: 100_000,
-      expenseStatus: INCIDENT_EXPENSE_STATUS.REIMBURSED,
-      reimbursedAmount: 100_000,
-    }))).toBeNull();
-    expect(getResolutionBlocker(incident({
-      incidentType: INCIDENT_TYPE.REEFER_BREAKDOWN,
-      status: INCIDENT_STATUS.REDISPATCHED_TO_CUSTOMER,
-      driverPaidAmount: 100_000,
-      expenseStatus: INCIDENT_EXPENSE_STATUS.APPROVED,
-    }))).toBe(
-      "Chưa thể đóng Incident vì khoản Driver ứng trước chưa được hoàn trả."
+    expect(
+      getResolutionBlocker(
+        incident({
+          incidentType: INCIDENT_TYPE.REEFER_BREAKDOWN,
+          requiresRescue: true,
+          replacementVehicleId: "vehicle-coldchainx",
+          status: INCIDENT_STATUS.REDISPATCHED_TO_CUSTOMER,
+          driverPaidAmount: 100_000,
+          expenseStatus: INCIDENT_EXPENSE_STATUS.REIMBURSED,
+          reimbursedAmount: 100_000,
+        }),
+      ),
+    ).toBeNull();
+    expect(
+      getResolutionBlocker(
+        incident({
+          incidentType: INCIDENT_TYPE.REEFER_BREAKDOWN,
+          requiresRescue: true,
+          replacementVehicleId: "vehicle-coldchainx",
+          status: INCIDENT_STATUS.REDISPATCHED_TO_CUSTOMER,
+          driverPaidAmount: 100_000,
+          expenseStatus: INCIDENT_EXPENSE_STATUS.APPROVED,
+        }),
+      ),
+    ).toBe(
+      "Chưa thể đóng Incident vì khoản Driver ứng trước chưa được hoàn trả.",
     );
   });
 
-  it("không cho breakdown đóng tại external transit, ready hoặc redispatch planned", () => {
+  it("không cho breakdown cứu hộ đóng tại external transit hoặc ready", () => {
     for (const status of [
       INCIDENT_STATUS.EXTERNAL_REEFER_IN_TRANSIT,
       INCIDENT_STATUS.READY_FOR_REDISPATCH,
-      INCIDENT_STATUS.REDISPATCH_PLANNED,
     ]) {
-      expect(getResolutionBlocker(incident({
-        incidentType: INCIDENT_TYPE.VEHICLE_BREAKDOWN,
-        status,
-      }))).toBe(
-        "Chỉ được đóng Incident sau khi chuyến mới đã kẹp seal và xuất phát giao khách."
-      );
+      expect(
+        getResolutionBlocker(
+          incident({
+            incidentType: INCIDENT_TYPE.VEHICLE_BREAKDOWN,
+            requiresRescue: true,
+            status,
+          }),
+        ),
+      ).toBe("Cần tạo chuyến mới bằng xe ColdChainX trước khi đóng Incident.");
     }
   });
 
+  it("WARNING không rescue, CONTINUED và 0đ cho phép Dispatcher đóng", () => {
+    expect(
+      getIncidentResolveEligibility(
+        incident({
+          incidentType: INCIDENT_TYPE.VEHICLE_BREAKDOWN,
+          riskLevel: "WARNING",
+          requiresRescue: false,
+          driverPaidAmount: 0,
+          status: INCIDENT_STATUS.CONTINUED,
+        }),
+        " dispatcher ",
+      ),
+    ).toEqual({ allowed: true });
+  });
+
+  it("CRITICAL không rescue vẫn được đóng khi chuyến đã CONTINUED", () => {
+    expect(
+      getIncidentResolveEligibility(
+        incident({
+          riskLevel: "CRITICAL",
+          requiresRescue: false,
+          status: INCIDENT_STATUS.CONTINUED,
+        }),
+        "Admin",
+      ),
+    ).toEqual({ allowed: true });
+  });
+
+  it("không rescue nhưng chưa CONTINUED thì bị chặn", () => {
+    expect(
+      getIncidentResolveEligibility(
+        incident({
+          requiresRescue: false,
+          status: INCIDENT_STATUS.TRIAGED,
+        }),
+        "Dispatcher",
+      ),
+    ).toEqual({
+      allowed: false,
+      reason: "Chuyến phải được tiếp tục trước khi đóng Incident.",
+    });
+  });
+
+  it("rescue trực tiếp được đóng ngay sau khi xe thay thế đã được điều", () => {
+    expect(
+      getIncidentResolveEligibility(
+        incident({
+          incidentType: INCIDENT_TYPE.ACCIDENT,
+          requiresRescue: true,
+          replacementVehicleId: "vehicle-2",
+          rescueDispatchedAt: "2026-08-20T11:00:00+07:00",
+          status: INCIDENT_STATUS.RESCUE_DISPATCHED,
+        }),
+        "Dispatcher",
+      ),
+    ).toEqual({ allowed: true });
+  });
+
+  it("có tiền ứng phải REIMBURSED và có reimbursedAmount", () => {
+    const base = {
+      requiresRescue: false,
+      status: INCIDENT_STATUS.CONTINUED,
+      driverPaidAmount: 100_000,
+    } satisfies Partial<TIncident>;
+    expect(
+      getIncidentResolveEligibility(
+        incident({
+          ...base,
+          expenseStatus: INCIDENT_EXPENSE_STATUS.APPROVED,
+        }),
+        "Dispatcher",
+      ).allowed,
+    ).toBe(false);
+    expect(
+      getIncidentResolveEligibility(
+        incident({
+          ...base,
+          expenseStatus: INCIDENT_EXPENSE_STATUS.REIMBURSED,
+          reimbursedAmount: 100_000,
+        }),
+        "Dispatcher",
+      ),
+    ).toEqual({ allowed: true });
+  });
+
+  it.each(["WarehouseWorker", "Driver", "Accountant", "Sales", "Customer"])(
+    "role %s không có quyền đóng Incident",
+    (role) => {
+      expect(
+        getIncidentResolveEligibility(
+          incident({
+            requiresRescue: false,
+            status: INCIDENT_STATUS.CONTINUED,
+          }),
+          role,
+        ),
+      ).toEqual({
+        allowed: false,
+        reason: "Bạn không có quyền đóng Incident.",
+      });
+    },
+  );
+
   it("dịch lỗi resolve backend và quyền sang message Dispatcher", () => {
-    expect(getResolveIncidentErrorMessage({
-      response: {
-        data: {
-          message:
-            "Vehicle/reefer breakdown can only be resolved after the new warehouse trip is sealed and dispatched to customers.",
+    expect(
+      getResolveIncidentErrorMessage({
+        response: {
+          data: {
+            message:
+              "Vehicle/reefer breakdown can only be resolved after the new warehouse trip is sealed and dispatched to customers.",
+          },
         },
-      },
-    })).toBe(
-      "Chỉ được đóng Incident sau khi chuyến mới đã kẹp seal và xuất phát giao khách."
+      }),
+    ).toBe(
+      "Chỉ được đóng Incident sau khi chuyến mới đã kẹp seal và xuất phát giao khách.",
     );
-    expect(getResolveIncidentErrorMessage({
-      response: { status: 403 },
-    })).toBe("Bạn không có quyền đóng Incident.");
+    expect(
+      getResolveIncidentErrorMessage({
+        response: { status: 403 },
+      }),
+    ).toBe("Bạn không có quyền đóng Incident.");
   });
 
   it("RESOLVED đổi badge thành Đã đóng và không còn action xử lý", () => {
     expect(getIncidentStatusLabel(INCIDENT_STATUS.RESOLVED).label).toBe(
-      "Đã đóng"
+      "Đã đóng",
     );
     expect(getIncidentPrimaryAction(INCIDENT_STATUS.RESOLVED)).toBe(
-      "READ_ONLY"
+      "READ_ONLY",
     );
   });
 
   it("16. SignalR inbound urgent lấy đúng Incident để refetch và hiện CTA", () => {
-    expect(extractIncidentIdFromRealtimePayload({
-      requiredAction: "CREATE_REDISPATCH_TRIP",
-      priority: "URGENT",
-      data: { incidentId: "incident-urgent" },
-    })).toBe("incident-urgent");
-    expect(getIncidentPrimaryAction(INCIDENT_STATUS.READY_FOR_REDISPATCH)).toBe("CREATE_REDISPATCH_TRIP");
+    expect(
+      extractIncidentIdFromRealtimePayload({
+        requiredAction: "CREATE_REDISPATCH_TRIP",
+        priority: "URGENT",
+        data: { incidentId: "incident-urgent" },
+      }),
+    ).toBe("incident-urgent");
+    expect(getIncidentPrimaryAction(INCIDENT_STATUS.READY_FOR_REDISPATCH)).toBe(
+      "CREATE_REDISPATCH_TRIP",
+    );
   });
 
   it("17. API lỗi giữ form và hiển thị message/errors backend", () => {
-    expect(getIncidentErrorMessage({
-      response: { data: { message: "Location ACTIVE không trùng địa chỉ kho" } },
-    }, "fallback")).toBe("Location ACTIVE không trùng địa chỉ kho");
-    expect(getIncidentErrorMessage({
-      response: { data: { errors: { lpnIds: ["Phải chọn đủ LPN"] } } },
-    }, "fallback")).toBe("Phải chọn đủ LPN");
+    expect(
+      getIncidentErrorMessage(
+        {
+          response: {
+            data: { message: "Location ACTIVE không trùng địa chỉ kho" },
+          },
+        },
+        "fallback",
+      ),
+    ).toBe("Location ACTIVE không trùng địa chỉ kho");
+    expect(
+      getIncidentErrorMessage(
+        {
+          response: { data: { errors: { lpnIds: ["Phải chọn đủ LPN"] } } },
+        },
+        "fallback",
+      ),
+    ).toBe("Phải chọn đủ LPN");
   });
 
   it("ưu tiên containment, rescue planning, redispatch và SLA overdue", () => {
     const sorted = sortIncidentsByDispatcherPriority([
       incident({ incidentId: "normal", status: INCIDENT_STATUS.MONITORING }),
-      incident({ incidentId: "redispatch", status: INCIDENT_STATUS.READY_FOR_REDISPATCH }),
-      incident({ incidentId: "rescue", status: INCIDENT_STATUS.RESCUE_PLANNING }),
-      incident({ incidentId: "containment", status: INCIDENT_STATUS.CONTAINMENT_REQUIRED }),
+      incident({
+        incidentId: "redispatch",
+        status: INCIDENT_STATUS.READY_FOR_REDISPATCH,
+      }),
+      incident({
+        incidentId: "rescue",
+        status: INCIDENT_STATUS.RESCUE_PLANNING,
+      }),
+      incident({
+        incidentId: "containment",
+        status: INCIDENT_STATUS.CONTAINMENT_REQUIRED,
+      }),
     ]);
     expect(sorted.map((item) => item.incidentId)).toEqual([
-      "containment", "rescue", "redispatch", "normal",
+      "containment",
+      "rescue",
+      "redispatch",
+      "normal",
     ]);
   });
 
   it("đăng ký đầy đủ 15 SignalR event Incident của Dispatcher", () => {
-    expect(INCIDENT_REALTIME_EVENTS).toEqual(expect.arrayContaining([
-      "IncidentReported",
-      "IncidentEvidenceAdded",
-      "IncidentRiskAssessed",
-      "ExternalReeferDispatched",
-      "IncidentCargoInboundedAtRouteWarehouse",
-      "IncidentRedispatchPlanned",
-      "IncidentRedispatchPickingStarted",
-      "IncidentRedispatchLpnPicked",
-      "IncidentRedispatchLoadingCompleted",
-      "IncidentRedispatchSealed",
-      "IncidentRedispatchedToCustomer",
-      "IncidentExpenseApproved",
-      "IncidentExpenseReimbursed",
-      "IncidentResolved",
-      "IncidentSlaEscalated",
-    ]));
+    expect(INCIDENT_REALTIME_EVENTS).toEqual(
+      expect.arrayContaining([
+        "IncidentReported",
+        "IncidentEvidenceAdded",
+        "IncidentRiskAssessed",
+        "ExternalReeferDispatched",
+        "IncidentCargoInboundedAtRouteWarehouse",
+        "IncidentRedispatchPlanned",
+        "IncidentRedispatchPickingStarted",
+        "IncidentRedispatchLpnPicked",
+        "IncidentRedispatchLoadingCompleted",
+        "IncidentRedispatchSealed",
+        "IncidentRedispatchedToCustomer",
+        "IncidentExpenseApproved",
+        "IncidentExpenseReimbursed",
+        "IncidentResolved",
+        "IncidentSlaEscalated",
+      ]),
+    );
   });
 });

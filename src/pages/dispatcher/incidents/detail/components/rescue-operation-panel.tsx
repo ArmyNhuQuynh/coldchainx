@@ -7,10 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIncident } from "@/hooks/use-incident";
+import type { RootState } from "@/redux/store";
 import { PATH_DISPATCHER_DASHBOARD } from "@/routes/path";
 import type { TIncident, TIncidentRescuePlan } from "@/schemas/incident.schema";
 import type { TTrackingTrip } from "@/schemas/monitoring.schema";
 import { INCIDENT_STATUS } from "@/types/enums/incident-status.enum";
+import { normalizeUserRole, USER_ROLE } from "@/types/enums/user-role.enum";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -24,6 +26,7 @@ import {
   Truck,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import AssessRiskDialog from "./assess-risk-dialog";
 import ContinueTripDialog from "./continue-trip-dialog";
@@ -34,7 +37,7 @@ import RescueProgressPanel from "./rescue-progress-panel";
 import ResolveIncidentDialog from "./resolve-incident-dialog";
 import {
   getIncidentPrimaryAction,
-  getResolutionBlocker,
+  getIncidentResolveEligibility,
   isMandatoryExternalReeferIncident,
 } from "../incident-workflow";
 
@@ -91,7 +94,11 @@ const RescuePlanning = ({ incident, trip }: Props) => {
         description="Không tự đoán phương án. Hãy tải lại rescue options từ backend."
         icon={AlertTriangle}
       >
-        <Button type="button" variant="outline" onClick={() => optionsQuery.refetch()}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => optionsQuery.refetch()}
+        >
           <RefreshCw className="h-4 w-4" /> Tải lại phương án
         </Button>
       </StatusCard>
@@ -150,9 +157,7 @@ const ExternalReeferTracking = ({ incident }: { incident: TIncident }) => {
         </div>
         <div className="rounded-lg border p-3">
           <p className="text-xs text-muted-foreground">Toàn bộ hàng cứu hộ</p>
-          <p className="mt-2 font-semibold">
-            {plan?.lpnIds?.length ?? 0} LPN
-          </p>
+          <p className="mt-2 font-semibold">{plan?.lpnIds?.length ?? 0} LPN</p>
         </div>
         <div className="rounded-lg border p-3">
           <p className="text-xs text-muted-foreground">
@@ -171,11 +176,20 @@ const ExternalReeferTracking = ({ incident }: { incident: TIncident }) => {
 
 const RescueOperationPanel = ({ incident, trip, isTripLoading }: Props) => {
   const navigate = useNavigate();
+  const currentRole = useSelector((state: RootState) => state.user.role);
   const [assessOpen, setAssessOpen] = useState(false);
   const [containmentOpen, setContainmentOpen] = useState(false);
   const [continueOpen, setContinueOpen] = useState(false);
   const [resolveOpen, setResolveOpen] = useState(false);
   const action = getIncidentPrimaryAction(incident.status);
+  const resolveEligibility = getIncidentResolveEligibility(
+    incident,
+    currentRole,
+  );
+  const normalizedRole = normalizeUserRole(currentRole);
+  const hasResolvePermission =
+    normalizedRole === USER_ROLE.DISPATCHER ||
+    normalizedRole === USER_ROLE.ADMIN;
   const redispatchTripId =
     incident.externalReeferPlan?.redispatchTripId ?? incident.tripId ?? null;
   if (incident.status === INCIDENT_STATUS.RESOLVED) {
@@ -185,7 +199,9 @@ const RescueOperationPanel = ({ incident, trip, isTripLoading }: Props) => {
         description={incident.resolutionNote || "Không có ghi chú kết thúc."}
         icon={CheckCircle2}
       >
-        <p className="text-sm">Hoàn tất lúc {formatIncidentDate(incident.resolvedAt)}</p>
+        <p className="text-sm">
+          Hoàn tất lúc {formatIncidentDate(incident.resolvedAt)}
+        </p>
       </StatusCard>
     );
   }
@@ -195,11 +211,21 @@ const RescueOperationPanel = ({ incident, trip, isTripLoading }: Props) => {
   }
   if (action === "TRACK_RESCUE") {
     return (
-      <RescueProgressPanel
-        incident={incident}
-        trip={trip}
-        isTripLoading={isTripLoading}
-      />
+      <>
+        <RescueProgressPanel
+          incident={incident}
+          trip={trip}
+          isTripLoading={isTripLoading}
+          canResolve={resolveEligibility.allowed}
+          onResolve={() => setResolveOpen(true)}
+        />
+        <ResolveIncidentDialog
+          open={resolveOpen}
+          incident={incident}
+          currentRole={currentRole}
+          onOpenChange={setResolveOpen}
+        />
+      </>
     );
   }
   if (action === "TRACK_EXTERNAL_REEFER") {
@@ -220,15 +246,33 @@ const RescueOperationPanel = ({ incident, trip, isTripLoading }: Props) => {
         icon={Siren}
       >
         <div className="grid gap-3 sm:grid-cols-2">
-          <div className="rounded-lg border p-3 text-sm"><p className="text-muted-foreground">Kho xuất phát</p><p className="mt-1 font-semibold">{plan?.destinationWarehouseName || "—"}</p></div>
-          <div className="rounded-lg border p-3 text-sm"><p className="text-muted-foreground">LPN bắt buộc</p><p className="mt-1 font-semibold">{plan?.lpnIds?.length ?? 0}/{plan?.lpnIds?.length ?? 0} LPN</p></div>
+          <div className="rounded-lg border p-3 text-sm">
+            <p className="text-muted-foreground">Kho xuất phát</p>
+            <p className="mt-1 font-semibold">
+              {plan?.destinationWarehouseName || "—"}
+            </p>
+          </div>
+          <div className="rounded-lg border p-3 text-sm">
+            <p className="text-muted-foreground">LPN bắt buộc</p>
+            <p className="mt-1 font-semibold">
+              {plan?.lpnIds?.length ?? 0}/{plan?.lpnIds?.length ?? 0} LPN
+            </p>
+          </div>
         </div>
-        {blocker && <p className="rounded-lg border border-rose-300 bg-rose-50 p-3 text-sm text-rose-800">{blocker}</p>}
+        {blocker && (
+          <p className="rounded-lg border border-rose-300 bg-rose-50 p-3 text-sm text-rose-800">
+            {blocker}
+          </p>
+        )}
         <Button
           type="button"
           className="w-full"
           disabled={Boolean(blocker)}
-          onClick={() => navigate(`${PATH_DISPATCHER_DASHBOARD.dispatch.root}?incidentId=${encodeURIComponent(incident.incidentId)}`)}
+          onClick={() =>
+            navigate(
+              `${PATH_DISPATCHER_DASHBOARD.dispatch.root}?incidentId=${encodeURIComponent(incident.incidentId)}`,
+            )
+          }
         >
           <PackageCheck className="h-4 w-4" /> Tạo lại chuyến gấp
         </Button>
@@ -238,25 +282,55 @@ const RescueOperationPanel = ({ incident, trip, isTripLoading }: Props) => {
 
   if (action === "OPEN_REDISPATCH_TRIP") {
     return (
-      <StatusCard
-        title="Trip mới đã được tạo"
-        description={incident.redispatchPlan || "Warehouse đang picking/loading/kẹp seal. Incident chưa đủ điều kiện resolve."}
-        icon={PackageCheck}
-      >
-        <div className="rounded-lg border p-3 text-sm">
-          <p className="text-muted-foreground">Trip redispatch</p>
-          <p className="mt-1 font-semibold">{formatIncidentId(redispatchTripId)}</p>
-        </div>
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full"
-          disabled={!redispatchTripId}
-          onClick={() => navigate(`${PATH_DISPATCHER_DASHBOARD.trip.root}?tripId=${encodeURIComponent(redispatchTripId ?? "")}`)}
+      <>
+        <StatusCard
+          title="Trip mới đã được tạo"
+          description={
+            resolveEligibility.reason ||
+            incident.redispatchPlan ||
+            "Đã có xe ColdChainX cho chuyến giao lại. Incident đủ điều kiện vận hành để đóng."
+          }
+          icon={PackageCheck}
         >
-          <ExternalLink className="h-4 w-4" /> Mở trip mới
-        </Button>
-      </StatusCard>
+          <div className="rounded-lg border p-3 text-sm">
+            <p className="text-muted-foreground">Trip redispatch</p>
+            <p className="mt-1 font-semibold">
+              {formatIncidentId(redispatchTripId)}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="flex-1"
+              disabled={!redispatchTripId}
+              onClick={() =>
+                navigate(
+                  `${PATH_DISPATCHER_DASHBOARD.trip.root}?tripId=${encodeURIComponent(redispatchTripId ?? "")}`,
+                )
+              }
+            >
+              <ExternalLink className="h-4 w-4" /> Mở trip mới
+            </Button>
+            {hasResolvePermission && (
+              <Button
+                type="button"
+                className="flex-1"
+                disabled={!resolveEligibility.allowed}
+                onClick={() => setResolveOpen(true)}
+              >
+                <CheckCircle2 className="h-4 w-4" /> Đóng Incident
+              </Button>
+            )}
+          </div>
+        </StatusCard>
+        <ResolveIncidentDialog
+          open={resolveOpen}
+          incident={incident}
+          currentRole={currentRole}
+          onOpenChange={setResolveOpen}
+        />
+      </>
     );
   }
 
@@ -264,7 +338,11 @@ const RescueOperationPanel = ({ incident, trip, isTripLoading }: Props) => {
     return (
       <StatusCard
         title="Incident vẫn đang mở"
-        description={incident.redispatchPlan || incident.handlingNote || "Theo dõi phương án tiếp theo từ kho lạnh nội bộ."}
+        description={
+          incident.redispatchPlan ||
+          incident.handlingNote ||
+          "Theo dõi phương án tiếp theo từ kho lạnh nội bộ."
+        }
         icon={Clock3}
       />
     );
@@ -275,10 +353,14 @@ const RescueOperationPanel = ({ incident, trip, isTripLoading }: Props) => {
       incidentId: incident.incidentId,
       tripId: incident.tripId ?? "",
       targetTemperature: incident.latestTemperature ?? 0,
-      temperatureThresholdBreached: Boolean(incident.temperatureThresholdBreached),
+      temperatureThresholdBreached: Boolean(
+        incident.temperatureThresholdBreached,
+      ),
       directDeliveryLocked: Boolean(incident.directDeliveryLocked),
       recommendedAction: "MANUAL_ESCALATION",
-      recommendationReason: incident.handlingNote || "Chưa có phương án hệ thống hợp lệ; cập nhật quyết định khẩn cấp.",
+      recommendationReason:
+        incident.handlingNote ||
+        "Chưa có phương án hệ thống hợp lệ; cập nhật quyết định khẩn cấp.",
       vehicles: [],
       internalColdStorages: [],
       requiresExternalVehicleRental: false,
@@ -287,7 +369,7 @@ const RescueOperationPanel = ({ incident, trip, isTripLoading }: Props) => {
     return <RescueFallbackForm incident={incident} plan={emergencyPlan} />;
   }
 
-  const resolutionBlocker = getResolutionBlocker(incident);
+  const resolutionBlocker = resolveEligibility.reason ?? null;
 
   return (
     <>
@@ -309,16 +391,46 @@ const RescueOperationPanel = ({ incident, trip, isTripLoading }: Props) => {
             : action === "CONFIRM_CONTAINMENT"
               ? "Không được mở cứu hộ trước khi toàn bộ hàng được bảo toàn trong điều kiện lạnh."
               : action === "CONTINUE_TRIP"
-                ? incident.safeTimeCalculation || "Có thể cho chuyến tiếp tục hoặc đánh giá lại theo trạng thái thực tế."
-                : resolutionBlocker || "Đã đủ điều kiện vận hành để đóng Incident."
+                ? incident.safeTimeCalculation ||
+                  "Có thể cho chuyến tiếp tục hoặc đánh giá lại theo trạng thái thực tế."
+                : resolutionBlocker ||
+                  "Đã đủ điều kiện vận hành để đóng Incident."
         }
-        icon={action === "CONFIRM_CONTAINMENT" ? ShieldCheck : action === "ASSESS_RISK" ? AlertTriangle : Play}
+        icon={
+          action === "CONFIRM_CONTAINMENT"
+            ? ShieldCheck
+            : action === "ASSESS_RISK"
+              ? AlertTriangle
+              : Play
+        }
       >
         {incident.status === INCIDENT_STATUS.MONITORING && (
           <div className="grid gap-3 sm:grid-cols-3">
-            <div className="rounded-lg border p-3 text-sm"><p className="text-muted-foreground">Reading</p><p className="mt-1 font-semibold">{incident.latestTemperature != null ? `${incident.latestTemperature}°C` : "—"}</p></div>
-            <div className="rounded-lg border p-3 text-sm"><p className="text-muted-foreground">Nguồn / thời điểm</p><p className="mt-1 font-semibold">{incident.temperatureSource || "—"}</p><p className="mt-1 text-xs text-muted-foreground">{formatIncidentDate(incident.temperatureMeasuredAt)}</p></div>
-            <div className="rounded-lg border p-3 text-sm"><p className="text-muted-foreground">An toàn còn lại</p><p className="mt-1 font-semibold">{incident.remainingSafeTimeMinutes != null ? `${incident.remainingSafeTimeMinutes} phút` : "—"}</p></div>
+            <div className="rounded-lg border p-3 text-sm">
+              <p className="text-muted-foreground">Reading</p>
+              <p className="mt-1 font-semibold">
+                {incident.latestTemperature != null
+                  ? `${incident.latestTemperature}°C`
+                  : "—"}
+              </p>
+            </div>
+            <div className="rounded-lg border p-3 text-sm">
+              <p className="text-muted-foreground">Nguồn / thời điểm</p>
+              <p className="mt-1 font-semibold">
+                {incident.temperatureSource || "—"}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {formatIncidentDate(incident.temperatureMeasuredAt)}
+              </p>
+            </div>
+            <div className="rounded-lg border p-3 text-sm">
+              <p className="text-muted-foreground">An toàn còn lại</p>
+              <p className="mt-1 font-semibold">
+                {incident.remainingSafeTimeMinutes != null
+                  ? `${incident.remainingSafeTimeMinutes} phút`
+                  : "—"}
+              </p>
+            </div>
           </div>
         )}
 
@@ -339,24 +451,50 @@ const RescueOperationPanel = ({ incident, trip, isTripLoading }: Props) => {
                 <Play className="h-4 w-4" /> Cho chuyến tiếp tục
               </Button>
               {incident.status === INCIDENT_STATUS.MONITORING && (
-                <Button type="button" variant="outline" onClick={() => setAssessOpen(true)}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setAssessOpen(true)}
+                >
                   Đánh giá lại
                 </Button>
               )}
             </>
           )}
-          {action === "RESOLVE" && (
-            <Button type="button" disabled={Boolean(resolutionBlocker)} onClick={() => setResolveOpen(true)}>
+          {action === "RESOLVE" && hasResolvePermission && (
+            <Button
+              type="button"
+              disabled={Boolean(resolutionBlocker)}
+              onClick={() => setResolveOpen(true)}
+            >
               <CheckCircle2 className="h-4 w-4" /> Đóng Incident
             </Button>
           )}
         </div>
       </StatusCard>
 
-      <AssessRiskDialog open={assessOpen} incident={incident} onOpenChange={setAssessOpen} />
-      <AssessRiskDialog open={containmentOpen} incident={incident} containmentOnly onOpenChange={setContainmentOpen} />
-      <ContinueTripDialog open={continueOpen} incident={incident} onOpenChange={setContinueOpen} />
-      <ResolveIncidentDialog open={resolveOpen} incident={incident} onOpenChange={setResolveOpen} />
+      <AssessRiskDialog
+        open={assessOpen}
+        incident={incident}
+        onOpenChange={setAssessOpen}
+      />
+      <AssessRiskDialog
+        open={containmentOpen}
+        incident={incident}
+        containmentOnly
+        onOpenChange={setContainmentOpen}
+      />
+      <ContinueTripDialog
+        open={continueOpen}
+        incident={incident}
+        onOpenChange={setContinueOpen}
+      />
+      <ResolveIncidentDialog
+        open={resolveOpen}
+        incident={incident}
+        currentRole={currentRole}
+        onOpenChange={setResolveOpen}
+      />
     </>
   );
 };

@@ -39,10 +39,7 @@ type IncidentApiError = {
   };
 };
 
-export const getIncidentErrorMessage = (
-  error: unknown,
-  fallback: string
-) => {
+export const getIncidentErrorMessage = (error: unknown, fallback: string) => {
   const apiError = error as IncidentApiError;
   const validationErrors =
     apiError.response?.data?.errors ?? apiError.response?.data?.Errors;
@@ -68,7 +65,7 @@ const RESOLVE_INCIDENT_ERROR_MESSAGES: Record<string, string> = {
   "Driver expense must be approved and reimbursed before resolving the incident.":
     "Chưa thể đóng Incident vì khoản Driver ứng trước chưa được hoàn trả.",
   "Incident is already resolved.": "Incident đã được đóng.",
-  "Resolution note is required.": "Ghi chú đóng Incident là bắt buộc.",
+  "Resolution note is required.": "Vui lòng nhập ghi chú đóng Incident.",
 };
 
 export const getResolveIncidentErrorMessage = (error: unknown) => {
@@ -82,7 +79,7 @@ export const getResolveIncidentErrorMessage = (error: unknown) => {
 
   const backendMessage = getIncidentErrorMessage(
     error,
-    "Không thể đóng Incident."
+    "Không thể đóng Incident.",
   );
   return RESOLVE_INCIDENT_ERROR_MESSAGES[backendMessage] ?? backendMessage;
 };
