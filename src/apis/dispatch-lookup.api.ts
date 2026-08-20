@@ -258,10 +258,24 @@ const getAvailableDrivers = async (warehouseId: string) => {
     );
 };
 
+const getAvailableLpns = async (warehouseId: string) => {
+  const response = await apiRequest.baseApi.get<
+    TDispatchLookupEnvelope<TDispatchReadyLpn[]> | TDispatchReadyLpn[]
+  >(`${API_SUFFIX.DISPATCH_API}/available-lpns`, {
+    params: { warehouseId, pageIndex: 1, pageSize: 500 },
+  });
+
+  return unwrapLookup<TDispatchReadyLpn>(response.data).map((item) => ({
+    ...normalizeLpn(item),
+    warehouseId,
+  }));
+};
+
 export const dispatchLookupApi = {
   getSchedules,
   searchCompatibleLpns,
   getReadyLpns,
   getAvailableVehicles,
   getAvailableDrivers,
+  getAvailableLpns,
 };

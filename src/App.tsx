@@ -2,6 +2,7 @@ import { BrowserRouter } from 'react-router-dom';
 
 import AppProvider from './providers/app-provider';
 import { AppRoutes } from './routes/routes';
+import IncidentNotificationProvider from './providers/incident-notification-provider';
 
 function App ()
 {
@@ -10,7 +11,9 @@ function App ()
     // <SignalRProvider>
       <AppProvider>
         <BrowserRouter>
-          <AppRoutes />
+          <IncidentNotificationProvider>
+            <AppRoutes />
+          </IncidentNotificationProvider>
         </BrowserRouter>
       </AppProvider>
     // </SignalRProvider>

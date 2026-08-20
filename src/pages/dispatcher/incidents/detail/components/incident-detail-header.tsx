@@ -2,7 +2,9 @@ import { Button } from "@/components/ui/button";
 import type { TIncident } from "@/schemas/incident.schema";
 import { ArrowLeft, RefreshCw } from "lucide-react";
 import { IncidentStatusBadge } from "@/components/incidents/incident-badges";
+import { IncidentRiskBadge } from "@/components/incidents/incident-badges";
 import { formatIncidentId } from "@/components/incidents/incident-formatters";
+import { getIncidentTypeLabel } from "@/types/enums/incident-type.enum";
 
 type Props = {
   incident: TIncident;
@@ -23,9 +25,10 @@ const IncidentDetailHeader = ({ incident, isRefreshing, onBack, onRefresh }: Pro
             Sự cố SC-{formatIncidentId(incident.incidentId)}
           </h1>
           <IncidentStatusBadge status={incident.status} />
+          <IncidentRiskBadge risk={incident.riskLevel} />
         </div>
         <p className="mt-1 text-muted-foreground">
-          Trip {formatIncidentId(incident.tripId)} · Theo dõi và xử lý tại một nơi
+          {getIncidentTypeLabel(incident.incidentType)} · Trip {incident.tripCode || formatIncidentId(incident.tripId)} · Xe hư {formatIncidentId(incident.brokenVehicleId)}
         </p>
       </div>
     </div>

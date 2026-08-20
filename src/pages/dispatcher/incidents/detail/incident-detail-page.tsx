@@ -4,16 +4,21 @@ import { useIncident } from "@/hooks/use-incident";
 import { TRACKING_DEFAULT_STATUSES, useMonitoring } from "@/hooks/use-monitoring";
 import { PATH_DISPATCHER_DASHBOARD } from "@/routes/path";
 import type { TTrackingTrip } from "@/schemas/monitoring.schema";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import IncidentDetailHeader from "./components/incident-detail-header";
 import IncidentEvidencePanel from "./components/incident-evidence-panel";
 import IncidentOverviewPanel from "./components/incident-overview-panel";
+import IncidentTimelinePanel from "./components/incident-timeline-panel";
 import RescueOperationPanel from "./components/rescue-operation-panel";
 import TripContextPanel from "./components/trip-context-panel";
+import { useQueryClient } from "@tanstack/react-query";
+import { incidentQueryKeys } from "@/hooks/use-incident";
+import { toast } from "sonner";
 
 const IncidentDetailPage = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { incidentId } = useParams<{ incidentId: string }>();
   const { getIncident } = useIncident();
   const { getTrackingDetail, getTrackingTrips } = useMonitoring();
@@ -48,6 +53,13 @@ const IncidentDetailPage = () => {
       plannedEndTime: listItem?.plannedEndTime ?? detail?.plannedEndTime,
     };
   }, [trackingDetailQuery.data, trackingListQuery.data, tripId]);
+
+  useEffect(() => {
+    const status = (incidentQuery.error as any)?.response?.status;
+    if (status !== 404) return;
+    void queryClient.invalidateQueries({ queryKey: incidentQueryKeys.root });
+    toast.error("Incident không còn tồn tại. Danh sách đã được làm mới.");
+  }, [incidentQuery.error, queryClient]);
 
   if (incidentQuery.isLoading) {
     return <div className="space-y-5"><Skeleton className="h-20 w-full" /><Skeleton className="h-80 w-full" /><Skeleton className="h-96 w-full" /></div>;
@@ -88,21 +100,24 @@ const IncidentDetailPage = () => {
         onRefresh={handleRefresh}
       />
 
-      <div className="grid items-start gap-5 xl:grid-cols-[0.8fr_1.2fr]">
-        <IncidentOverviewPanel incident={incident} />
-        <TripContextPanel
+      <div className="grid items-start gap-5 xl:grid-cols-[0.65fr_1fr_1.15fr]">
+        <IncidentTimelinePanel incident={incident} />
+        <div className="space-y-5">
+          <IncidentOverviewPanel incident={incident} />
+          <IncidentEvidencePanel evidences={incident.evidences ?? []} />
+        </div>
+        <RescueOperationPanel
+          incident={incident}
           trip={trip}
-          tripId={incident.tripId}
-          isLoading={isTripLoading}
+          isTripLoading={isTripLoading}
         />
       </div>
 
-      <RescueOperationPanel
-        incident={incident}
+      <TripContextPanel
         trip={trip}
-        isTripLoading={isTripLoading}
+        tripId={incident.tripId}
+        isLoading={isTripLoading}
       />
-      <IncidentEvidencePanel evidences={incident.evidences ?? []} />
     </div>
   );
 };

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useIncident } from "@/hooks/use-incident";
-import type { TIncident } from "@/schemas/incident.schema";
+import type { TIncident, TIncidentRescuePlan } from "@/schemas/incident.schema";
 import type { TTrackingTrip } from "@/schemas/monitoring.schema";
 import { Clock, Loader2, RadioTower } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -16,12 +16,13 @@ import TripDriverList from "./trip-driver-list";
 type Props = {
   incident: TIncident;
   trip?: TTrackingTrip | null;
+  plan?: TIncidentRescuePlan;
 };
 
-const RescueDispatchForm = ({ incident, trip }: Props) => {
+const RescueDispatchForm = ({ incident, trip, plan }: Props) => {
   const { getRescueCandidates, dispatchRescue } = useIncident();
-  const candidatesQuery = getRescueCandidates(incident.incidentId);
-  const candidates = candidatesQuery.data ?? [];
+  const candidatesQuery = getRescueCandidates(incident.incidentId, !plan);
+  const candidates = plan?.vehicles ?? candidatesQuery.data ?? [];
   const [selectedVehicleId, setSelectedVehicleId] = useState("");
   const [transloadMinutes, setTransloadMinutes] = useState("45");
   const [note, setNote] = useState("");
@@ -30,6 +31,16 @@ const RescueDispatchForm = ({ incident, trip }: Props) => {
     () => candidates.find((vehicle) => vehicle.vehicleId === selectedVehicleId),
     [candidates, selectedVehicleId]
   );
+  const planType =
+    plan?.recommendedAction === "WAREHOUSE_RESCUE"
+      ? "WAREHOUSE_RESCUE"
+      : "DIRECT_RESCUE";
+  const destinationWarehouse =
+    planType === "WAREHOUSE_RESCUE"
+      ? plan?.internalColdStorages.find((warehouse) => warehouse.isNearby) ??
+        plan?.routeDestinationWarehouse ??
+        null
+      : null;
 
   const handleDispatch = async () => {
     if (!selectedVehicle) {
@@ -48,6 +59,8 @@ const RescueDispatchForm = ({ incident, trip }: Props) => {
         incidentId: incident.incidentId,
         data: {
           replacementVehicleId: selectedVehicle.vehicleId,
+          planType,
+          destinationWarehouseId: destinationWarehouse?.warehouseId ?? null,
           transloadMinutes: minutes,
           note: note.trim() || undefined,
         },
@@ -63,9 +76,14 @@ const RescueDispatchForm = ({ incident, trip }: Props) => {
   return (
     <Card className="gap-0 rounded-lg py-0">
       <CardHeader className="border-b px-5 py-4">
-        <CardTitle className="text-lg">Điều xe cứu hộ</CardTitle>
+        <CardTitle className="text-lg">
+          {planType === "WAREHOUSE_RESCUE"
+            ? "Điều xe về kho lạnh nội bộ"
+            : "Điều xe cứu hộ giao tiếp"}
+        </CardTitle>
         <p className="mt-1 text-sm text-muted-foreground">
-          Chọn một xe đủ tải, đúng dải nhiệt và không bận chuyến khác
+          {plan?.recommendationReason ||
+            "Chọn một xe đủ tải, đúng dải nhiệt và không bận chuyến khác"}
         </p>
       </CardHeader>
       <CardContent className="space-y-5 p-5">
@@ -79,6 +97,14 @@ const RescueDispatchForm = ({ incident, trip }: Props) => {
           />
           <TripDriverList trip={trip} />
         </div>
+
+        {destinationWarehouse && (
+          <div className="rounded-lg border bg-muted/30 p-3 text-sm">
+            <p className="text-muted-foreground">Kho lạnh nội bộ theo rescue option</p>
+            <p className="mt-1 font-semibold">{destinationWarehouse.warehouseName}</p>
+            <p className="mt-1 text-muted-foreground">{destinationWarehouse.address || "—"}</p>
+          </div>
+        )}
 
         <div className="grid gap-4 border-t pt-5 md:grid-cols-[220px_1fr]">
           <div className="space-y-2">

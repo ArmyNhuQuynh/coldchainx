@@ -3,11 +3,41 @@ import type { TIncidentEvidenceType } from "@/types/enums/incident-evidence-type
 import type { TIncidentSeverity } from "@/types/enums/incident-severity.enum";
 import type { TIncidentStatus } from "@/types/enums/incident-status.enum";
 import type { TIncidentType } from "@/types/enums/incident-type.enum";
+import type {
+  TIncidentRisk,
+  TTemperatureSource,
+} from "@/types/enums/incident-risk.enum";
 
 export type TIncidentEvidence = {
   evidenceId: string;
   evidenceType: TIncidentEvidenceType;
   fileUrl: string;
+};
+
+export type TExternalReeferPlan = {
+  rentalProvider: string;
+  vehiclePlate: string;
+  driverName: string;
+  driverPhone?: string | null;
+  destinationWarehouseId: string;
+  destinationWarehouseName?: string | null;
+  destinationWarehouseAddress?: string | null;
+  routeDestinationCity?: string | null;
+  agreedTemperature: number;
+  originalTripId?: string | null;
+  dispatchedAt?: string | null;
+  expectedWarehouseArrivalAt?: string | null;
+  arrivedAt?: string | null;
+  sealNumber: string;
+  lpnIds: string[];
+  dispatchEvidenceUrls?: string[];
+  inboundReceiptIds?: string[];
+  recordedBy?: string | null;
+  arrivalConfirmedBy?: string | null;
+  redispatchTripId?: string | null;
+  redispatchPlannedAt?: string | null;
+  dispatchNote?: string | null;
+  arrivalNote?: string | null;
 };
 
 export type TIncident = {
@@ -16,11 +46,27 @@ export type TIncident = {
   tripCode?: string | null;
   incidentType: TIncidentType;
   severity: TIncidentSeverity;
+  riskLevel?: TIncidentRisk | string | null;
   description: string;
   currentLatitude?: number | null;
   currentLongitude?: number | null;
   driverPaidAmount: number;
   requiresRescue: boolean;
+  temperatureSource?: TTemperatureSource | string | null;
+  latestTemperature?: number | null;
+  temperatureMeasuredAt?: string | null;
+  temperatureTolerance?: number | null;
+  temperatureThresholdBreached?: boolean;
+  containmentConfirmedAt?: string | null;
+  remainingSafeTimeMinutes?: number | null;
+  safeTimeCalculation?: string | null;
+  directDeliveryLocked?: boolean;
+  previousIncidentId?: string | null;
+  slaDueAt?: string | null;
+  lastSlaEscalatedAt?: string | null;
+  rescuePlanType?: string | null;
+  externalReeferPlan?: TExternalReeferPlan | null;
+  redispatchPlan?: string | null;
   approvedAmount?: number | null;
   reimbursedAmount?: number | null;
   expenseStatus?: TIncidentExpenseStatus | null;
@@ -78,11 +124,21 @@ export type TRescueCandidate = {
   iotDeviceCount: number;
   onlineIotDeviceCount: number;
   hasOnlineIot: boolean;
+  estimatedArrivalMinutes?: number | null;
+  canArriveWithinSafeTime?: boolean | null;
+  remainingSafeTimeMinutes?: number | null;
+  remainingWeightCapacity?: number;
+  remainingCbmCapacity?: number;
+  transferCount?: number;
+  recommended?: boolean;
+  recommendationReason?: string;
   label: string;
 };
 
 export type TDispatchRescueRequest = {
   replacementVehicleId: string;
+  planType: "DIRECT_RESCUE" | "WAREHOUSE_RESCUE";
+  destinationWarehouseId?: string | null;
   transloadMinutes?: number;
   note?: string;
 };
@@ -116,6 +172,123 @@ export type TDispatchRescueResult = {
 
 export type TConfirmTransloadRequest = {
   confirmationNote: string;
+  lpnIds: string[];
+  sealNumber?: string;
+  transferTemperature?: number;
+  transferredAt?: string;
+  latitude?: number;
+  longitude?: number;
+  locationDescription?: string;
+  evidenceUrls: string[];
+};
+
+export type TContinueTripRequest = {
+  handlingNote: string;
+  expectedDelayMinutes: number;
+};
+
+export type TAssessIncidentRiskRequest = {
+  riskLevel: TIncidentRisk;
+  temperatureSource: TTemperatureSource;
+  measuredTemperature?: number;
+  measuredAt?: string;
+  temperatureStable: boolean;
+  canSafelyRepairOnSite?: boolean | null;
+  containmentConfirmed: boolean;
+  note?: string;
+};
+
+export type TIncidentRiskAssessmentResult = {
+  incidentId: string;
+  requestedRiskLevel: TIncidentRisk | string;
+  effectiveRiskLevel: TIncidentRisk | string;
+  incidentStatus: string;
+  escalatedToCritical: boolean;
+  decisionReason: string;
+  targetTemperature: number;
+  temperatureTolerance: number;
+  latestTemperature?: number | null;
+  temperatureMeasuredAt?: string | null;
+  temperatureSource: string;
+  hasTrustedTemperatureSource: boolean;
+  temperatureThresholdBreached: boolean;
+  directDeliveryLocked: boolean;
+  requiresRescue: boolean;
+  remainingSafeTimeMinutes?: number | null;
+  safeTimeCalculation: string;
+};
+
+export type TInternalColdStorageOption = {
+  warehouseId: string;
+  warehouseName: string;
+  address?: string | null;
+  distanceKm?: number | null;
+  estimatedArrivalMinutes?: number | null;
+  canArriveWithinSafeTime?: boolean | null;
+  minTemperature?: number | null;
+  maxTemperature?: number | null;
+  availablePalletPositions: number;
+  isNearby: boolean;
+  isRouteDestinationWarehouse: boolean;
+};
+
+export type TIncidentRescuePlan = {
+  incidentId: string;
+  tripId: string;
+  targetTemperature: number;
+  remainingSafeTimeMinutes?: number | null;
+  temperatureThresholdBreached: boolean;
+  directDeliveryLocked: boolean;
+  recommendedAction:
+    | "DIRECT_RESCUE"
+    | "WAREHOUSE_RESCUE"
+    | "EXTERNAL_REEFER_TO_ROUTE_WAREHOUSE"
+    | "INTERNAL_COLD_STORAGE"
+    | "MANUAL_ESCALATION"
+    | string;
+  recommendationReason: string;
+  vehicles: TRescueCandidate[];
+  internalColdStorages: TInternalColdStorageOption[];
+  routeDestinationWarehouse?: TInternalColdStorageOption | null;
+  requiresExternalVehicleRental: boolean;
+  requiresManualEscalation: boolean;
+};
+
+export type TDispatchExternalReeferRequest = {
+  externalVehicleConfirmed: true;
+};
+
+export type TExternalReeferWorkflowResult = {
+  incidentId: string;
+  tripId: string;
+  incidentStatus: string;
+  tripStatus: string;
+  destinationWarehouseId: string;
+  destinationWarehouseName: string;
+  externalVehiclePlate?: string | null;
+  lpnCount: number;
+  warehouseInboundReady: boolean;
+  requiredWarehouseAction:
+    | "INBOUND_RESCUE_BY_SEAL"
+    | "CREATE_REDISPATCH_TRIP";
+  message?: string;
+};
+
+export type TRecordRescueFallbackRequest = {
+  planType: "INTERNAL_COLD_STORAGE" | "MANUAL_ESCALATION";
+  warehouseId?: string;
+  redispatchPlan?: string;
+  note: string;
+};
+
+export type TRescueFallbackResult = {
+  incidentId: string;
+  tripId: string;
+  incidentStatus: string;
+  tripStatus: string;
+  planType: string;
+  planDetails: string;
+  incidentRemainsOpen: boolean;
 };
 
 export type TIncidentWorkflowResult = {

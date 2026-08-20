@@ -32,6 +32,8 @@ type IncidentApiError = {
       Message?: string;
       error?: string;
       Error?: string;
+      errors?: Record<string, string[]> | string[];
+      Errors?: Record<string, string[]> | string[];
     };
   };
 };
@@ -41,11 +43,19 @@ export const getIncidentErrorMessage = (
   fallback: string
 ) => {
   const apiError = error as IncidentApiError;
+  const validationErrors =
+    apiError.response?.data?.errors ?? apiError.response?.data?.Errors;
+  const firstValidationError = Array.isArray(validationErrors)
+    ? validationErrors.find((item) => typeof item === "string")
+    : Object.values(validationErrors ?? {})
+        .flat()
+        .find((item) => typeof item === "string");
   return (
     apiError.response?.data?.message ||
     apiError.response?.data?.Message ||
     apiError.response?.data?.error ||
     apiError.response?.data?.Error ||
+    firstValidationError ||
     apiError.message ||
     fallback
   );

@@ -41,6 +41,8 @@ type Props = {
   hasCurrentPreview: boolean;
   canCreateTrip: boolean;
   validationMessages: string[];
+  showPackingPreview?: boolean;
+  createButtonLabel?: string;
   onVehicleChange: (vehicleId: string) => void;
   onDriverToggle: (driverId: string) => void;
   onPlannedStartTimeChange: (value: string) => void;
@@ -71,6 +73,8 @@ const VehicleDriverPanel = ({
   hasCurrentPreview,
   canCreateTrip,
   validationMessages,
+  showPackingPreview = true,
+  createButtonLabel = "Plan Load · Tạo Trip",
   onVehicleChange,
   onDriverToggle,
   onPlannedStartTimeChange,
@@ -296,20 +300,22 @@ const VehicleDriverPanel = ({
           </div>
         )}
 
-        <Button
-          type="button"
-          variant="outline"
-          className="h-11 w-full"
-          disabled={!canPreviewPacking || isPreviewing}
-          onClick={onPreviewPacking}
-        >
-          <Cuboid className="h-4 w-4" />
-          {isPreviewing
-            ? "Đang tạo mô phỏng..."
-            : hasCurrentPreview
-              ? "Xem lại mô phỏng 3D"
-              : "Xem mô phỏng 3D"}
-        </Button>
+        {showPackingPreview && (
+          <Button
+            type="button"
+            variant="outline"
+            className="h-11 w-full"
+            disabled={!canPreviewPacking || isPreviewing}
+            onClick={onPreviewPacking}
+          >
+            <Cuboid className="h-4 w-4" />
+            {isPreviewing
+              ? "Đang tạo mô phỏng..."
+              : hasCurrentPreview
+                ? "Xem lại mô phỏng 3D"
+                : "Xem mô phỏng 3D"}
+          </Button>
+        )}
 
         <Button
           type="button"
@@ -318,7 +324,7 @@ const VehicleDriverPanel = ({
           onClick={onCreateTrip}
         >
           <CheckCircle2 className="h-4 w-4" />
-          {isSubmitting ? "Đang tạo chuyến..." : "Plan Load · Tạo Trip"}
+          {isSubmitting ? "Đang tạo chuyến..." : createButtonLabel}
         </Button>
       </CardContent>
     </Card>

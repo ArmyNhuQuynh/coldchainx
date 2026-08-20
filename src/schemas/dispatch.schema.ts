@@ -155,6 +155,7 @@ export type TDispatchPackingResult = {
 };
 
 export type TManualDispatchRequest = {
+  incidentId?: string;
   scheduleId?: string | null;
   lpnIds: string[];
   vehicleId: string;

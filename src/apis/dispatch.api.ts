@@ -68,6 +68,9 @@ const simulatePacking = async (data: TDispatchPackingRequest) => {
 
 const manualDispatch = async (data: TManualDispatchRequest) => {
   const formData = new FormData();
+  if (data.incidentId) {
+    formData.append("IncidentId", data.incidentId);
+  }
   if (data.scheduleId) {
     formData.append("ScheduleId", data.scheduleId);
   }

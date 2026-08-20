@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 import IncidentFilterBar from "./components/incident-filter-bar";
 import IncidentSummaryStrip from "./components/incident-summary-strip";
 import IncidentTable from "./components/incident-table";
+import { sortIncidentsByDispatcherPriority } from "../detail/incident-workflow";
 
 const matchesSearch = (incident: TIncident, search: string) => {
   const keyword = search.trim().toLowerCase();
@@ -36,25 +37,42 @@ const IncidentListPage = () => {
   const incidents = incidentsQuery.data ?? [];
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("UNRESOLVED");
-  const [severity, setSeverity] = useState("ALL");
+  const [risk, setRisk] = useState("ALL");
+  const [incidentType, setIncidentType] = useState("ALL");
+  const [queue, setQueue] = useState("ALL");
   const [rescue, setRescue] = useState("ALL");
 
   const filteredIncidents = useMemo(
     () =>
-      incidents.filter((incident) => {
+      sortIncidentsByDispatcherPriority(incidents.filter((incident) => {
         const matchesStatus =
           status === "ALL" ||
           (status === "UNRESOLVED"
             ? incident.status !== INCIDENT_STATUS.RESOLVED
             : incident.status === status);
-        const matchesSeverity = severity === "ALL" || incident.severity === severity;
+        const matchesRisk = risk === "ALL" || incident.riskLevel === risk;
+        const matchesType = incidentType === "ALL" || incident.incidentType === incidentType;
+        const matchesQueue =
+          queue === "ALL" ||
+          (queue === "DISPATCHER_ACTION" &&
+            new Set<string>([
+              INCIDENT_STATUS.REPORTED,
+              INCIDENT_STATUS.TRIAGED,
+              INCIDENT_STATUS.MONITORING,
+              INCIDENT_STATUS.CONTAINMENT_REQUIRED,
+              INCIDENT_STATUS.RESCUE_PLANNING,
+              INCIDENT_STATUS.READY_FOR_REDISPATCH,
+              INCIDENT_STATUS.REDISPATCHED_TO_CUSTOMER,
+              INCIDENT_STATUS.CONTINUED,
+              INCIDENT_STATUS.TRANSLOAD_COMPLETED,
+            ]).has(incident.status));
         const matchesRescue =
           rescue === "ALL" ||
           (rescue === "REQUIRED" ? incident.requiresRescue : !incident.requiresRescue);
 
-        return matchesSearch(incident, search) && matchesStatus && matchesSeverity && matchesRescue;
-      }),
-    [incidents, rescue, search, severity, status]
+        return matchesSearch(incident, search) && matchesStatus && matchesRisk && matchesType && matchesQueue && matchesRescue;
+      })),
+    [incidentType, incidents, queue, rescue, risk, search, status]
   );
 
   return (
@@ -87,12 +105,16 @@ const IncidentListPage = () => {
       <IncidentFilterBar
         search={search}
         status={status}
-        severity={severity}
+        risk={risk}
+        incidentType={incidentType}
+        queue={queue}
         rescue={rescue}
         isRefreshing={incidentsQuery.isFetching}
         onSearchChange={setSearch}
         onStatusChange={setStatus}
-        onSeverityChange={setSeverity}
+        onRiskChange={setRisk}
+        onIncidentTypeChange={setIncidentType}
+        onQueueChange={setQueue}
         onRescueChange={setRescue}
         onRefresh={() => incidentsQuery.refetch()}
       />

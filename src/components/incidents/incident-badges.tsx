@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { getIncidentExpenseStatusLabel } from "@/types/enums/incident-expense-status.enum";
 import { getIncidentSeverityLabel } from "@/types/enums/incident-severity.enum";
 import { getIncidentStatusLabel } from "@/types/enums/incident-status.enum";
+import { getIncidentRiskLabel } from "@/types/enums/incident-risk.enum";
 
 export const IncidentStatusBadge = ({ status }: { status?: string | null }) => {
   const statusInfo = getIncidentStatusLabel(status);
@@ -28,6 +29,18 @@ export const IncidentSeverityBadge = ({
       className={cn("rounded-md font-medium", severityInfo.className)}
     >
       {severityInfo.label}
+    </Badge>
+  );
+};
+
+export const IncidentRiskBadge = ({ risk }: { risk?: string | null }) => {
+  const riskInfo = getIncidentRiskLabel(risk);
+  return (
+    <Badge
+      variant="outline"
+      className={cn("rounded-md font-medium", riskInfo.className)}
+    >
+      {riskInfo.label}
     </Badge>
   );
 };

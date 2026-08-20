@@ -51,11 +51,21 @@ export const useDispatchLookup = () => {
       enabled: Boolean(warehouseId),
     });
 
+  const getAvailableLpns = (warehouseId?: string | null, enabled = true) =>
+    useQuery({
+      queryKey: ["dispatch", "available-lpns", "warehouse", warehouseId],
+      queryFn: () => dispatchLookupApi.getAvailableLpns(warehouseId!),
+      enabled: enabled && Boolean(warehouseId),
+      staleTime: 0,
+      refetchOnMount: "always",
+    });
+
   return {
     getSchedules,
     searchCompatibleLpns,
     getReadyLpns,
     getAvailableVehicles,
     getAvailableDrivers,
+    getAvailableLpns,
   };
 };

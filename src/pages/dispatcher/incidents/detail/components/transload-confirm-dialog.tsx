@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useIncident } from "@/hooks/use-incident";
 import type { TIncident } from "@/schemas/incident.schema";
@@ -18,10 +19,16 @@ type Props = {
 const TransloadConfirmDialog = ({ open, incident, onOpenChange }: Props) => {
   const { confirmTransload } = useIncident();
   const [confirmationNote, setConfirmationNote] = useState("");
+  const [sealNumber, setSealNumber] = useState("");
+  const [transferTemperature, setTransferTemperature] = useState("");
+  const [locationDescription, setLocationDescription] = useState("");
 
   useEffect(() => {
     if (!open) {
       setConfirmationNote("");
+      setSealNumber("");
+      setTransferTemperature("");
+      setLocationDescription("");
     }
   }, [open]);
 
@@ -35,7 +42,18 @@ const TransloadConfirmDialog = ({ open, incident, onOpenChange }: Props) => {
     try {
       const result = await confirmTransload.mutateAsync({
         incidentId: incident.incidentId,
-        data: { confirmationNote: note },
+        data: {
+          confirmationNote: note,
+          lpnIds: incident.externalReeferPlan?.lpnIds ?? [],
+          sealNumber: sealNumber.trim() || undefined,
+          transferTemperature:
+            transferTemperature.trim() === ""
+              ? undefined
+              : Number(transferTemperature),
+          transferredAt: new Date().toISOString(),
+          locationDescription: locationDescription.trim() || undefined,
+          evidenceUrls: [],
+        },
       });
       toast.success(
         result.message || `Đã xác nhận sang hàng sang xe ${result.vehiclePlate}.`
@@ -70,6 +88,21 @@ const TransloadConfirmDialog = ({ open, incident, onOpenChange }: Props) => {
             placeholder="Xác nhận toàn bộ hàng đã sang xe thay thế và sẵn sàng tiếp tục chuyến..."
             onChange={(event) => setConfirmationNote(event.target.value)}
           />
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="transload-seal">Seal xe thay thế</Label>
+            <Input id="transload-seal" value={sealNumber} onChange={(event) => setSealNumber(event.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="transload-temperature">Nhiệt độ khi chuyển (°C)</Label>
+            <Input id="transload-temperature" type="number" step="0.1" value={transferTemperature} onChange={(event) => setTransferTemperature(event.target.value)} />
+          </div>
+          <div className="space-y-2 sm:col-span-2">
+            <Label htmlFor="transload-location">Vị trí sang hàng</Label>
+            <Input id="transload-location" value={locationDescription} onChange={(event) => setLocationDescription(event.target.value)} />
+          </div>
         </div>
 
         <DialogFooter>

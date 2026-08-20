@@ -1,5 +1,5 @@
 import type { TIncident } from "@/schemas/incident.schema";
-import { INCIDENT_SEVERITY } from "@/types/enums/incident-severity.enum";
+import { INCIDENT_RISK } from "@/types/enums/incident-risk.enum";
 import { INCIDENT_STATUS } from "@/types/enums/incident-status.enum";
 import { AlertTriangle, CheckCircle2, CircleDot, Truck } from "lucide-react";
 
@@ -17,19 +17,19 @@ const IncidentSummaryStrip = ({ incidents }: { incidents: TIncident[] }) => {
       className: "text-amber-700",
     },
     {
-      label: "Đã điều xe",
+      label: "Chờ cứu hộ",
       value: unresolved.filter(
-        (incident) => incident.status === INCIDENT_STATUS.RESCUE_DISPATCHED
+        (incident) =>
+          incident.status === INCIDENT_STATUS.CONTAINMENT_REQUIRED ||
+          incident.status === INCIDENT_STATUS.RESCUE_PLANNING
       ).length,
       icon: Truck,
       className: "text-blue-700",
     },
     {
-      label: "Chờ Admin đóng",
+      label: "Tạo lại trip gấp",
       value: unresolved.filter(
-        (incident) =>
-          incident.status === INCIDENT_STATUS.CONTINUED ||
-          incident.status === INCIDENT_STATUS.TRANSLOAD_COMPLETED
+        (incident) => incident.status === INCIDENT_STATUS.READY_FOR_REDISPATCH
       ).length,
       icon: CheckCircle2,
       className: "text-emerald-700",
@@ -37,7 +37,7 @@ const IncidentSummaryStrip = ({ incidents }: { incidents: TIncident[] }) => {
     {
       label: "Mức nghiêm trọng",
       value: unresolved.filter(
-        (incident) => incident.severity === INCIDENT_SEVERITY.CRITICAL
+        (incident) => incident.riskLevel === INCIDENT_RISK.CRITICAL
       ).length,
       icon: AlertTriangle,
       className: "text-rose-700",

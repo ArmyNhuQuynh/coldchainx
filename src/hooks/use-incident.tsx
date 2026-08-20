@@ -2,12 +2,17 @@ import { incidentApi } from "@/apis/incident.api";
 import type {
   TApproveIncidentExpenseRequest,
   TConfirmTransloadRequest,
+  TContinueTripRequest,
+  TAssessIncidentRiskRequest,
+  TDispatchExternalReeferRequest,
+  TRecordRescueFallbackRequest,
   TDispatchRescueRequest,
   TReimburseIncidentExpenseRequest,
   TResolveIncidentRequest,
 } from "@/schemas/incident.schema";
 import { INCIDENT_STATUS } from "@/types/enums/incident-status.enum";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { isAxiosError } from "axios";
 
 export const incidentQueryKeys = {
   root: ["incidents"] as const,
@@ -16,6 +21,8 @@ export const incidentQueryKeys = {
     [...incidentQueryKeys.root, "detail", incidentId] as const,
   candidates: (incidentId: string) =>
     [...incidentQueryKeys.root, "rescue-candidates", incidentId] as const,
+  rescueOptions: (incidentId: string) =>
+    [...incidentQueryKeys.root, "rescue-options", incidentId] as const,
 };
 
 export const useIncident = () => {
@@ -68,6 +75,70 @@ export const useIncident = () => {
       enabled: enabled && Boolean(incidentId),
       retry: false,
     });
+
+  const getRescueOptions = (incidentId?: string, enabled = true) =>
+    useQuery({
+      queryKey: incidentQueryKeys.rescueOptions(incidentId ?? ""),
+      queryFn: () => incidentApi.getRescueOptions(incidentId!),
+      enabled: enabled && Boolean(incidentId),
+      retry: false,
+    });
+
+  const assessRisk = useMutation({
+    mutationFn: ({
+      incidentId,
+      data,
+    }: {
+      incidentId: string;
+      data: TAssessIncidentRiskRequest;
+    }) => incidentApi.assessRisk(incidentId, data),
+    onSuccess: (_, variables) => invalidateIncidentData(variables.incidentId),
+  });
+
+  const continueTrip = useMutation({
+    mutationFn: ({
+      incidentId,
+      data,
+    }: {
+      incidentId: string;
+      data: TContinueTripRequest;
+    }) => incidentApi.continueTrip(incidentId, data),
+    onSuccess: (_, variables) => invalidateIncidentData(variables.incidentId),
+  });
+
+  const dispatchExternalReefer = useMutation({
+    mutationFn: ({
+      incidentId,
+      data,
+    }: {
+      incidentId: string;
+      data: TDispatchExternalReeferRequest;
+    }) => incidentApi.dispatchExternalReefer(incidentId, data),
+    onSuccess: (_, variables) => invalidateIncidentData(variables.incidentId),
+    onError: (error, variables) => {
+      if (!isAxiosError(error)) return;
+      const status = error.response?.status;
+      if (
+        !error.response ||
+        status === 404 ||
+        status === 409 ||
+        (status ?? 0) >= 500
+      ) {
+        invalidateIncidentData(variables.incidentId);
+      }
+    },
+  });
+
+  const recordFallback = useMutation({
+    mutationFn: ({
+      incidentId,
+      data,
+    }: {
+      incidentId: string;
+      data: TRecordRescueFallbackRequest;
+    }) => incidentApi.recordFallback(incidentId, data),
+    onSuccess: (_, variables) => invalidateIncidentData(variables.incidentId),
+  });
 
   const dispatchRescue = useMutation({
     mutationFn: ({
@@ -129,6 +200,11 @@ export const useIncident = () => {
     getUnresolvedIncidentCount,
     getIncident,
     getRescueCandidates,
+    getRescueOptions,
+    assessRisk,
+    continueTrip,
+    dispatchExternalReefer,
+    recordFallback,
     dispatchRescue,
     confirmTransload,
     approveExpense,

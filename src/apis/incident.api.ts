@@ -2,6 +2,14 @@ import { apiRequest } from "@/lib/http";
 import type {
   TApproveIncidentExpenseRequest,
   TConfirmTransloadRequest,
+  TContinueTripRequest,
+  TAssessIncidentRiskRequest,
+  TIncidentRiskAssessmentResult,
+  TIncidentRescuePlan,
+  TDispatchExternalReeferRequest,
+  TExternalReeferWorkflowResult,
+  TRecordRescueFallbackRequest,
+  TRescueFallbackResult,
   TDispatchRescueRequest,
   TDispatchRescueResult,
   TIncident,
@@ -54,6 +62,55 @@ const getRescueCandidates = async (
   const response = await apiRequest.baseApi.get<BaseResponse<TRescueCandidate[]>>(
     `${INCIDENTS_URL}/${incidentId}/rescue-candidates`
   );
+  return response.data.data;
+};
+
+const assessRisk = async (
+  incidentId: string,
+  data: TAssessIncidentRiskRequest
+): Promise<TIncidentRiskAssessmentResult> => {
+  const response = await apiRequest.baseApi.post<
+    BaseResponse<TIncidentRiskAssessmentResult>
+  >(`${INCIDENTS_URL}/${incidentId}/assess-risk`, data);
+  return response.data.data;
+};
+
+const continueTrip = async (
+  incidentId: string,
+  data: TContinueTripRequest
+): Promise<TIncidentWorkflowResult> => {
+  const response = await apiRequest.baseApi.post<
+    BaseResponse<TIncidentWorkflowResult>
+  >(`${INCIDENTS_URL}/${incidentId}/continue-trip`, data);
+  return response.data.data;
+};
+
+const getRescueOptions = async (
+  incidentId: string
+): Promise<TIncidentRescuePlan> => {
+  const response = await apiRequest.baseApi.get<
+    BaseResponse<TIncidentRescuePlan>
+  >(`${INCIDENTS_URL}/${incidentId}/rescue-options`);
+  return response.data.data;
+};
+
+const dispatchExternalReefer = async (
+  incidentId: string,
+  data: TDispatchExternalReeferRequest
+): Promise<TExternalReeferWorkflowResult> => {
+  const response = await apiRequest.baseApi.post<
+    BaseResponse<TExternalReeferWorkflowResult>
+  >(`${INCIDENTS_URL}/${incidentId}/external-reefer-dispatch`, data);
+  return response.data.data;
+};
+
+const recordFallback = async (
+  incidentId: string,
+  data: TRecordRescueFallbackRequest
+): Promise<TRescueFallbackResult> => {
+  const response = await apiRequest.baseApi.post<
+    BaseResponse<TRescueFallbackResult>
+  >(`${INCIDENTS_URL}/${incidentId}/record-fallback`, data);
   return response.data.data;
 };
 
@@ -120,6 +177,11 @@ export const incidentApi = {
   getAllIncidents,
   getIncident,
   getRescueCandidates,
+  assessRisk,
+  continueTrip,
+  getRescueOptions,
+  dispatchExternalReefer,
+  recordFallback,
   dispatchRescue,
   confirmTransload,
   approveExpense,

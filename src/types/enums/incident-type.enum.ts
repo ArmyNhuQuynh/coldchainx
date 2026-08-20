@@ -1,6 +1,7 @@
 export const INCIDENT_TYPE = {
   ACCIDENT: "ACCIDENT",
   VEHICLE_BREAKDOWN: "VEHICLE_BREAKDOWN",
+  REEFER_BREAKDOWN: "REEFER_BREAKDOWN",
   TEMP_EXCURSION: "TEMP_EXCURSION",
   DAMAGE_CARGO: "DAMAGE_CARGO",
   DELAY: "DELAY",
@@ -21,6 +22,8 @@ export const normalizeIncidentType = (
       return INCIDENT_TYPE.ACCIDENT;
     case INCIDENT_TYPE.VEHICLE_BREAKDOWN:
       return INCIDENT_TYPE.VEHICLE_BREAKDOWN;
+    case INCIDENT_TYPE.REEFER_BREAKDOWN:
+      return INCIDENT_TYPE.REEFER_BREAKDOWN;
     case INCIDENT_TYPE.TEMP_EXCURSION:
       return INCIDENT_TYPE.TEMP_EXCURSION;
     case INCIDENT_TYPE.DAMAGE_CARGO:
@@ -38,6 +41,8 @@ export const getIncidentTypeLabel = (type?: string | null) => {
       return "Tai nạn";
     case INCIDENT_TYPE.VEHICLE_BREAKDOWN:
       return "Hỏng xe";
+    case INCIDENT_TYPE.REEFER_BREAKDOWN:
+      return "Hỏng thùng lạnh";
     case INCIDENT_TYPE.TEMP_EXCURSION:
       return "Sai lệch nhiệt độ";
     case INCIDENT_TYPE.DAMAGE_CARGO:

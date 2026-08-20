@@ -34,7 +34,7 @@ export const getIncidentSeverityLabel = (severity?: string | null) => {
     case INCIDENT_SEVERITY.LOW:
       return {
         label: "Thấp",
-        className: "border-sky-500 bg-transparent text-sky-700",
+        className: "border-emerald-600 bg-emerald-50 text-emerald-700",
       };
     case INCIDENT_SEVERITY.MEDIUM:
       return {

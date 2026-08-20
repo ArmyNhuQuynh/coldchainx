@@ -2,7 +2,8 @@ import { Button } from "@/components/ui/button";
 import { useDispatchTrips } from "@/hooks/use-dispatch-trip";
 import type { TDispatchTrip } from "@/schemas/dispatch.schema";
 import { ClipboardList, Route } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import TripCancelDialog from "./components/trip-cancel-dialog";
 import TripDetailDialog from "./components/trip-detail-dialog";
@@ -41,13 +42,24 @@ const matchTripSearch = (trip: TDispatchTrip, search: string) => {
 };
 
 const TripListPage = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedTripId = searchParams.get("tripId")?.trim() || "";
   const { getCreatedTrips, cancelTrip, startPicking } = useDispatchTrips();
   const tripsQuery = getCreatedTrips();
   const trips = tripsQuery.data ?? [];
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState(ALL_TRIP_STATUS);
+  const [status, setStatus] = useState<string>(ALL_TRIP_STATUS);
   const [selectedTrip, setSelectedTrip] = useState<TDispatchTrip | null>(null);
   const [tripToCancel, setTripToCancel] = useState<TDispatchTrip | null>(null);
+
+  useEffect(() => {
+    if (!requestedTripId || trips.length === 0) return;
+    const requestedTrip = trips.find((trip) => trip.tripId === requestedTripId);
+    if (requestedTrip) {
+      setSearch(requestedTripId);
+      setSelectedTrip(requestedTrip);
+    }
+  }, [requestedTripId, trips]);
 
   const filteredTrips = useMemo(() => {
     return trips.filter(
@@ -167,7 +179,14 @@ const TripListPage = () => {
         open={Boolean(selectedTrip)}
         trip={selectedTrip}
         onOpenChange={(open) => {
-          if (!open) setSelectedTrip(null);
+          if (!open) {
+            setSelectedTrip(null);
+            if (requestedTripId) {
+              const next = new URLSearchParams(searchParams);
+              next.delete("tripId");
+              setSearchParams(next, { replace: true });
+            }
+          }
         }}
         onCancel={setTripToCancel}
         onStartPicking={handleStartPicking}

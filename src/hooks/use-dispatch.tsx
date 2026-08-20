@@ -19,6 +19,7 @@ export const useDispatchPlanning = () => {
       queryClient.invalidateQueries({ queryKey: ["dispatch"] });
       queryClient.invalidateQueries({ queryKey: ["drivers"] });
       queryClient.invalidateQueries({ queryKey: ["driver"] });
+      queryClient.invalidateQueries({ queryKey: ["incidents"] });
     },
   });
 

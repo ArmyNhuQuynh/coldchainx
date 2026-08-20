@@ -36,6 +36,7 @@ type Props = {
   isLoading?: boolean;
   isChecking?: boolean;
   panelHeight?: number | null;
+  locked?: boolean;
   onToggle: (lpn: TDispatchReadyLpn) => void;
   onPageChange: (page: number) => void;
 };
@@ -50,6 +51,7 @@ const LpnSelectionPanel = ({
   isLoading,
   isChecking,
   panelHeight,
+  locked,
   onToggle,
   onPageChange,
 }: Props) => {
@@ -72,7 +74,9 @@ const LpnSelectionPanel = ({
               LPN đã ở trong kho
             </CardTitle>
             <p className="mt-1 text-sm text-muted-foreground">
-              {selectedIds.length} LPN đang được chọn
+              {locked
+                ? `Đã chọn ${selectedIds.length}/${totalRecords} LPN · Không thể bỏ chọn`
+                : `${selectedIds.length} LPN đang được chọn`}
             </p>
           </div>
           <Badge variant="outline">
@@ -107,13 +111,13 @@ const LpnSelectionPanel = ({
               lpns.map((lpn) => {
                 const checked = selectedIds.includes(lpn.lpnId);
                 const tempGroup = getTemperatureGroup(lpn.tempCondition);
-                const disabled = !checked && Boolean(isChecking);
+                const disabled = Boolean(locked) || (!checked && Boolean(isChecking));
 
                 return (
                   <div
                     key={lpn.lpnId}
                     aria-disabled={disabled}
-                    onClick={() => onToggle(lpn)}
+                    onClick={() => !locked && onToggle(lpn)}
                     className={cn(
                       "h-auto w-full cursor-pointer overflow-hidden rounded-lg border p-0 text-left whitespace-normal shadow-none transition-colors",
                       checked
@@ -129,7 +133,7 @@ const LpnSelectionPanel = ({
                           disabled={disabled}
                           aria-label={`${checked ? "Bỏ chọn" : "Chọn"} LPN ${lpn.lpnCode}`}
                           onClick={(event) => event.stopPropagation()}
-                          onCheckedChange={() => onToggle(lpn)}
+                          onCheckedChange={() => !locked && onToggle(lpn)}
                         />
                       </div>
                       <div className="min-w-0 flex-1">
@@ -147,7 +151,9 @@ const LpnSelectionPanel = ({
                             </Badge>
                           )}
                           {checked && (
-                            <Badge className="bg-emerald-700 text-white">Đã chọn</Badge>
+                            <Badge className="bg-emerald-700 text-white">
+                              {locked ? "Bắt buộc" : "Đã chọn"}
+                            </Badge>
                           )}
                           {lpn.routeName && (
                             <Badge

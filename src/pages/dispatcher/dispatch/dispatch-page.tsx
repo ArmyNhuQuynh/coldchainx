@@ -1,13 +1,17 @@
 import { useDispatchLookup } from "@/hooks/use-dispatch-lookup";
 import { useDispatchPlanning } from "@/hooks/use-dispatch";
+import { useIncident } from "@/hooks/use-incident";
+import { PATH_DISPATCHER_DASHBOARD } from "@/routes/path";
 import type {
   TDispatchPackingResult,
   TDispatchReadyLpn,
   TDispatchScheduleLookup,
 } from "@/schemas/dispatch.schema";
-import { Boxes } from "lucide-react";
+import { Boxes, LockKeyhole, Siren } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { INCIDENT_STATUS } from "@/types/enums/incident-status.enum";
 import DispatchScheduleSelector from "./components/dispatch-schedule-selector";
 import {
   getDefaultPlanningWindow,
@@ -16,6 +20,7 @@ import {
 import LpnSelectionPanel from "./components/lpn-selection-panel";
 import PackingPreviewDialog from "./components/packing-preview-dialog";
 import VehicleDriverPanel from "./components/vehicle-driver-panel";
+import { hasExactLockedLpnSelection } from "../incidents/detail/incident-workflow";
 
 const COMPATIBLE_LPN_PAGE_SIZE = 20;
 const planningWindow = getDefaultPlanningWindow();
@@ -50,14 +55,23 @@ const getErrorMessage = (error: any, fallback: string) =>
   fallback;
 
 const DispatchPage = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const incidentId = searchParams.get("incidentId")?.trim() || "";
+  const incidentMode = Boolean(incidentId);
   const { manualDispatch, simulatePacking } = useDispatchPlanning();
+  const { getIncident } = useIncident();
   const {
     getSchedules,
     searchCompatibleLpns,
     getReadyLpns,
     getAvailableVehicles,
     getAvailableDrivers,
+    getAvailableLpns,
   } = useDispatchLookup();
+  const incidentQuery = getIncident(incidentId || undefined);
+  const incident = incidentQuery.data;
+  const externalPlan = incident?.externalReeferPlan;
 
   const [selectedRouteId, setSelectedRouteId] = useState("");
   const [selectedScheduleId, setSelectedScheduleId] = useState("");
@@ -76,12 +90,42 @@ const DispatchPage = () => {
     number | null
   >(null);
 
-  const selectedWarehouseId = selectedLpns[0]?.warehouseId ?? "";
-  const selectedWarehouseName = selectedLpns[0]?.warehouseName ?? "";
+  const selectedWarehouseId = incidentMode
+    ? externalPlan?.destinationWarehouseId ?? ""
+    : selectedLpns[0]?.warehouseId ?? "";
+  const selectedWarehouseName = incidentMode
+    ? externalPlan?.destinationWarehouseName ?? ""
+    : selectedLpns[0]?.warehouseName ?? "";
 
-  const schedulesQuery = getSchedules();
+  const schedulesQuery = getSchedules(!incidentMode);
   const vehiclesQuery = getAvailableVehicles(selectedWarehouseId);
   const driversQuery = getAvailableDrivers(selectedWarehouseId);
+  const incidentLpnsQuery = getAvailableLpns(selectedWarehouseId, incidentMode);
+
+  const requiredIncidentLpnIds = useMemo(
+    () => externalPlan?.lpnIds ?? [],
+    [externalPlan?.lpnIds]
+  );
+  const requiredIncidentLpnSet = useMemo(
+    () => new Set(requiredIncidentLpnIds),
+    [requiredIncidentLpnIds]
+  );
+  const incidentRequiredLpns = useMemo(
+    () =>
+      (incidentLpnsQuery.data ?? [])
+        .filter((lpn) => requiredIncidentLpnSet.has(lpn.lpnId))
+        .map((lpn) => ({
+          ...lpn,
+          warehouseId: selectedWarehouseId,
+          warehouseName: selectedWarehouseName,
+        })),
+    [
+      incidentLpnsQuery.data,
+      requiredIncidentLpnSet,
+      selectedWarehouseId,
+      selectedWarehouseName,
+    ]
+  );
 
   const selectedLpnIds = useMemo(
     () => selectedLpns.map((lpn) => lpn.lpnId),
@@ -100,10 +144,10 @@ const DispatchPage = () => {
   );
   const compatibilityRequest = useMemo(
     () =>
-      selectedScheduleId
+      !incidentMode && selectedScheduleId
         ? { scheduleId: selectedScheduleId, selectedLpnIds }
         : undefined,
-    [selectedLpnIds, selectedScheduleId]
+    [incidentMode, selectedLpnIds, selectedScheduleId]
   );
   const compatibleLpnsQuery = searchCompatibleLpns(compatibilityRequest, {
     pageNumber: candidatePage,
@@ -115,7 +159,7 @@ const DispatchPage = () => {
       pageSize: COMPATIBLE_LPN_PAGE_SIZE,
       warehouseId: selectedWarehouseId || undefined,
     },
-    !selectedScheduleId
+    !incidentMode && !selectedScheduleId
   );
 
   const schedules = schedulesQuery.data ?? [];
@@ -123,24 +167,31 @@ const DispatchPage = () => {
     () =>
       (vehiclesQuery.data ?? []).filter(
         (vehicle) =>
-          (!selectedWarehouseName ||
+          (incidentMode ||
+            !selectedWarehouseName ||
             vehicle.currentLocation?.trim().toLocaleLowerCase("vi-VN") ===
               selectedWarehouseName.trim().toLocaleLowerCase("vi-VN")) &&
           vehicle.maxWeight >= selectedCargoTotals.weightKg &&
           vehicle.maxCbm >= selectedCargoTotals.cbm
       ),
-    [selectedCargoTotals, selectedWarehouseName, vehiclesQuery.data]
+    [
+      incidentMode,
+      selectedCargoTotals,
+      selectedWarehouseName,
+      vehiclesQuery.data,
+    ]
   );
   const drivers = useMemo(
     () =>
       (driversQuery.data ?? []).filter(
         (driver) =>
           driver.hasValidLicense === true &&
-          (!selectedWarehouseName ||
+          (incidentMode ||
+            !selectedWarehouseName ||
             driver.currentLocation?.trim().toLocaleLowerCase("vi-VN") ===
               selectedWarehouseName.trim().toLocaleLowerCase("vi-VN"))
       ),
-    [driversQuery.data, selectedWarehouseName]
+    [driversQuery.data, incidentMode, selectedWarehouseName]
   );
   const lpnQuery = selectedScheduleId ? compatibleLpnsQuery : readyLpnsQuery;
   const compatibility = selectedScheduleId ? compatibleLpnsQuery.data : undefined;
@@ -149,11 +200,17 @@ const DispatchPage = () => {
 
   const displayedLpns = useMemo(() => {
     const selectedIds = new Set(selectedLpnIds);
+    if (incidentMode) return incidentRequiredLpns;
     return [
       ...selectedLpns,
       ...candidateLpns.filter((lpn) => !selectedIds.has(lpn.lpnId)),
     ];
-  }, [candidateLpns, selectedLpnIds, selectedLpns]);
+  }, [candidateLpns, incidentMode, incidentRequiredLpns, selectedLpnIds, selectedLpns]);
+
+  useEffect(() => {
+    if (!incidentMode || incidentLpnsQuery.isLoading) return;
+    setSelectedLpns(incidentRequiredLpns);
+  }, [incidentLpnsQuery.isLoading, incidentMode, incidentRequiredLpns]);
 
   const selectionKey = useMemo(
     () =>
@@ -232,6 +289,7 @@ const DispatchPage = () => {
   };
 
   const handleToggleLpn = (lpn: TDispatchReadyLpn) => {
+    if (incidentMode) return;
     const exists = selectedLpnIds.includes(lpn.lpnId);
     if (!exists && lpnQuery.isFetching) return;
 
@@ -264,6 +322,7 @@ const DispatchPage = () => {
     !lpnQuery.isFetching &&
     (!selectedScheduleId || compatibility?.selectedSetValid === true);
   const canPreviewPacking =
+    !incidentMode &&
     compatibilityValid &&
     selectedLpnIds.length > 0 &&
     Boolean(selectedWarehouseId) &&
@@ -274,23 +333,35 @@ const DispatchPage = () => {
     const start = new Date(plannedStartTime);
     const end = new Date(plannedEndTime);
 
-    if (selectedLpns.length === 0) {
-      messages.push("Chọn ít nhất 1 LPN.");
+    if (incidentMode) {
+      if (incidentQuery.isError) messages.push("Không tải được Incident cần tạo lại chuyến.");
+      if (incident && incident.status !== INCIDENT_STATUS.READY_FOR_REDISPATCH) {
+        messages.push("Incident chỉ được tạo trip mới tại READY_FOR_REDISPATCH.");
+      }
+      if (!selectedWarehouseId) messages.push("Incident thiếu kho đích tuyến.");
+      if (requiredIncidentLpnIds.length === 0) messages.push("Incident chưa có danh sách LPN bắt buộc.");
+      if (incidentLpnsQuery.isLoading) messages.push("Đang tải toàn bộ LPN đã inbound.");
+      if (incidentLpnsQuery.isError) messages.push("Không tải được LPN tại kho đích tuyến.");
+      if (!hasExactLockedLpnSelection(requiredIncidentLpnIds, selectedLpnIds)) {
+        messages.push(`Phải chọn đủ ${requiredIncidentLpnIds.length}/${requiredIncidentLpnIds.length} LPN của Incident.`);
+      }
+    } else {
+      if (selectedLpns.length === 0) messages.push("Chọn ít nhất 1 LPN.");
     }
     if (selectedLpns.length > 0 && !selectedWarehouseId) {
       messages.push("LPN đã chọn chưa có thông tin kho xuất phát.");
     }
-    if (lpnQuery.isFetching && selectedLpns.length > 0) {
+    if (!incidentMode && lpnQuery.isFetching && selectedLpns.length > 0) {
       messages.push("Đang kiểm tra tính tương thích của tập LPN.");
     }
-    if (compatibility && !compatibility.selectedSetValid) {
+    if (!incidentMode && compatibility && !compatibility.selectedSetValid) {
       messages.push(
         ...compatibility.conflicts.map(
           (conflict) => conflict.message || "Tập LPN đang chọn không tương thích."
         )
       );
     }
-    if (lpnQuery.isError) {
+    if (!incidentMode && lpnQuery.isError) {
       messages.push("Không tải được danh sách LPN sẵn sàng từ BE.");
     }
     if (selectedWarehouseId && vehiclesQuery.isError) {
@@ -306,6 +377,7 @@ const DispatchPage = () => {
       messages.push("Thời gian bắt đầu phải nhỏ hơn thời gian kết thúc.");
     }
     if (
+      !incidentMode &&
       selectedLpns.length > 0 &&
       selectedVehicleId &&
       !hasCurrentPreview
@@ -327,21 +399,30 @@ const DispatchPage = () => {
     plannedStartTime,
     selectedDriverIds.length,
     selectedLpns.length,
+    selectedLpnIds,
     selectedScheduleId,
     selectedVehicleId,
     selectedWarehouseId,
     driversQuery.isError,
+    incident,
+    incidentLpnsQuery.isError,
+    incidentLpnsQuery.isLoading,
+    incidentMode,
+    incidentQuery.isError,
+    requiredIncidentLpnIds.length,
+    requiredIncidentLpnSet,
     vehiclesQuery.isError,
   ]);
 
-  const canCreateTrip =
-    validationMessages.length === 0 &&
-    hasCurrentPreview &&
-    packingPreview?.canCreateTrip === true &&
-    packingPreview.unplacedLpnIds.length === 0;
+  const canCreateTrip = incidentMode
+    ? validationMessages.length === 0
+    : validationMessages.length === 0 &&
+      hasCurrentPreview &&
+      packingPreview?.canCreateTrip === true &&
+      packingPreview.unplacedLpnIds.length === 0;
 
   const handlePreviewPacking = async () => {
-    if (!canPreviewPacking) return;
+    if (incidentMode || !canPreviewPacking) return;
 
     setIsPreviewOpen(true);
     setPackingPreview(null);
@@ -366,6 +447,7 @@ const DispatchPage = () => {
 
     try {
       const result = await manualDispatch.mutateAsync({
+        incidentId: incidentMode ? incidentId : undefined,
         ...(selectedScheduleId ? { scheduleId: selectedScheduleId } : {}),
         lpnIds: selectedLpnIds,
         vehicleId: selectedVehicleId,
@@ -375,6 +457,10 @@ const DispatchPage = () => {
       });
 
       toast.success(`Đã tạo chuyến ${result.tripId}`);
+      if (incidentMode) {
+        navigate(`${PATH_DISPATCHER_DASHBOARD.trip.root}?tripId=${encodeURIComponent(result.tripId)}`);
+        return;
+      }
       setSelectedLpns([]);
       setSelectedVehicleId("");
       setSelectedDriverIds([]);
@@ -392,14 +478,28 @@ const DispatchPage = () => {
           <Boxes className="h-5 w-5" />
         </div>
         <div>
-          <h1 className="text-3xl font-semibold">Điều phối & Ghép chuyến</h1>
+          <h1 className="text-3xl font-semibold">
+            {incidentMode ? "Tạo lại chuyến từ Incident" : "Điều phối & Ghép chuyến"}
+          </h1>
           <p className="mt-1 text-muted-foreground">
-            Chọn LPN, xe, tài xế và thời gian vận hành trước khi tạo chuyến
+            {incidentMode
+              ? "Chọn xe và 1-2 tài xế tại đúng kho inbound; toàn bộ LPN đã được khóa."
+              : "Chọn LPN, xe, tài xế và thời gian vận hành trước khi tạo chuyến"}
           </p>
         </div>
       </div>
 
-      <DispatchScheduleSelector
+      {incidentMode && (
+        <div className="flex flex-col gap-3 rounded-lg border border-violet-300 bg-violet-50 p-4 text-violet-900 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="flex items-center gap-2 font-bold"><Siren className="h-5 w-5" /> TẠO LẠI CHUYẾN TỪ INCIDENT</p>
+            <p className="mt-1 text-sm">Kho xuất phát: {selectedWarehouseName || "Chưa cấu hình"}</p>
+          </div>
+          <div className="flex items-center gap-2 text-sm font-semibold"><LockKeyhole className="h-4 w-4" /> Đã chọn {selectedLpnIds.length}/{requiredIncidentLpnIds.length} LPN</div>
+        </div>
+      )}
+
+      {!incidentMode && <DispatchScheduleSelector
         schedules={schedules}
         selectedRouteId={selectedRouteId}
         selectedScheduleId={selectedScheduleId}
@@ -408,18 +508,27 @@ const DispatchPage = () => {
         onRouteChange={handleRouteChange}
         onScheduleChange={handleScheduleChange}
         onRetry={() => schedulesQuery.refetch()}
-      />
+      />}
 
       <div className="grid min-h-0 items-start gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.8fr)]">
         <LpnSelectionPanel
           lpns={displayedLpns}
           selectedIds={selectedLpnIds}
-          totalRecords={lpnResult?.totalRecords ?? 0}
+          totalRecords={
+            incidentMode
+              ? requiredIncidentLpnIds.length
+              : lpnResult?.totalRecords ?? 0
+          }
           currentPage={lpnResult?.currentPage ?? candidatePage}
           totalPages={lpnResult?.totalPages ?? 0}
-          hasSchedule={Boolean(selectedScheduleId)}
-          isLoading={lpnQuery.isLoading}
-          isChecking={lpnQuery.isFetching}
+          hasSchedule={incidentMode || Boolean(selectedScheduleId)}
+          isLoading={
+            incidentMode ? incidentLpnsQuery.isLoading : lpnQuery.isLoading
+          }
+          isChecking={
+            incidentMode ? incidentLpnsQuery.isFetching : lpnQuery.isFetching
+          }
+          locked={incidentMode}
           panelHeight={vehicleDriverPanelHeight}
           onToggle={handleToggleLpn}
           onPageChange={setCandidatePage}
@@ -446,6 +555,8 @@ const DispatchPage = () => {
             hasCurrentPreview={hasCurrentPreview}
             canCreateTrip={canCreateTrip}
             validationMessages={validationMessages}
+            showPackingPreview={!incidentMode}
+            createButtonLabel={incidentMode ? "Tạo trip redispatch gấp" : undefined}
             onVehicleChange={handleVehicleChange}
             onDriverToggle={handleDriverToggle}
             onPlannedStartTimeChange={setPlannedStartTime}

@@ -4,6 +4,7 @@ import { CalendarClock, CircleDollarSign, MapPin, UserRound } from "lucide-react
 import {
   IncidentExpenseBadge,
   IncidentSeverityBadge,
+  IncidentRiskBadge,
 } from "@/components/incidents/incident-badges";
 import {
   formatIncidentDate,
@@ -27,6 +28,7 @@ const IncidentOverviewPanel = ({ incident }: { incident: TIncident }) => {
               {getIncidentTypeLabel(incident.incidentType)}
             </h2>
             <IncidentSeverityBadge severity={incident.severity} />
+            <IncidentRiskBadge risk={incident.riskLevel} />
           </div>
           <p className="mt-3 whitespace-pre-wrap leading-6 text-muted-foreground">
             {incident.description}
@@ -68,6 +70,43 @@ const IncidentOverviewPanel = ({ incident }: { incident: TIncident }) => {
             </div>
           </div>
         </div>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="rounded-lg border p-3">
+            <p className="text-sm text-muted-foreground">Nhiệt độ mới nhất</p>
+            <p className="mt-2 font-medium">
+              {incident.latestTemperature != null ? `${incident.latestTemperature}°C` : "—"}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {incident.temperatureSource || "Chưa có nguồn"} · {formatIncidentDate(incident.temperatureMeasuredAt)}
+            </p>
+          </div>
+          <div className="rounded-lg border p-3">
+            <p className="text-sm text-muted-foreground">Safe time / ngưỡng</p>
+            <p className="mt-2 font-medium">
+              {incident.remainingSafeTimeMinutes != null ? `${incident.remainingSafeTimeMinutes} phút` : "—"}
+            </p>
+            <p className={`mt-1 text-xs ${incident.temperatureThresholdBreached ? "text-rose-700" : "text-muted-foreground"}`}>
+              {incident.temperatureThresholdBreached ? "Đã vượt ngưỡng" : "Chưa ghi nhận vượt ngưỡng"}
+            </p>
+          </div>
+          <div className="rounded-lg border p-3">
+            <p className="text-sm text-muted-foreground">SLA due</p>
+            <p className="mt-2 font-medium">{formatIncidentDate(incident.slaDueAt)}</p>
+          </div>
+          <div className="rounded-lg border p-3">
+            <p className="text-sm text-muted-foreground">Duyệt / hoàn ứng</p>
+            <p className="mt-2 font-medium">
+              {formatIncidentMoney(incident.approvedAmount)} / {formatIncidentMoney(incident.reimbursedAmount)}
+            </p>
+          </div>
+        </div>
+
+        {incident.safeTimeCalculation && (
+          <p className="rounded-lg border bg-muted/30 p-3 text-sm text-muted-foreground">
+            {incident.safeTimeCalculation}
+          </p>
+        )}
 
         <div className="flex items-center justify-between gap-3 border-t pt-4 text-sm">
           <span className="text-muted-foreground">Yêu cầu điều xe cứu hộ</span>

@@ -7,19 +7,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { INCIDENT_SEVERITY_FILTER_OPTIONS } from "@/types/enums/incident-severity.enum";
+import { INCIDENT_RISK_OPTIONS } from "@/types/enums/incident-risk.enum";
 import { INCIDENT_STATUS_FILTER_OPTIONS } from "@/types/enums/incident-status.enum";
+import { INCIDENT_TYPE_OPTIONS } from "@/types/enums/incident-type.enum";
 import { RefreshCw, Search } from "lucide-react";
 
 type Props = {
   search: string;
   status: string;
-  severity: string;
+  risk: string;
+  incidentType: string;
+  queue: string;
   rescue: string;
   isRefreshing?: boolean;
   onSearchChange: (value: string) => void;
   onStatusChange: (value: string) => void;
-  onSeverityChange: (value: string) => void;
+  onRiskChange: (value: string) => void;
+  onIncidentTypeChange: (value: string) => void;
+  onQueueChange: (value: string) => void;
   onRescueChange: (value: string) => void;
   onRefresh: () => void;
 };
@@ -27,16 +32,20 @@ type Props = {
 const IncidentFilterBar = ({
   search,
   status,
-  severity,
+  risk,
+  incidentType,
+  queue,
   rescue,
   isRefreshing,
   onSearchChange,
   onStatusChange,
-  onSeverityChange,
+  onRiskChange,
+  onIncidentTypeChange,
+  onQueueChange,
   onRescueChange,
   onRefresh,
 }: Props) => (
-  <div className="grid gap-3 rounded-lg border bg-background p-4 lg:grid-cols-[minmax(240px,1fr)_190px_170px_170px_auto]">
+  <div className="grid gap-3 rounded-lg border bg-background p-4 xl:grid-cols-[minmax(220px,1fr)_180px_150px_180px_190px_160px_auto]">
     <div className="relative">
       <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
       <Input
@@ -60,15 +69,33 @@ const IncidentFilterBar = ({
       </SelectContent>
     </Select>
 
-    <Select value={severity} onValueChange={onSeverityChange}>
-      <SelectTrigger><SelectValue placeholder="Mức độ" /></SelectTrigger>
+    <Select value={risk} onValueChange={onRiskChange}>
+      <SelectTrigger><SelectValue placeholder="Risk" /></SelectTrigger>
       <SelectContent>
-        <SelectItem value="ALL">Tất cả mức độ</SelectItem>
-        {INCIDENT_SEVERITY_FILTER_OPTIONS.map((option) => (
+        <SelectItem value="ALL">Tất cả risk</SelectItem>
+        {INCIDENT_RISK_OPTIONS.map((option) => (
           <SelectItem key={option.value} value={option.value}>
             {option.label}
           </SelectItem>
         ))}
+      </SelectContent>
+    </Select>
+
+    <Select value={incidentType} onValueChange={onIncidentTypeChange}>
+      <SelectTrigger><SelectValue placeholder="Loại sự cố" /></SelectTrigger>
+      <SelectContent>
+        <SelectItem value="ALL">Tất cả loại</SelectItem>
+        {INCIDENT_TYPE_OPTIONS.map((option) => (
+          <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+
+    <Select value={queue} onValueChange={onQueueChange}>
+      <SelectTrigger><SelectValue placeholder="Hàng đợi" /></SelectTrigger>
+      <SelectContent>
+        <SelectItem value="ALL">Tất cả hàng đợi</SelectItem>
+        <SelectItem value="DISPATCHER_ACTION">Chờ Dispatcher xử lý</SelectItem>
       </SelectContent>
     </Select>
 
