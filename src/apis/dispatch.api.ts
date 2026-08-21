@@ -116,9 +116,10 @@ const manualDispatch = async (data: TManualDispatchRequest) => {
 };
 
 const createTripFromWarehouse = async (data: TWarehouseRedispatchRequest) => {
+  const driverIds = normalizeDriverIds(data.driverIds);
   const formData = new FormData();
   formData.append("VehicleId", data.vehicleId);
-  data.driverIds.forEach((driverId) => formData.append("DriverIds", driverId));
+  driverIds.forEach((driverId) => formData.append("DriverIds", driverId));
   formData.append("PlannedStartTime", data.plannedStartTime);
   formData.append("PlannedEndTime", data.plannedEndTime);
   if (data.screenshotBase64) {
