@@ -197,6 +197,7 @@ export type TManualDispatchRequest = {
   driverIds: string[];
   plannedStartTime: string;
   plannedEndTime: string;
+  screenshotBase64?: string | null;
 };
 
 export type TManualDispatchResult = {

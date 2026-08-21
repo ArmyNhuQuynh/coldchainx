@@ -40,6 +40,18 @@ export type TExternalReeferPlan = {
   arrivalNote?: string | null;
 };
 
+export type TTransloadRecord = {
+  lpnIds: string[];
+  sealNumber?: string | null;
+  transferTemperature?: number | null;
+  transferredAt: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  locationDescription?: string | null;
+  evidenceUrls: string[];
+  confirmedBy: string;
+};
+
 export type TIncident = {
   incidentId: string;
   tripId?: string | null;
@@ -65,6 +77,7 @@ export type TIncident = {
   slaDueAt?: string | null;
   lastSlaEscalatedAt?: string | null;
   rescuePlanType?: string | null;
+  rescuePlanDetails?: string | null;
   externalReeferPlan?: TExternalReeferPlan | null;
   redispatchPlan?: string | null;
   approvedAmount?: number | null;
@@ -84,6 +97,7 @@ export type TIncident = {
   transloadConfirmedBy?: string | null;
   transloadConfirmedAt?: string | null;
   transloadNote?: string | null;
+  transloadDetails?: TTransloadRecord | null;
   expenseApprovedBy?: string | null;
   expenseApprovedAt?: string | null;
   expenseApprovalNote?: string | null;
@@ -256,6 +270,21 @@ export type TIncidentRescuePlan = {
 
 export type TDispatchExternalReeferRequest = {
   externalVehicleConfirmed: true;
+  rentalProvider: string;
+  vehiclePlate: string;
+  driverName: string;
+  driverPhone: string;
+  destinationWarehouseId: string;
+  agreedTemperature: number;
+  expectedWarehouseArrivalAt: string | null;
+  sealNumber: string;
+  lpnIds: string[];
+  evidenceUrls: string[];
+  note: string;
+};
+
+export type TInboundRouteWarehouseRequest = {
+  sealNumber: string;
 };
 
 export type TExternalReeferWorkflowResult = {

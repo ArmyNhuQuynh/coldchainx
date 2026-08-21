@@ -33,10 +33,11 @@ export const isMandatoryExternalReeferIncident = (
 
 export const getIncidentPrimaryAction = (
   status?: string | null,
+  requiresRescue?: boolean,
 ): TIncidentPrimaryAction => {
   switch (status) {
     case INCIDENT_STATUS.REPORTED:
-      return "ASSESS_RISK";
+      return requiresRescue === false ? "CONTINUE_TRIP" : "ASSESS_RISK";
     case INCIDENT_STATUS.TRIAGED:
     case INCIDENT_STATUS.MONITORING:
       return "CONTINUE_TRIP";
@@ -131,13 +132,14 @@ export const getIncidentResolveEligibility = (
 
   const replacementDispatched =
     Boolean(incident.replacementVehicleId) &&
-    Boolean(incident.rescueDispatchedAt);
+    Boolean(incident.rescueDispatchedAt) &&
+    incident.status === INCIDENT_STATUS.TRANSLOAD_COMPLETED;
 
   return replacementDispatched
     ? { allowed: true }
     : {
         allowed: false,
-        reason: "Cần điều xe thay thế trước khi đóng Incident.",
+        reason: "Cần hoàn tất sang hàng và cho trip tiếp tục trước khi đóng Incident.",
       };
 };
 
@@ -174,18 +176,14 @@ export const getExternalReeferConfigurationBlocker = (plan: {
   recommendedAction?: string | null;
   requiresExternalVehicleRental?: boolean;
 }) => {
-  if (plan.recommendedAction !== "EXTERNAL_REEFER_TO_ROUTE_WAREHOUSE") {
-    return "Breakdown phải dùng phương án xe lạnh ngoài về kho đích tuyến.";
-  }
-  if (!plan.requiresExternalVehicleRental) {
-    return "Backend chưa xác nhận yêu cầu thuê xe lạnh ngoài.";
+  if (
+    plan.recommendedAction !== "EXTERNAL_REEFER_TO_ROUTE_WAREHOUSE" &&
+    !plan.requiresExternalVehicleRental
+  ) {
+    return "Backend chưa đề xuất hoặc yêu cầu thuê xe lạnh ngoài.";
   }
   return null;
 };
-
-export const buildExternalReeferConfirmationRequest = () => ({
-  externalVehicleConfirmed: true as const,
-});
 
 const STATUS_PRIORITY: Record<string, number> = {
   [INCIDENT_STATUS.CONTAINMENT_REQUIRED]: 0,

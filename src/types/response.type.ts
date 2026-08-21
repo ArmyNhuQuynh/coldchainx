@@ -3,7 +3,8 @@ export type BaseResponse<T> = {
   message: string
   data: T
   statusCode?: number
-  errors?: Record<string, string[]> | string[] | null
+  errors?: unknown
+  meta?: unknown
 };
 
 export type PaginationResponse<T> = {

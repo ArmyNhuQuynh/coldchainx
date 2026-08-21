@@ -137,9 +137,10 @@ const request = (apiUrl: string): AxiosInstance => {
       return response;
     },
     async (error: AxiosError) => {
+      const isIncidentRequest = error.config?.url?.startsWith("/v1/incidents");
       if (error.response?.data && typeof error.response.data === "object") {
         const data = error.response.data as Record<string, unknown>;
-        if (typeof data.message === "string") {
+        if (!isIncidentRequest && typeof data.message === "string") {
           data.message = translateApiMessage(data.message);
         }
       }

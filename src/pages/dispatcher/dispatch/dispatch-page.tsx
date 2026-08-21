@@ -88,6 +88,7 @@ const DispatchPage = () => {
   const [packingPreviewKey, setPackingPreviewKey] = useState<string | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const vehicleDriverPanelRef = useRef<HTMLDivElement | null>(null);
+  const createTripSubmittingRef = useRef(false);
   const [vehicleDriverPanelHeight, setVehicleDriverPanelHeight] = useState<
     number | null
   >(null);
@@ -475,8 +476,9 @@ const DispatchPage = () => {
   };
 
   const handleCreateTrip = async () => {
-    if (!canCreateTrip) return;
+    if (!canCreateTrip || createTripSubmittingRef.current) return;
 
+    createTripSubmittingRef.current = true;
     try {
       const result = await manualDispatch.mutateAsync({
         incidentId: incidentMode ? incidentId : undefined,
@@ -500,6 +502,8 @@ const DispatchPage = () => {
       resetPackingPreview();
     } catch (error: any) {
       toast.error(getErrorMessage(error, "Không tạo được chuyến."));
+    } finally {
+      createTripSubmittingRef.current = false;
     }
   };
 

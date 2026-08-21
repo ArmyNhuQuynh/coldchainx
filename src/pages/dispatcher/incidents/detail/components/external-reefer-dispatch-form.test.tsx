@@ -72,13 +72,13 @@ const renderForm = () =>
 
 const openAndConfirm = () => {
   fireEvent.click(
-    screen.getByRole("button", { name: "Xác nhận đã có xe lạnh ngoài" })
+    screen.getByRole("button", { name: "Xem lại và điều xe lạnh ngoài" })
   );
   fireEvent.click(
     screen.getByRole("checkbox", { name: "Xác nhận đã có xe lạnh ngoài" })
   );
   fireEvent.click(
-    screen.getByRole("button", { name: "Xác nhận và chuyển task cho kho" })
+    screen.getByRole("button", { name: "Xác nhận điều xe" })
   );
 };
 
@@ -95,20 +95,20 @@ describe("ExternalReeferDispatchForm", () => {
     cleanup();
   });
 
-  it("chỉ hiển thị CTA xác nhận và không render các field quản lý xe ngoài", () => {
+  it("hiển thị đầy đủ field dispatch xe lạnh ngoài theo DTO backend", () => {
     renderForm();
 
     expect(
-      screen.getByRole("button", { name: "Xác nhận đã có xe lạnh ngoài" })
+      screen.getByRole("button", { name: "Xem lại và điều xe lạnh ngoài" })
     ).toBeTruthy();
-    expect(screen.queryByText("Biển số xe")).toBeNull();
-    expect(screen.queryByText("Tên tài xế")).toBeNull();
-    expect(screen.queryByText("Đơn vị cho thuê")).toBeNull();
-    expect(screen.queryByText("ETA đến kho")).toBeNull();
-    expect(screen.queryByText("Seal xe thuê ngoài")).toBeNull();
+    expect(screen.getByLabelText("Nhà cung cấp thuê xe")).toBeTruthy();
+    expect(screen.getByLabelText("Biển số xe ngoài")).toBeTruthy();
+    expect(screen.getByLabelText("Tài xế đối tác")).toBeTruthy();
+    expect(screen.getByLabelText("Nhiệt độ thỏa thuận (°C) *")).toBeTruthy();
+    expect(screen.getByLabelText("Seal bàn giao")).toBeTruthy();
   });
 
-  it("mở dialog, gửi đúng payload tối giản và dùng warehouse action từ response", async () => {
+  it("mở dialog và gửi đúng payload đầy đủ về kho đích tuyến", async () => {
     mocks.mutateAsync.mockResolvedValue({
       incidentId: "incident-1",
       tripId: "trip-1",
@@ -122,19 +122,54 @@ describe("ExternalReeferDispatchForm", () => {
     });
     renderForm();
 
+    fireEvent.change(screen.getByLabelText("Nhà cung cấp thuê xe"), {
+      target: { value: "Đối tác A" },
+    });
+    fireEvent.change(screen.getByLabelText("Biển số xe ngoài"), {
+      target: { value: "29C-12345" },
+    });
+    fireEvent.change(screen.getByLabelText("Tài xế đối tác"), {
+      target: { value: "Nguyễn Văn A" },
+    });
+    fireEvent.change(screen.getByLabelText("Điện thoại tài xế"), {
+      target: { value: "0900000000" },
+    });
+    fireEvent.change(screen.getByLabelText("Seal bàn giao"), {
+      target: { value: "SEAL-01" },
+    });
+    fireEvent.change(screen.getByLabelText("Evidence URLs (mỗi dòng một URL)"), {
+      target: { value: "https://example.com/evidence.jpg" },
+    });
+    fireEvent.change(screen.getByLabelText("Ghi chú điều phối"), {
+      target: { value: "Đưa hàng về kho tuyến" },
+    });
+
     openAndConfirm();
 
     await waitFor(() => {
       expect(mocks.mutateAsync).toHaveBeenCalledWith({
         incidentId: "incident-1",
-        data: { externalVehicleConfirmed: true },
+        data: {
+          externalVehicleConfirmed: true,
+          rentalProvider: "Đối tác A",
+          vehiclePlate: "29C-12345",
+          driverName: "Nguyễn Văn A",
+          driverPhone: "0900000000",
+          destinationWarehouseId: "warehouse-1",
+          agreedTemperature: 2,
+          expectedWarehouseArrivalAt: null,
+          sealNumber: "SEAL-01",
+          lpnIds: [],
+          evidenceUrls: ["https://example.com/evidence.jpg"],
+          note: "Đưa hàng về kho tuyến",
+        },
       });
     });
     expect(mocks.toastSuccess).toHaveBeenCalledWith(
-      "Đã xác nhận xe lạnh ngoài. Warehouse Kho Hà Nội đã nhận yêu cầu inbound cứu hộ."
+      "Đã điều xe lạnh ngoài về Kho Hà Nội."
     );
     await waitFor(() => {
-      expect(screen.queryByText("Xác nhận đã có xe lạnh ngoài?")).toBeNull();
+      expect(screen.queryByText("Xác nhận điều xe lạnh ngoài")).toBeNull();
     });
   });
 
@@ -143,7 +178,7 @@ describe("ExternalReeferDispatchForm", () => {
     renderForm();
 
     expect(
-      screen.getByRole("button", { name: "Xác nhận đã có xe lạnh ngoài" })
+      screen.getByRole("button", { name: "Xem lại và điều xe lạnh ngoài" })
     ).toHaveProperty("disabled", true);
   });
 
@@ -160,6 +195,6 @@ describe("ExternalReeferDispatchForm", () => {
         "Incident status đã thay đổi"
       );
     });
-    expect(screen.getByText("Xác nhận đã có xe lạnh ngoài?")).toBeTruthy();
+    expect(screen.getByText("Xác nhận điều xe lạnh ngoài")).toBeTruthy();
   });
 });

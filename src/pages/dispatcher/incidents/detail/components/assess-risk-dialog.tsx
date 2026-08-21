@@ -33,7 +33,7 @@ import {
   type TTemperatureSource,
 } from "@/types/enums/incident-risk.enum";
 import { AlertTriangle, Loader2, ShieldCheck } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 type Props = {
@@ -70,6 +70,7 @@ const AssessRiskDialog = ({
   const [note, setNote] = useState("");
   const [result, setResult] =
     useState<TIncidentRiskAssessmentResult | null>(null);
+  const submittingRef = useRef(false);
 
   useEffect(() => {
     if (!open) return;
@@ -82,9 +83,9 @@ const AssessRiskDialog = ({
 
   const warningFieldsValid =
     riskLevel !== INCIDENT_RISK.WARNING ||
+    temperatureSource === TEMPERATURE_SOURCE.IOT ||
     (temperatureSource !== TEMPERATURE_SOURCE.NONE &&
-      measuredTemperature.trim() !== "" &&
-      measuredAt.trim() !== "");
+      measuredTemperature.trim() !== "" && measuredAt.trim() !== "");
   const lowFieldsValid =
     riskLevel !== INCIDENT_RISK.LOW || canSafelyRepairOnSite !== null;
   const containmentValid = !containmentOnly || containmentConfirmed;
@@ -103,7 +104,7 @@ const AssessRiskDialog = ({
   );
 
   const handleSubmit = async () => {
-    if (!canSubmit) return;
+    if (!canSubmit || submittingRef.current) return;
     if (
       riskLevel === INCIDENT_RISK.WARNING &&
       temperatureSource === TEMPERATURE_SOURCE.TIMESTAMPED_PHOTO &&
@@ -112,6 +113,7 @@ const AssessRiskDialog = ({
       toast.warning("Incident chưa có ảnh evidence có thời gian; backend có thể nâng lên CRITICAL.");
     }
 
+    submittingRef.current = true;
     try {
       const assessment = await assessRisk.mutateAsync({
         incidentId: incident.incidentId,
@@ -119,10 +121,16 @@ const AssessRiskDialog = ({
           riskLevel,
           temperatureSource,
           measuredTemperature:
+            temperatureSource === TEMPERATURE_SOURCE.NONE ||
+            temperatureSource === TEMPERATURE_SOURCE.IOT ||
             measuredTemperature.trim() === ""
               ? undefined
               : Number(measuredTemperature),
-          measuredAt: measuredAt
+          measuredAt:
+            temperatureSource !== TEMPERATURE_SOURCE.NONE &&
+            temperatureSource !== TEMPERATURE_SOURCE.IOT &&
+            measuredTemperature.trim() !== "" &&
+            measuredAt
             ? new Date(measuredAt).toISOString()
             : undefined,
           temperatureStable,
@@ -140,6 +148,8 @@ const AssessRiskDialog = ({
       toast.error(
         getIncidentErrorMessage(error, "Không thể đánh giá risk Incident.")
       );
+    } finally {
+      submittingRef.current = false;
     }
   };
 
@@ -193,6 +203,32 @@ const AssessRiskDialog = ({
                     : "Không xác định"}
                 </p>
               </div>
+              <div className="rounded-lg border p-3 text-sm">
+                <p className="text-muted-foreground">Mục tiêu / dung sai</p>
+                <p className="mt-1 font-semibold">
+                  {result.targetTemperature}°C ± {result.temperatureTolerance}°C
+                </p>
+              </div>
+              <div className="rounded-lg border p-3 text-sm">
+                <p className="text-muted-foreground">Kết quả vận hành</p>
+                <p className="mt-1 font-semibold">
+                  {result.requiresRescue ? "Cần cứu hộ" : "Không cần cứu hộ"}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {result.directDeliveryLocked ? "Khóa giao trực tiếp" : "Không khóa giao trực tiếp"}
+                </p>
+              </div>
+            </div>
+            <div className={`rounded-lg border p-3 text-sm ${result.temperatureThresholdBreached ? "border-rose-300 bg-rose-50 text-rose-800" : ""}`}>
+              <p className="font-medium">
+                {result.temperatureThresholdBreached
+                  ? "Nhiệt độ đã vượt ngưỡng"
+                  : "Chưa ghi nhận vượt ngưỡng nhiệt độ"}
+              </p>
+              <p className="mt-1 text-xs">{result.safeTimeCalculation}</p>
+              {result.escalatedToCritical && (
+                <p className="mt-2 font-semibold">Backend đã nâng mức đánh giá lên CRITICAL.</p>
+              )}
             </div>
           </div>
         ) : (
@@ -237,28 +273,36 @@ const AssessRiskDialog = ({
               </div>
             )}
 
-            {riskLevel === INCIDENT_RISK.WARNING && (
-              <div className="grid gap-4 rounded-lg border p-4 sm:grid-cols-2">
-                <div className="space-y-2 sm:col-span-2">
-                  <Label>Nguồn nhiệt độ tin cậy *</Label>
-                  <Select
-                    value={temperatureSource}
-                    onValueChange={(value) =>
-                      setTemperatureSource(value as TTemperatureSource)
-                    }
-                  >
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {TEMPERATURE_SOURCE_OPTIONS.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+            <div className="grid gap-4 rounded-lg border p-4 sm:grid-cols-2">
+              <div className="space-y-2 sm:col-span-2">
+                <Label>Nguồn nhiệt độ {riskLevel === INCIDENT_RISK.WARNING ? "*" : ""}</Label>
+                <Select
+                  value={temperatureSource}
+                  onValueChange={(value) =>
+                    setTemperatureSource(value as TTemperatureSource)
+                  }
+                >
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={TEMPERATURE_SOURCE.NONE}>Không có reading</SelectItem>
+                    {TEMPERATURE_SOURCE_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {temperatureSource === TEMPERATURE_SOURCE.IOT && (
+                  <p className="text-xs text-muted-foreground">
+                    Backend tự lấy telemetry mới nhất của trip; FE không gửi nhiệt độ đo thủ công.
+                  </p>
+                )}
+              </div>
+              {temperatureSource !== TEMPERATURE_SOURCE.NONE &&
+                temperatureSource !== TEMPERATURE_SOURCE.IOT && (
+                <>
                 <div className="space-y-2">
-                  <Label htmlFor="incident-temperature">Nhiệt độ đo (°C) *</Label>
+                  <Label htmlFor="incident-temperature">Nhiệt độ đo (°C)</Label>
                   <Input
                     id="incident-temperature"
                     type="number"
@@ -268,7 +312,7 @@ const AssessRiskDialog = ({
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="incident-measured-at">Thời điểm đo *</Label>
+                  <Label htmlFor="incident-measured-at">Thời điểm đo</Label>
                   <Input
                     id="incident-measured-at"
                     type="datetime-local"
@@ -276,8 +320,9 @@ const AssessRiskDialog = ({
                     onChange={(event) => setMeasuredAt(event.target.value)}
                   />
                 </div>
-              </div>
-            )}
+                </>
+              )}
+            </div>
 
             <label className="flex items-start gap-3 rounded-lg border p-4 text-sm">
               <Checkbox

@@ -5,10 +5,12 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { TIncident } from "@/schemas/incident.schema";
+import type { TDispatchRescueResult, TIncident } from "@/schemas/incident.schema";
 import type { TTrackingTrip } from "@/schemas/monitoring.schema";
 import { CheckCircle2 } from "lucide-react";
 import { useState } from "react";
+import { incidentQueryKeys } from "@/hooks/use-incident";
+import { useQueryClient } from "@tanstack/react-query";
 import TransloadConfirmDialog from "./transload-confirm-dialog";
 
 type Props = {
@@ -30,6 +32,10 @@ const RescueProgressPanel = ({
   onResolve,
 }: Props) => {
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const queryClient = useQueryClient();
+  const dispatchResult = queryClient.getQueryData<TDispatchRescueResult>(
+    incidentQueryKeys.lastRescueResult(incident.incidentId),
+  );
   const transloadDone = Boolean(incident.transloadConfirmedAt);
   const replacementVehicleId = incident.replacementVehicleId;
   const replacementVehicleLabel =
@@ -80,6 +86,29 @@ const RescueProgressPanel = ({
               </p>
             </div>
           </div>
+
+          {dispatchResult && (
+            <details className="rounded-lg border border-blue-200 bg-blue-50/50 p-3 text-sm" open>
+              <summary className="cursor-pointer font-semibold">Kết quả điều xe backend</summary>
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                <p>Xe hỏng: <strong>{dispatchResult.brokenVehiclePlate}</strong> · {dispatchResult.brokenVehicleStatus}</p>
+                <p>Xe cứu hộ: <strong>{dispatchResult.rescueVehiclePlate}</strong> · {dispatchResult.rescueVehicleStatus}</p>
+                <p>Maintenance ticket: <strong>{formatIncidentId(dispatchResult.maintenanceTicketId)}</strong></p>
+                <p>Sang hàng: <strong>{dispatchResult.transloadLpnCount} LPN</strong></p>
+                <p>ETA method: <strong>{dispatchResult.etaMethod}</strong></p>
+                <p>Khách đã báo: <strong>{dispatchResult.notifiedCustomerCount}</strong></p>
+              </div>
+              {dispatchResult.updatedStops.length > 0 && (
+                <div className="mt-3 space-y-1 border-t pt-3 text-xs text-muted-foreground">
+                  {dispatchResult.updatedStops.map((stop) => (
+                    <p key={stop.stopId}>
+                      Trạm {stop.stopSequence}: {stop.address || "—"} · trễ {stop.delayMinutes} phút · báo {stop.notifiedCustomers} khách
+                    </p>
+                  ))}
+                </div>
+              )}
+            </details>
+          )}
 
           {incident.transloadNote && (
             <p className="rounded-lg border p-3 text-sm text-muted-foreground">

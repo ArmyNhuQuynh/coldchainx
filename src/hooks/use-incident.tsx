@@ -7,6 +7,8 @@ import type {
   TDispatchExternalReeferRequest,
   TRecordRescueFallbackRequest,
   TDispatchRescueRequest,
+  TDispatchRescueResult,
+  TInboundRouteWarehouseRequest,
   TReimburseIncidentExpenseRequest,
   TResolveIncidentRequest,
 } from "@/schemas/incident.schema";
@@ -23,6 +25,8 @@ export const incidentQueryKeys = {
     [...incidentQueryKeys.root, "rescue-candidates", incidentId] as const,
   rescueOptions: (incidentId: string) =>
     [...incidentQueryKeys.root, "rescue-options", incidentId] as const,
+  lastRescueResult: (incidentId: string) =>
+    [...incidentQueryKeys.root, "last-rescue-result", incidentId] as const,
 };
 
 export const useIncident = () => {
@@ -31,6 +35,7 @@ export const useIncident = () => {
   const invalidateIncidentData = (incidentId?: string) => {
     void queryClient.invalidateQueries({ queryKey: incidentQueryKeys.root });
     void queryClient.invalidateQueries({ queryKey: ["monitoring"] });
+    void queryClient.invalidateQueries({ queryKey: ["dispatch"] });
     if (incidentId) {
       void queryClient.invalidateQueries({
         queryKey: incidentQueryKeys.detail(incidentId),
@@ -140,6 +145,17 @@ export const useIncident = () => {
     onSuccess: (_, variables) => invalidateIncidentData(variables.incidentId),
   });
 
+  const inboundRouteWarehouse = useMutation({
+    mutationFn: ({
+      incidentId,
+      data,
+    }: {
+      incidentId: string;
+      data: TInboundRouteWarehouseRequest;
+    }) => incidentApi.inboundRouteWarehouse(incidentId, data),
+    onSuccess: (_, variables) => invalidateIncidentData(variables.incidentId),
+  });
+
   const dispatchRescue = useMutation({
     mutationFn: ({
       incidentId,
@@ -148,7 +164,13 @@ export const useIncident = () => {
       incidentId: string;
       data: TDispatchRescueRequest;
     }) => incidentApi.dispatchRescue(incidentId, data),
-    onSuccess: (_, variables) => invalidateIncidentData(variables.incidentId),
+    onSuccess: (result, variables) => {
+      queryClient.setQueryData<TDispatchRescueResult>(
+        incidentQueryKeys.lastRescueResult(variables.incidentId),
+        result,
+      );
+      invalidateIncidentData(variables.incidentId);
+    },
   });
 
   const confirmTransload = useMutation({
@@ -204,6 +226,7 @@ export const useIncident = () => {
     assessRisk,
     continueTrip,
     dispatchExternalReefer,
+    inboundRouteWarehouse,
     recordFallback,
     dispatchRescue,
     confirmTransload,

@@ -2,11 +2,18 @@ import { getIncidentErrorMessage } from "@/components/incidents/incident-formatt
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useIncident } from "@/hooks/use-incident";
 import type { TIncident, TIncidentRescuePlan } from "@/schemas/incident.schema";
 import { AlertTriangle, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 
 type Props = { incident: TIncident; plan: TIncidentRescuePlan };
@@ -14,15 +21,21 @@ type Props = { incident: TIncident; plan: TIncidentRescuePlan };
 const RescueFallbackForm = ({ incident, plan }: Props) => {
   const { recordFallback } = useIncident();
   const isInternal = plan.recommendedAction === "INTERNAL_COLD_STORAGE";
-  const warehouse = isInternal
+  const initialWarehouse = isInternal
     ? plan.internalColdStorages.find((item) => item.isNearby) ??
       plan.internalColdStorages[0]
     : null;
+  const [warehouseId, setWarehouseId] = useState(initialWarehouse?.warehouseId ?? "");
+  const warehouse = plan.internalColdStorages.find(
+    (item) => item.warehouseId === warehouseId,
+  );
   const [note, setNote] = useState("");
   const [redispatchPlan, setRedispatchPlan] = useState("");
+  const submittingRef = useRef(false);
 
   const handleSubmit = async () => {
-    if (!note.trim() || (isInternal && !warehouse)) return;
+    if (!note.trim() || (isInternal && !warehouse) || submittingRef.current) return;
+    submittingRef.current = true;
     try {
       await recordFallback.mutateAsync({
         incidentId: incident.incidentId,
@@ -36,6 +49,8 @@ const RescueFallbackForm = ({ incident, plan }: Props) => {
       toast.success("Đã ghi nhận phương án; Incident vẫn mở để tiếp tục theo dõi.");
     } catch (error: unknown) {
       toast.error(getIncidentErrorMessage(error, "Không thể ghi phương án cứu hộ."));
+    } finally {
+      submittingRef.current = false;
     }
   };
 
@@ -49,11 +64,24 @@ const RescueFallbackForm = ({ incident, plan }: Props) => {
         <p className="mt-1 text-sm text-muted-foreground">{plan.recommendationReason}</p>
       </CardHeader>
       <CardContent className="space-y-4 p-5">
-        {isInternal && warehouse && (
-          <div className="rounded-lg border p-3 text-sm">
-            <p className="text-muted-foreground">Kho nội bộ backend đề xuất</p>
-            <p className="mt-1 font-semibold">{warehouse.warehouseName}</p>
-            <p className="mt-1 text-muted-foreground">{warehouse.address || "—"}</p>
+        {isInternal && (
+          <div className="space-y-2 rounded-lg border p-3 text-sm">
+            <Label htmlFor="fallback-warehouse">Kho lạnh nội bộ *</Label>
+            <Select value={warehouseId} onValueChange={setWarehouseId}>
+              <SelectTrigger id="fallback-warehouse" className="w-full">
+                <SelectValue placeholder="Chọn kho từ rescue options" />
+              </SelectTrigger>
+              <SelectContent>
+                {plan.internalColdStorages.map((item) => (
+                  <SelectItem key={item.warehouseId} value={item.warehouseId}>
+                    {item.warehouseName} · {item.distanceKm ?? "?"} km
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {warehouse && (
+              <p className="text-muted-foreground">{warehouse.address || "—"}</p>
+            )}
           </div>
         )}
         <div className="space-y-2">

@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { TIncident } from "@/schemas/incident.schema";
-import { CalendarClock, CircleDollarSign, MapPin, UserRound } from "lucide-react";
+import { CalendarClock, CircleDollarSign, MapPin, ShieldAlert, Truck, UserRound } from "lucide-react";
 import {
   IncidentExpenseBadge,
   IncidentSeverityBadge,
@@ -8,6 +8,7 @@ import {
 } from "@/components/incidents/incident-badges";
 import {
   formatIncidentDate,
+  formatIncidentId,
   formatIncidentMoney,
 } from "@/components/incidents/incident-formatters";
 import { getIncidentTypeLabel } from "@/types/enums/incident-type.enum";
@@ -42,6 +43,9 @@ const IncidentOverviewPanel = ({ incident }: { incident: TIncident }) => {
             </p>
             <p className="mt-2 break-all font-medium leading-5">
               {incident.reportedByUsername || "—"}
+            </p>
+            <p className="mt-1 break-all text-xs text-muted-foreground">
+              {incident.reportedBy}
             </p>
           </div>
           <div className="rounded-lg border p-3">
@@ -89,6 +93,9 @@ const IncidentOverviewPanel = ({ incident }: { incident: TIncident }) => {
             <p className={`mt-1 text-xs ${incident.temperatureThresholdBreached ? "text-rose-700" : "text-muted-foreground"}`}>
               {incident.temperatureThresholdBreached ? "Đã vượt ngưỡng" : "Chưa ghi nhận vượt ngưỡng"}
             </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Dung sai: ±{incident.temperatureTolerance ?? "—"}°C
+            </p>
           </div>
           <div className="rounded-lg border p-3">
             <p className="text-sm text-muted-foreground">SLA due</p>
@@ -106,6 +113,74 @@ const IncidentOverviewPanel = ({ incident }: { incident: TIncident }) => {
           <p className="rounded-lg border bg-muted/30 p-3 text-sm text-muted-foreground">
             {incident.safeTimeCalculation}
           </p>
+        )}
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="rounded-lg border p-3">
+            <p className="flex items-center gap-2 text-sm text-muted-foreground">
+              <ShieldAlert className="h-4 w-4" /> Khóa giao trực tiếp
+            </p>
+            <p className={`mt-2 font-medium ${incident.directDeliveryLocked ? "text-rose-700" : ""}`}>
+              {incident.directDeliveryLocked ? "Đang khóa" : "Không khóa"}
+            </p>
+          </div>
+          <div className="rounded-lg border p-3">
+            <p className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Truck className="h-4 w-4" /> Xe hỏng / xe thay thế
+            </p>
+            <p className="mt-2 font-medium">
+              {formatIncidentId(incident.brokenVehicleId)} / {formatIncidentId(incident.replacementVehicleId)}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Ticket bảo trì: {formatIncidentId(incident.maintenanceTicketId)}
+            </p>
+          </div>
+          <div className="rounded-lg border p-3 sm:col-span-2">
+            <p className="text-sm text-muted-foreground">Phương án cứu hộ</p>
+            <p className="mt-2 font-medium">{incident.rescuePlanType || "Chưa có"}</p>
+            {incident.redispatchPlan && (
+              <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">
+                {incident.redispatchPlan}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {(incident.handlingNote || incident.transloadNote || incident.rescuePlanDetails) && (
+          <div className="space-y-3 border-t pt-4">
+            <p className="font-medium">Ghi chú và dữ liệu xử lý</p>
+            {incident.handlingNote && (
+              <div className="rounded-lg border p-3 text-sm">
+                <p className="text-xs text-muted-foreground">Handling note · {formatIncidentDate(incident.handledAt)}</p>
+                <p className="mt-1 whitespace-pre-wrap">{incident.handlingNote}</p>
+              </div>
+            )}
+            {incident.transloadNote && (
+              <div className="rounded-lg border p-3 text-sm">
+                <p className="text-xs text-muted-foreground">Transload note · {formatIncidentDate(incident.transloadConfirmedAt)}</p>
+                <p className="mt-1 whitespace-pre-wrap">{incident.transloadNote}</p>
+              </div>
+            )}
+            {incident.transloadDetails && (
+              <div className="rounded-lg border p-3 text-sm">
+                <p className="text-xs text-muted-foreground">Chi tiết sang hàng</p>
+                <p className="mt-1">
+                  {incident.transloadDetails.lpnIds.length} LPN · seal {incident.transloadDetails.sealNumber || "—"} · nhiệt {incident.transloadDetails.transferTemperature ?? "—"}°C
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {formatIncidentDate(incident.transloadDetails.transferredAt)} · {incident.transloadDetails.locationDescription || "Không có mô tả vị trí"}
+                </p>
+              </div>
+            )}
+            {incident.rescuePlanDetails && (
+              <details className="rounded-lg border p-3 text-sm">
+                <summary className="cursor-pointer font-medium">Chi tiết kế hoạch backend</summary>
+                <pre className="mt-3 max-h-56 overflow-auto whitespace-pre-wrap break-all rounded bg-muted/40 p-3 text-xs">
+                  {incident.rescuePlanDetails}
+                </pre>
+              </details>
+            )}
+          </div>
         )}
 
         <div className="flex items-center justify-between gap-3 border-t pt-4 text-sm">

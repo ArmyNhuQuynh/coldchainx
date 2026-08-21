@@ -14,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useIncident } from "@/hooks/use-incident";
 import type { TIncident } from "@/schemas/incident.schema";
 import { Loader2, Play } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 
 type Props = {
@@ -27,11 +27,13 @@ const ContinueTripDialog = ({ open, incident, onOpenChange }: Props) => {
   const { continueTrip } = useIncident();
   const [handlingNote, setHandlingNote] = useState(incident.handlingNote ?? "");
   const [expectedDelayMinutes, setExpectedDelayMinutes] = useState("20");
+  const submittingRef = useRef(false);
 
   const handleSubmit = async () => {
     const delay = Number(expectedDelayMinutes);
-    if (!handlingNote.trim() || !Number.isInteger(delay) || delay < 0) return;
+    if (!handlingNote.trim() || !Number.isInteger(delay) || delay < 0 || submittingRef.current) return;
 
+    submittingRef.current = true;
     try {
       await continueTrip.mutateAsync({
         incidentId: incident.incidentId,
@@ -43,6 +45,8 @@ const ContinueTripDialog = ({ open, incident, onOpenChange }: Props) => {
       toast.error(
         getIncidentErrorMessage(error, "Không thể cho chuyến tiếp tục.")
       );
+    } finally {
+      submittingRef.current = false;
     }
   };
 

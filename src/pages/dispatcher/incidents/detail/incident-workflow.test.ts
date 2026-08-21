@@ -7,7 +7,6 @@ import {
 import { INCIDENT_TYPE } from "@/types/enums/incident-type.enum";
 import { INCIDENT_EXPENSE_STATUS } from "@/types/enums/incident-expense-status.enum";
 import {
-  buildExternalReeferConfirmationRequest,
   getExternalReeferConfigurationBlocker,
   getIncidentPrimaryAction,
   getIncidentResolveEligibility,
@@ -100,7 +99,7 @@ describe("Dispatcher Incident acceptance state machine", () => {
     ).toBe(false);
   });
 
-  it("9. Xe ngoài gửi payload tối giản và để backend tự xác định kho đích", () => {
+  it("9. Xe ngoài được mở khi backend đề xuất hoặc yêu cầu thuê", () => {
     expect(
       getExternalReeferConfigurationBlocker({
         recommendedAction: "EXTERNAL_REEFER_TO_ROUTE_WAREHOUSE",
@@ -109,22 +108,31 @@ describe("Dispatcher Incident acceptance state machine", () => {
     ).toBeNull();
     expect(
       getExternalReeferConfigurationBlocker({
-        recommendedAction: "EXTERNAL_REEFER_TO_ROUTE_WAREHOUSE",
+        recommendedAction: "MANUAL_ESCALATION",
         requiresExternalVehicleRental: true,
       }),
     ).toBeNull();
-    expect(buildExternalReeferConfirmationRequest()).toEqual({
-      externalVehicleConfirmed: true,
-    });
-    expect(Object.keys(buildExternalReeferConfirmationRequest())).toEqual([
-      "externalVehicleConfirmed",
-    ]);
+    expect(
+      getExternalReeferConfigurationBlocker({
+        recommendedAction: "MANUAL_ESCALATION",
+        requiresExternalVehicleRental: false,
+      }),
+    ).toBeTruthy();
   });
 
   it("10. EXTERNAL_REEFER_IN_TRANSIT chỉ theo dõi Warehouse inbound", () => {
     expect(
       getIncidentPrimaryAction(INCIDENT_STATUS.EXTERNAL_REEFER_IN_TRANSIT),
     ).toBe("TRACK_EXTERNAL_REEFER");
+  });
+
+  it("10b. REPORTED không cần cứu hộ cho phép tiếp tục chuyến", () => {
+    expect(
+      getIncidentPrimaryAction(INCIDENT_STATUS.REPORTED, false),
+    ).toBe("CONTINUE_TRIP");
+    expect(
+      getIncidentPrimaryAction(INCIDENT_STATUS.REPORTED, true),
+    ).toBe("ASSESS_RISK");
   });
 
   it("11. READY_FOR_REDISPATCH mở manual dispatch Incident", () => {
@@ -249,7 +257,7 @@ describe("Dispatcher Incident acceptance state machine", () => {
     });
   });
 
-  it("rescue trực tiếp được đóng ngay sau khi xe thay thế đã được điều", () => {
+  it("rescue trực tiếp chỉ được đóng trên UI sau khi sang hàng hoàn tất", () => {
     expect(
       getIncidentResolveEligibility(
         incident({
@@ -257,7 +265,7 @@ describe("Dispatcher Incident acceptance state machine", () => {
           requiresRescue: true,
           replacementVehicleId: "vehicle-2",
           rescueDispatchedAt: "2026-08-20T11:00:00+07:00",
-          status: INCIDENT_STATUS.RESCUE_DISPATCHED,
+          status: INCIDENT_STATUS.TRANSLOAD_COMPLETED,
         }),
         "Dispatcher",
       ),
@@ -396,14 +404,18 @@ describe("Dispatcher Incident acceptance state machine", () => {
     ]);
   });
 
-  it("đăng ký đầy đủ 15 SignalR event Incident của Dispatcher", () => {
+  it("đăng ký đầy đủ SignalR event Incident của Dispatcher", () => {
     expect(INCIDENT_REALTIME_EVENTS).toEqual(
       expect.arrayContaining([
         "IncidentReported",
         "IncidentEvidenceAdded",
         "IncidentRiskAssessed",
+        "IncidentFallbackRecorded",
+        "IncidentRescueDispatched",
+        "IncidentTransloadCompleted",
         "ExternalReeferDispatched",
         "IncidentCargoInboundedAtRouteWarehouse",
+        "IncidentTripContinued",
         "IncidentRedispatchPlanned",
         "IncidentRedispatchPickingStarted",
         "IncidentRedispatchLpnPicked",

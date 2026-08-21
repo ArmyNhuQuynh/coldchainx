@@ -78,6 +78,9 @@ const manualDispatch = async (data: TManualDispatchRequest) => {
   formData.append("PlannedStartTime", data.plannedStartTime);
   formData.append("PlannedEndTime", data.plannedEndTime);
   data.driverIds.forEach((driverId) => formData.append("DriverIds", driverId));
+  if (data.screenshotBase64) {
+    formData.append("ScreenshotBase64", data.screenshotBase64);
+  }
 
   const response = await apiRequest.baseApi.post<
     TDispatchLookupEnvelope<TManualDispatchResult> | TManualDispatchResult

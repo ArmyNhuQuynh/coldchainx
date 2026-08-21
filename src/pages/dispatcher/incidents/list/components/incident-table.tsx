@@ -66,8 +66,11 @@ const IncidentTable = ({
             <TableRow>
               <TableHead className="pl-5">Sự cố / Trip</TableHead>
               <TableHead>Loại sự cố</TableHead>
+              <TableHead>Severity</TableHead>
               <TableHead>Risk</TableHead>
               <TableHead>Yêu cầu cứu hộ</TableHead>
+              <TableHead>Nhiệt độ</TableHead>
+              <TableHead>Safe time</TableHead>
               <TableHead>Chi phí</TableHead>
               <TableHead>Trạng thái</TableHead>
               <TableHead>SLA / Báo lúc</TableHead>
@@ -78,7 +81,7 @@ const IncidentTable = ({
             {isLoading &&
               Array.from({ length: 8 }).map((_, index) => (
                 <TableRow key={index}>
-                  <TableCell colSpan={8} className="px-5 py-3">
+                  <TableCell colSpan={11} className="px-5 py-3">
                     <Skeleton className="h-12 w-full" />
                   </TableCell>
                 </TableRow>
@@ -86,7 +89,7 @@ const IncidentTable = ({
 
             {!isLoading && incidents.length === 0 && (
               <TableRow>
-                <TableCell colSpan={8} className="h-56 text-center">
+                <TableCell colSpan={11} className="h-56 text-center">
                   <AlertTriangle className="mx-auto h-8 w-8 text-muted-foreground" />
                   <p className="mt-3 font-medium">Không có sự cố phù hợp</p>
                   <p className="mt-1 text-sm text-muted-foreground">
@@ -114,7 +117,7 @@ const IncidentTable = ({
                         SC-{formatIncidentId(incident.incidentId)}
                       </p>
                       <p className="mt-1 max-w-44 truncate text-xs text-muted-foreground">
-                        Trip {formatIncidentId(incident.tripId)}
+                        Trip {incident.tripCode || formatIncidentId(incident.tripId)}
                       </p>
                     </TableCell>
                     <TableCell>
@@ -126,12 +129,10 @@ const IncidentTable = ({
                       </p>
                     </TableCell>
                     <TableCell>
+                      <IncidentSeverityBadge severity={incident.severity} />
+                    </TableCell>
+                    <TableCell>
                       <IncidentRiskBadge risk={incident.riskLevel} />
-                      {!incident.riskLevel && (
-                        <div className="mt-1">
-                          <IncidentSeverityBadge severity={incident.severity} />
-                        </div>
-                      )}
                     </TableCell>
                     <TableCell>
                       {incident.requiresRescue ? (
@@ -143,6 +144,38 @@ const IncidentTable = ({
                           Không
                         </span>
                       )}
+                    </TableCell>
+                    <TableCell>
+                      <p
+                        className={
+                          incident.temperatureThresholdBreached
+                            ? "font-semibold text-rose-700"
+                            : "font-medium"
+                        }
+                      >
+                        {incident.latestTemperature != null
+                          ? `${incident.latestTemperature}°C`
+                          : "—"}
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {incident.temperatureSource || "Chưa có nguồn"}
+                      </p>
+                    </TableCell>
+                    <TableCell>
+                      <p
+                        className={
+                          incident.remainingSafeTimeMinutes === 0
+                            ? "font-semibold text-rose-700"
+                            : "font-medium"
+                        }
+                      >
+                        {incident.remainingSafeTimeMinutes != null
+                          ? `${incident.remainingSafeTimeMinutes} phút`
+                          : "Không xác định"}
+                      </p>
+                      <p className="mt-1 max-w-36 truncate text-xs text-muted-foreground">
+                        {incident.safeTimeCalculation || "—"}
+                      </p>
                     </TableCell>
                     <TableCell>
                       <p className="text-sm font-medium">

@@ -16,6 +16,7 @@ import type {
   TIncidentListParams,
   TIncidentPage,
   TIncidentWorkflowResult,
+  TInboundRouteWarehouseRequest,
   TReimburseIncidentExpenseRequest,
   TResolveIncidentRequest,
   TRescueCandidate,
@@ -104,6 +105,16 @@ const dispatchExternalReefer = async (
   return response.data.data;
 };
 
+const inboundRouteWarehouse = async (
+  incidentId: string,
+  data: TInboundRouteWarehouseRequest
+): Promise<TExternalReeferWorkflowResult> => {
+  const response = await apiRequest.baseApi.post<
+    BaseResponse<TExternalReeferWorkflowResult>
+  >(`${INCIDENTS_URL}/${incidentId}/inbound-route-warehouse`, data);
+  return response.data.data;
+};
+
 const recordFallback = async (
   incidentId: string,
   data: TRecordRescueFallbackRequest
@@ -181,6 +192,7 @@ export const incidentApi = {
   continueTrip,
   getRescueOptions,
   dispatchExternalReefer,
+  inboundRouteWarehouse,
   recordFallback,
   dispatchRescue,
   confirmTransload,

@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useIncident } from "@/hooks/use-incident";
 import type { TIncident } from "@/schemas/incident.schema";
 import { Loader2, RadioTower } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { getIncidentErrorMessage } from "@/components/incidents/incident-formatters";
 
@@ -22,6 +22,10 @@ const TransloadConfirmDialog = ({ open, incident, onOpenChange }: Props) => {
   const [sealNumber, setSealNumber] = useState("");
   const [transferTemperature, setTransferTemperature] = useState("");
   const [locationDescription, setLocationDescription] = useState("");
+  const [latitude, setLatitude] = useState("");
+  const [longitude, setLongitude] = useState("");
+  const [evidenceText, setEvidenceText] = useState("");
+  const submittingRef = useRef(false);
 
   useEffect(() => {
     if (!open) {
@@ -29,16 +33,46 @@ const TransloadConfirmDialog = ({ open, incident, onOpenChange }: Props) => {
       setSealNumber("");
       setTransferTemperature("");
       setLocationDescription("");
+      setLatitude("");
+      setLongitude("");
+      setEvidenceText("");
     }
   }, [open]);
 
   const handleSubmit = async () => {
+    if (submittingRef.current) return;
     const note = confirmationNote.trim();
     if (!note) {
       toast.warning("Nhập ghi chú xác nhận sang hàng.");
       return;
     }
+    const parsedLatitude = latitude.trim() === "" ? undefined : Number(latitude);
+    const parsedLongitude = longitude.trim() === "" ? undefined : Number(longitude);
+    if (
+      (parsedLatitude != null && (!Number.isFinite(parsedLatitude) || parsedLatitude < -90 || parsedLatitude > 90)) ||
+      (parsedLongitude != null && (!Number.isFinite(parsedLongitude) || parsedLongitude < -180 || parsedLongitude > 180))
+    ) {
+      toast.warning("Tọa độ sang hàng không hợp lệ.");
+      return;
+    }
+    const evidenceUrls = evidenceText
+      .split(/\r?\n|,/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+    const invalidEvidence = evidenceUrls.find((value) => {
+      try {
+        const url = new URL(value);
+        return url.protocol !== "http:" && url.protocol !== "https:";
+      } catch {
+        return true;
+      }
+    });
+    if (invalidEvidence) {
+      toast.warning(`Evidence URL không hợp lệ: ${invalidEvidence}`);
+      return;
+    }
 
+    submittingRef.current = true;
     try {
       const result = await confirmTransload.mutateAsync({
         incidentId: incident.incidentId,
@@ -51,8 +85,10 @@ const TransloadConfirmDialog = ({ open, incident, onOpenChange }: Props) => {
               ? undefined
               : Number(transferTemperature),
           transferredAt: new Date().toISOString(),
+          latitude: parsedLatitude,
+          longitude: parsedLongitude,
           locationDescription: locationDescription.trim() || undefined,
-          evidenceUrls: [],
+          evidenceUrls,
         },
       });
       toast.success(
@@ -61,6 +97,8 @@ const TransloadConfirmDialog = ({ open, incident, onOpenChange }: Props) => {
       onOpenChange(false);
     } catch (error: unknown) {
       toast.error(getIncidentErrorMessage(error, "Không thể xác nhận sang hàng."));
+    } finally {
+      submittingRef.current = false;
     }
   };
 
@@ -70,7 +108,7 @@ const TransloadConfirmDialog = ({ open, incident, onOpenChange }: Props) => {
         <DialogHeader>
           <DialogTitle>Xác nhận sang hàng</DialogTitle>
           <DialogDescription>
-            Xác nhận toàn bộ LPN đã sang xe thay thế và cho chuyến tiếp tục hành trình.
+            Xác nhận toàn bộ LPN đã sang xe thay thế và cho chuyến tiếp tục. Đây thường là hành động của Driver tại hiện trường; Dispatcher cũng được backend cho phép.
           </DialogDescription>
         </DialogHeader>
 
@@ -102,6 +140,18 @@ const TransloadConfirmDialog = ({ open, incident, onOpenChange }: Props) => {
           <div className="space-y-2 sm:col-span-2">
             <Label htmlFor="transload-location">Vị trí sang hàng</Label>
             <Input id="transload-location" value={locationDescription} onChange={(event) => setLocationDescription(event.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="transload-latitude">Vĩ độ</Label>
+            <Input id="transload-latitude" type="number" min={-90} max={90} step="any" value={latitude} onChange={(event) => setLatitude(event.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="transload-longitude">Kinh độ</Label>
+            <Input id="transload-longitude" type="number" min={-180} max={180} step="any" value={longitude} onChange={(event) => setLongitude(event.target.value)} />
+          </div>
+          <div className="space-y-2 sm:col-span-2">
+            <Label htmlFor="transload-evidence">Evidence URLs (mỗi dòng một URL)</Label>
+            <Textarea id="transload-evidence" rows={3} value={evidenceText} onChange={(event) => setEvidenceText(event.target.value)} />
           </div>
         </div>
 

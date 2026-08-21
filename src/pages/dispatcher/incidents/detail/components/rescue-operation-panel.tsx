@@ -31,6 +31,7 @@ import { useNavigate } from "react-router-dom";
 import AssessRiskDialog from "./assess-risk-dialog";
 import ContinueTripDialog from "./continue-trip-dialog";
 import ExternalReeferDispatchForm from "./external-reefer-dispatch-form";
+import InboundRouteWarehouseDialog from "./inbound-route-warehouse-dialog";
 import RescueDispatchForm from "./rescue-dispatch-form";
 import RescueFallbackForm from "./rescue-fallback-form";
 import RescueProgressPanel from "./rescue-progress-panel";
@@ -67,6 +68,71 @@ const StatusCard = ({
     <CardContent className="space-y-4 p-5">
       <p className="text-sm leading-6 text-muted-foreground">{description}</p>
       {children}
+    </CardContent>
+  </Card>
+);
+
+const RescueOptionsSummary = ({ plan }: { plan: TIncidentRescuePlan }) => (
+  <Card className="gap-0 rounded-lg border-blue-200 py-0">
+    <CardHeader className="border-b px-5 py-4">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <CardTitle className="text-lg">Phương án backend đề xuất</CardTitle>
+          <p className="mt-1 text-sm text-muted-foreground">{plan.recommendationReason}</p>
+        </div>
+        <Badge className="bg-blue-700 text-white">{plan.recommendedAction}</Badge>
+      </div>
+    </CardHeader>
+    <CardContent className="space-y-4 p-5">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="rounded-lg border p-3 text-sm">
+          <p className="text-muted-foreground">Nhiệt độ mục tiêu</p>
+          <p className="mt-1 font-semibold">{plan.targetTemperature}°C</p>
+        </div>
+        <div className="rounded-lg border p-3 text-sm">
+          <p className="text-muted-foreground">Safe time</p>
+          <p className="mt-1 font-semibold">{plan.remainingSafeTimeMinutes != null ? `${plan.remainingSafeTimeMinutes} phút` : "Không xác định"}</p>
+        </div>
+        <div className="rounded-lg border p-3 text-sm">
+          <p className="text-muted-foreground">Ngưỡng / giao trực tiếp</p>
+          <p className={`mt-1 font-semibold ${plan.temperatureThresholdBreached || plan.directDeliveryLocked ? "text-rose-700" : ""}`}>
+            {plan.temperatureThresholdBreached ? "Đã vượt ngưỡng" : "Trong ngưỡng"} · {plan.directDeliveryLocked ? "Đang khóa" : "Không khóa"}
+          </p>
+        </div>
+        <div className="rounded-lg border p-3 text-sm">
+          <p className="text-muted-foreground">Cờ backend</p>
+          <p className="mt-1 font-semibold">
+            {plan.requiresExternalVehicleRental ? "Cần thuê xe ngoài" : plan.requiresManualEscalation ? "Cần escalated thủ công" : "Có phương án nội bộ"}
+          </p>
+        </div>
+      </div>
+      <div className="rounded-lg border p-3 text-sm">
+        <p className="font-medium">Xe phù hợp ({plan.vehicles.length})</p>
+        <p className="mt-1 text-muted-foreground">
+          {plan.vehicles.length
+            ? plan.vehicles.map((vehicle) => `${vehicle.truckPlate}${vehicle.recommended ? " (đề xuất)" : ""}`).join(" · ")
+            : "Không có xe nội bộ phù hợp"}
+        </p>
+      </div>
+      <div className="rounded-lg border p-3 text-sm">
+        <p className="font-medium">Kho lạnh nội bộ ({plan.internalColdStorages.length})</p>
+        <div className="mt-2 space-y-2">
+          {plan.internalColdStorages.length === 0 ? (
+            <p className="text-muted-foreground">Không có kho phù hợp</p>
+          ) : (
+            plan.internalColdStorages.map((warehouse) => (
+              <div key={warehouse.warehouseId} className={`rounded border p-2 ${warehouse.isRouteDestinationWarehouse ? "border-violet-400 bg-violet-50" : ""}`}>
+                <p className="font-medium">
+                  {warehouse.warehouseName}{warehouse.isRouteDestinationWarehouse ? " · kho đích tuyến" : ""}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {warehouse.address || "—"} · {warehouse.distanceKm ?? "?"} km · ETA {warehouse.estimatedArrivalMinutes ?? "?"} phút · còn {warehouse.availablePalletPositions} vị trí pallet · nhiệt {warehouse.minTemperature ?? "?"}..{warehouse.maxTemperature ?? "?"}°C
+                </p>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
     </CardContent>
   </Card>
 );
@@ -120,17 +186,21 @@ const RescuePlanning = ({ incident, trip }: Props) => {
     );
   }
 
+  let operation: ReactNode;
   switch (plan.recommendedAction) {
     case "DIRECT_RESCUE":
     case "WAREHOUSE_RESCUE":
-      return <RescueDispatchForm incident={incident} trip={trip} plan={plan} />;
+      operation = <RescueDispatchForm incident={incident} trip={trip} plan={plan} />;
+      break;
     case "EXTERNAL_REEFER_TO_ROUTE_WAREHOUSE":
-      return <ExternalReeferDispatchForm incident={incident} plan={plan} />;
+      operation = <ExternalReeferDispatchForm incident={incident} plan={plan} />;
+      break;
     case "INTERNAL_COLD_STORAGE":
     case "MANUAL_ESCALATION":
-      return <RescueFallbackForm incident={incident} plan={plan} />;
+      operation = <RescueFallbackForm incident={incident} plan={plan} />;
+      break;
     default:
-      return (
+      operation = (
         <StatusCard
           title="Phương án backend chưa được hỗ trợ"
           description={`recommendedAction=${plan.recommendedAction}. Incident được giữ mở để tránh thao tác sai.`}
@@ -138,17 +208,26 @@ const RescuePlanning = ({ incident, trip }: Props) => {
         />
       );
   }
+
+  return (
+    <div className="space-y-5">
+      <RescueOptionsSummary plan={plan} />
+      {operation}
+    </div>
+  );
 };
 
 const ExternalReeferTracking = ({ incident }: { incident: TIncident }) => {
   const plan = incident.externalReeferPlan;
+  const [inboundOpen, setInboundOpen] = useState(false);
   return (
-    <StatusCard
-      title="Đang chờ kho inbound cứu hộ"
-      description="Xe lạnh ngoài đã được xác nhận. Backend đã giao task cho Warehouse đích; Dispatcher không quản lý xe và không xác nhận xe đến."
-      icon={Truck}
-    >
-      <div className="grid gap-3 sm:grid-cols-3">
+    <>
+      <StatusCard
+        title="Xe lạnh ngoài đang về kho đích tuyến"
+        description="Chờ xác nhận inbound bằng seal tại kho. Xe ngoài không được giao trực tiếp cho khách."
+        icon={Truck}
+      >
+        <div className="grid gap-3 sm:grid-cols-3">
         <div className="rounded-lg border p-3">
           <p className="text-xs text-muted-foreground">Kho đích tuyến</p>
           <p className="mt-2 font-semibold">
@@ -165,12 +244,33 @@ const ExternalReeferTracking = ({ incident }: { incident: TIncident }) => {
           </p>
           <p className="mt-2 font-semibold">INBOUND_RESCUE_BY_SEAL</p>
         </div>
-      </div>
-      <div className="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
-        <span>Warehouse chỉ cần nhập seal, không QC</span>
-        <Badge variant="outline">Chờ inbound</Badge>
-      </div>
-    </StatusCard>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="rounded-lg border p-3 text-sm">
+            <p className="text-muted-foreground">Xe ngoài / tài xế</p>
+            <p className="mt-1 font-semibold">{plan?.vehiclePlate || "—"}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{plan?.driverName || "—"} · {plan?.rentalProvider || "—"}</p>
+          </div>
+          <div className="rounded-lg border p-3 text-sm">
+            <p className="text-muted-foreground">Nhiệt độ / ETA</p>
+            <p className="mt-1 font-semibold">{plan?.agreedTemperature ?? "—"}°C</p>
+            <p className="mt-1 text-xs text-muted-foreground">{formatIncidentDate(plan?.expectedWarehouseArrivalAt)}</p>
+          </div>
+        </div>
+        <div className="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+          <span>Warehouse/Dispatcher xác nhận inbound bằng đúng seal bàn giao</span>
+          <Badge variant="outline">Chờ inbound</Badge>
+        </div>
+        <Button type="button" variant="outline" className="w-full" onClick={() => setInboundOpen(true)}>
+          <PackageCheck className="h-4 w-4" /> Xác nhận inbound tại kho tuyến
+        </Button>
+      </StatusCard>
+      <InboundRouteWarehouseDialog
+        open={inboundOpen}
+        incident={incident}
+        onOpenChange={setInboundOpen}
+      />
+    </>
   );
 };
 
@@ -181,7 +281,10 @@ const RescueOperationPanel = ({ incident, trip, isTripLoading }: Props) => {
   const [containmentOpen, setContainmentOpen] = useState(false);
   const [continueOpen, setContinueOpen] = useState(false);
   const [resolveOpen, setResolveOpen] = useState(false);
-  const action = getIncidentPrimaryAction(incident.status);
+  const action = getIncidentPrimaryAction(
+    incident.status,
+    incident.requiresRescue,
+  );
   const resolveEligibility = getIncidentResolveEligibility(
     incident,
     currentRole,
