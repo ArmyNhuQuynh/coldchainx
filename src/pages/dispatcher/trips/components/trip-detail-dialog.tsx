@@ -14,6 +14,7 @@ import { useDispatchTrips } from "@/hooks/use-dispatch-trip";
 import { cn } from "@/lib/utils";
 import type { TDispatchTrip } from "@/schemas/dispatch.schema";
 import {
+  AlertTriangle,
   Ban,
   Boxes,
   CalendarClock,
@@ -124,9 +125,19 @@ const TripDetailDialog = ({
                   <User className="h-4 w-4" />
                   Tài xế
                 </div>
-                <p className="mt-2 line-clamp-2 font-semibold">
-                  {trip.driver || "N/A"}
-                </p>
+                {trip.driver ? (
+                  <p className="mt-2 line-clamp-2 font-semibold">
+                    {trip.driver}
+                  </p>
+                ) : (
+                  <Badge
+                    variant="outline"
+                    className="mt-2 gap-1.5 border-amber-200 bg-amber-50 text-amber-800"
+                  >
+                    <AlertTriangle className="h-3.5 w-3.5" />
+                    Chưa gán tài xế
+                  </Badge>
+                )}
               </div>
               <div className="rounded-lg border p-4">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">

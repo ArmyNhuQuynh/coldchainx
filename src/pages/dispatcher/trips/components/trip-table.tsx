@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import type { TDispatchTrip } from "@/schemas/dispatch.schema";
-import { Clock, PackageCheck, Play, Truck, User } from "lucide-react";
+import { AlertTriangle, Clock, PackageCheck, Play, Truck, User } from "lucide-react";
 import {
   canStartPickingTrip,
   formatShortTripId,
@@ -128,10 +128,20 @@ const TripTable = ({
                         </span>
                       </TableCell>
                       <TableCell>
-                        <span className="flex max-w-[220px] items-center gap-1.5 truncate">
-                          <User className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                          <span className="truncate">{trip.driver || "N/A"}</span>
-                        </span>
+                        {trip.driver ? (
+                          <span className="flex max-w-[220px] items-center gap-1.5 truncate">
+                            <User className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                            <span className="truncate">{trip.driver}</span>
+                          </span>
+                        ) : (
+                          <Badge
+                            variant="outline"
+                            className="gap-1.5 border-amber-200 bg-amber-50 text-amber-800"
+                          >
+                            <AlertTriangle className="h-3.5 w-3.5" />
+                            Chưa gán tài xế
+                          </Badge>
+                        )}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1.5">

@@ -10,6 +10,7 @@ import type {
   TDispatchVehicleLookup,
 } from "@/schemas/dispatch.schema";
 import {
+  AlertTriangle,
   CalendarClock,
   CheckCircle2,
   Cuboid,
@@ -20,6 +21,21 @@ import {
   UserRound,
 } from "lucide-react";
 import { formatNumber } from "./dispatch-helpers";
+
+const LONG_TRIP_WARNING_HOURS = 10;
+
+const getPlannedDurationHours = (startValue: string, endValue: string) => {
+  const start = new Date(startValue);
+  const end = new Date(endValue);
+
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return null;
+
+  const durationHours = (end.getTime() - start.getTime()) / 3_600_000;
+  return durationHours > 0 ? durationHours : null;
+};
+
+const formatHourValue = (value: number) =>
+  value.toLocaleString("vi-VN", { maximumFractionDigits: 1 });
 
 type Props = {
   vehicles: TDispatchVehicleLookup[];
@@ -84,6 +100,21 @@ const VehicleDriverPanel = ({
   onRetryVehicles,
   onRetryDrivers,
 }: Props) => {
+  const plannedDurationHours = getPlannedDurationHours(
+    plannedStartTime,
+    plannedEndTime
+  );
+  const driverCount = selectedDriverIds.length;
+  const perDriverHours =
+    plannedDurationHours && driverCount > 0
+      ? plannedDurationHours / driverCount
+      : null;
+  const shouldShowLongTripWarning =
+    Boolean(isPlanningEnabled) &&
+    plannedDurationHours != null &&
+    perDriverHours != null &&
+    plannedDurationHours > LONG_TRIP_WARNING_HOURS;
+
   return (
     <Card className="min-h-[620px] gap-0 rounded-lg py-0">
       <CardHeader className="flex flex-row items-center justify-between gap-3 border-b px-5 py-4">
@@ -123,6 +154,24 @@ const VehicleDriverPanel = ({
             />
           </label>
         </div>
+
+        {shouldShowLongTripWarning && (
+          <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+            <div className="flex items-start gap-2">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+              <div className="space-y-1">
+                <p className="font-medium">
+                  Chuyến dài {formatHourValue(plannedDurationHours)} giờ —{" "}
+                  {driverCount} tài xế dự kiến luân phiên khoảng{" "}
+                  {formatHourValue(perDriverHours)} giờ/người.
+                </p>
+                <p>
+                  Vui lòng chủ động dừng xe nghỉ an toàn trong hành trình.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         <section className="space-y-3">
           <div className="flex items-center justify-between gap-3">

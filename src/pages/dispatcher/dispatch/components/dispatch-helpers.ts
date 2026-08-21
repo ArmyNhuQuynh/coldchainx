@@ -183,6 +183,8 @@ export const getPackingBlockingMessages = (
         return "Tổng thể tích hàng vượt quá sức chứa cho phép của xe.";
       case "INVALID_VEHICLE_STATE":
         return "Xe đã chọn hiện không khả dụng cho chuyến này.";
+      case "INVALID_LPN_STATE":
+        return "Một số LPN đã được ghép chuyến hoặc không còn nằm trong kho. Vui lòng làm mới danh sách LPN.";
       case "CATEGORY_MISMATCH":
       case "PHARMA_ISOLATION":
       case "STRONG_ODOR":

@@ -4,6 +4,7 @@ import { useIncident } from "@/hooks/use-incident";
 import { Button } from "@/components/ui/button";
 import { PATH_DISPATCHER_DASHBOARD } from "@/routes/path";
 import type {
+  TDispatchDriverLookup,
   TDispatchPackingResult,
   TDispatchReadyLpn,
   TDispatchScheduleLookup,
@@ -58,6 +59,77 @@ const getErrorMessage = (error: any, fallback: string) =>
   error?.message ||
   fallback;
 
+const INVALID_LPN_STATE_CODE = "INVALID_LPN_STATE";
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+const hasInvalidLpnState = (message: string) =>
+  message.toUpperCase().includes(INVALID_LPN_STATE_CODE);
+
+const hasDriverRejection = (message: string) => {
+  const normalized = message.toLocaleUpperCase("vi-VN");
+  return (
+    normalized.includes("TÀI XẾ") ||
+    normalized.includes("TAI XE") ||
+    normalized.includes("DRIVER") ||
+    normalized.includes("GPLX") ||
+    normalized.includes("BẰNG LÁI") ||
+    normalized.includes("BANG LAI")
+  );
+};
+
+const extractInvalidLpnRefs = (message: string) =>
+  Array.from(message.matchAll(/\bLPN\s+([a-z0-9-]+)/gi), ([, value]) =>
+    value.toUpperCase()
+  );
+
+const getDriverSelectionValidation = (
+  driverIds: string[],
+  availableDrivers: TDispatchDriverLookup[]
+) => {
+  const normalizedIds = driverIds
+    .map((driverId) => driverId.trim())
+    .filter(Boolean);
+  const uniqueIds = Array.from(new Set(normalizedIds));
+  const availableDriverIds = new Set(
+    availableDrivers.map((driver) => driver.driverId)
+  );
+  const validIds = uniqueIds.filter(
+    (driverId) =>
+      UUID_PATTERN.test(driverId) &&
+      driverId.toUpperCase() !== "N/A" &&
+      availableDriverIds.has(driverId)
+  );
+  const messages: string[] = [];
+
+  if (normalizedIds.length < 1) {
+    messages.push("Chọn 1 hoặc 2 tài xế.");
+  }
+  if (normalizedIds.length > 2) {
+    messages.push("Mỗi chuyến tối đa 2 tài xế.");
+  }
+  if (uniqueIds.length !== normalizedIds.length) {
+    messages.push("Không được chọn trùng tài xế.");
+  }
+  if (
+    uniqueIds.some(
+      (driverId) =>
+        driverId.toUpperCase() === "N/A" || !UUID_PATTERN.test(driverId)
+    )
+  ) {
+    messages.push("Tài xế đã chọn không hợp lệ. Vui lòng chọn lại từ danh sách khả dụng.");
+  }
+  if (uniqueIds.some((driverId) => !availableDriverIds.has(driverId))) {
+    messages.push("Một số tài xế đã chọn không còn trong danh sách khả dụng.");
+  }
+
+  return {
+    valid: messages.length === 0,
+    messages,
+    validIds,
+  };
+};
+
 const DispatchPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -94,6 +166,7 @@ const DispatchPage = () => {
     useState<TDispatchPackingResult | null>(null);
   const [packingPreviewKey, setPackingPreviewKey] = useState<string | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [isCreatingTrip, setIsCreatingTrip] = useState(false);
   const vehicleDriverPanelRef = useRef<HTMLDivElement | null>(null);
   const createTripSubmittingRef = useRef(false);
   const [vehicleDriverPanelHeight, setVehicleDriverPanelHeight] = useState<
@@ -244,6 +317,21 @@ const DispatchPage = () => {
       ),
     [driversQuery.data, incidentMode, selectedWarehouseName]
   );
+  const filterDriversByCurrentWarehouse = (
+    items: TDispatchDriverLookup[] = []
+  ) =>
+    items.filter(
+      (driver) =>
+        driver.hasValidLicense === true &&
+        (incidentMode ||
+          !selectedWarehouseName ||
+          driver.currentLocation?.trim().toLocaleLowerCase("vi-VN") ===
+            selectedWarehouseName.trim().toLocaleLowerCase("vi-VN"))
+    );
+  const driverSelectionValidation = useMemo(
+    () => getDriverSelectionValidation(selectedDriverIds, drivers),
+    [drivers, selectedDriverIds]
+  );
   const lpnQuery = readyLpnsQuery;
   const compatibility = selectedScheduleId ? compatibleLpnsQuery.data : undefined;
   const blockingCompatibilityConflicts = useMemo(
@@ -344,10 +432,74 @@ const DispatchPage = () => {
     setIsPreviewOpen(false);
   }, [selectedVehicleId, vehicles, vehiclesQuery.isFetching]);
 
+  useEffect(() => {
+    if (driversQuery.isFetching || selectedDriverIds.length === 0) return;
+
+    if (!driverSelectionValidation.valid) {
+      setSelectedDriverIds(driverSelectionValidation.validIds.slice(0, 2));
+      resetPackingPreview();
+    }
+  }, [
+    driverSelectionValidation.valid,
+    driverSelectionValidation.validIds,
+    driversQuery.isFetching,
+    selectedDriverIds.length,
+  ]);
+
   const resetPackingPreview = () => {
     setPackingPreview(null);
     setPackingPreviewKey(null);
     setIsPreviewOpen(false);
+  };
+
+  const refreshDispatchLookups = async () => {
+    await Promise.all([
+      lpnQuery.refetch(),
+      compatibilityRequest ? compatibleLpnsQuery.refetch() : Promise.resolve(),
+    ]);
+  };
+
+  const handleInvalidLpnState = async (message: string) => {
+    const invalidRefs = new Set(extractInvalidLpnRefs(message));
+    const invalidLabels =
+      invalidRefs.size === 0
+        ? []
+        : selectedLpns
+            .filter(
+              (lpn) =>
+                invalidRefs.has(lpn.lpnId.toUpperCase()) ||
+                invalidRefs.has(lpn.lpnCode.toUpperCase())
+            )
+            .map((lpn) => lpn.lpnCode);
+
+    setSelectedLpns((items) => {
+      if (invalidRefs.size === 0) return [];
+
+      const remaining = items.filter((lpn) => {
+        return (
+          !invalidRefs.has(lpn.lpnId.toUpperCase()) &&
+          !invalidRefs.has(lpn.lpnCode.toUpperCase())
+        );
+      });
+
+      return remaining.length === items.length ? [] : remaining;
+    });
+    setCandidatePage(1);
+    resetPackingPreview();
+    await refreshDispatchLookups();
+
+    const visibleInvalidLabels =
+      invalidLabels.length > 0 ? invalidLabels : Array.from(invalidRefs);
+    const suffix =
+      visibleInvalidLabels.length > 0
+        ? `: ${visibleInvalidLabels.slice(0, 3).join(", ")}${
+            visibleInvalidLabels.length > 3 ? "..." : ""
+          }`
+        : "";
+
+    toast.error(
+      `Một số LPN đã được ghép chuyến hoặc không còn trong kho${suffix}. Mình đã làm mới danh sách.`
+    );
   };
 
   const handleScheduleChange = (scheduleId: string) => {
@@ -391,13 +543,29 @@ const DispatchPage = () => {
   };
 
   const handleDriverToggle = (driverId: string) => {
+    const normalizedDriverId = driverId.trim();
+    const isAvailableDriver = drivers.some(
+      (driver) => driver.driverId === normalizedDriverId
+    );
+    if (
+      !UUID_PATTERN.test(normalizedDriverId) ||
+      normalizedDriverId.toUpperCase() === "N/A" ||
+      !isAvailableDriver
+    ) {
+      toast.error("Tài xế không còn khả dụng. Mình sẽ tải lại danh sách tài xế.");
+      void driversQuery.refetch();
+      return;
+    }
+
     setSelectedDriverIds((ids) => {
-      if (ids.includes(driverId)) return ids.filter((id) => id !== driverId);
+      if (ids.includes(normalizedDriverId)) {
+        return ids.filter((id) => id !== normalizedDriverId);
+      }
       if (ids.length >= 2) {
         toast.warning("Mỗi chuyến chỉ được chọn tối đa 2 tài xế.");
         return ids;
       }
-      return [...ids, driverId];
+      return [...ids, normalizedDriverId];
     });
   };
 
@@ -475,9 +643,11 @@ const DispatchPage = () => {
     if (selectedWarehouseId && driversQuery.isError) {
       messages.push("Không tải được tài xế tại kho xuất phát.");
     }
+    if (selectedWarehouseId && driversQuery.isFetching && selectedDriverIds.length > 0) {
+      messages.push("Đang kiểm tra danh sách tài xế khả dụng.");
+    }
     if (!selectedVehicleId) messages.push("Chọn 1 xe để ghép chuyến.");
-    if (selectedDriverIds.length < 1) messages.push("Chọn 1 hoặc 2 tài xế.");
-    if (selectedDriverIds.length > 2) messages.push("Mỗi chuyến tối đa 2 tài xế.");
+    messages.push(...driverSelectionValidation.messages);
     if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || start >= end) {
       messages.push("Thời gian bắt đầu phải nhỏ hơn thời gian kết thúc.");
     }
@@ -503,11 +673,13 @@ const DispatchPage = () => {
     plannedEndTime,
     plannedStartTime,
     selectedDriverIds.length,
+    driverSelectionValidation.messages,
     selectedLpns.length,
     selectedLpnIds,
     selectedVehicleId,
     selectedWarehouseId,
     driversQuery.isError,
+    driversQuery.isFetching,
     incident,
     incidentLpnsQuery.isError,
     incidentLpnsQuery.isLoading,
@@ -543,7 +715,13 @@ const DispatchPage = () => {
       setPackingPreviewKey(selectionKey);
     } catch (error: any) {
       setIsPreviewOpen(false);
-      toast.error(getErrorMessage(error, "Không tạo được mô phỏng 3D."));
+      const message = getErrorMessage(error, "Không tạo được mô phỏng 3D.");
+      if (hasInvalidLpnState(message)) {
+        await handleInvalidLpnState(message);
+        return;
+      }
+
+      toast.error(message);
     }
   };
 
@@ -551,14 +729,64 @@ const DispatchPage = () => {
     if (!canCreateTrip || createTripSubmittingRef.current) return;
 
     createTripSubmittingRef.current = true;
+    setIsCreatingTrip(true);
     try {
+      const latestDriversResult = await driversQuery.refetch();
+      if (latestDriversResult.isError) {
+        toast.error("Không kiểm tra được tài xế khả dụng. Vui lòng thử lại.");
+        return;
+      }
+
+      const latestAvailableDrivers = filterDriversByCurrentWarehouse(
+        latestDriversResult.data ?? []
+      );
+      const latestDriverValidation = getDriverSelectionValidation(
+        selectedDriverIds,
+        latestAvailableDrivers
+      );
+      if (!latestDriverValidation.valid) {
+        setSelectedDriverIds(latestDriverValidation.validIds.slice(0, 2));
+        resetPackingPreview();
+        toast.error(latestDriverValidation.messages[0]);
+        return;
+      }
+
+      if (!incidentMode) {
+        const latestPreview = await simulatePacking.mutateAsync({
+          ...(dispatchScheduleId ? { scheduleId: dispatchScheduleId } : {}),
+          vehicleId: selectedVehicleId,
+          lpnIds: selectedLpnIds,
+        });
+        setPackingPreview(latestPreview);
+        setPackingPreviewKey(selectionKey);
+
+        if (
+          latestPreview.blockingReasons.some(hasInvalidLpnState) ||
+          !latestPreview.canCreateTrip ||
+          latestPreview.unplacedLpnIds.length > 0
+        ) {
+          if (latestPreview.blockingReasons.some(hasInvalidLpnState)) {
+            await handleInvalidLpnState(latestPreview.blockingReasons.join("; "));
+            return;
+          }
+
+          const messages = getPackingBlockingMessages(latestPreview);
+          toast.error(
+            messages[0] ||
+              "Lựa chọn hiện tại chưa đáp ứng điều kiện tạo chuyến. Vui lòng kiểm tra lại LPN và xe."
+          );
+          return;
+        }
+      }
+
       const request = {
         lpnIds: selectedLpnIds,
         vehicleId: selectedVehicleId,
-        driverIds: selectedDriverIds,
+        driverIds: latestDriverValidation.validIds,
         plannedStartTime: new Date(plannedStartTime).toISOString(),
         plannedEndTime: new Date(plannedEndTime).toISOString(),
       };
+
       const result = warehouseRedispatchMode
         ? await createTripFromWarehouse.mutateAsync(request)
         : await manualDispatch.mutateAsync({
@@ -581,10 +809,34 @@ const DispatchPage = () => {
       setSelectedDriverIds([]);
       setCandidatePage(1);
       resetPackingPreview();
+      void refreshDispatchLookups().catch(() => {
+        toast.warning("Đã tạo chuyến nhưng chưa làm mới được danh sách LPN.");
+      });
     } catch (error: any) {
-      toast.error(getErrorMessage(error, "Không tạo được chuyến."));
+      const message = getErrorMessage(error, "Không tạo được chuyến.");
+      if (hasInvalidLpnState(message)) {
+        await handleInvalidLpnState(message);
+        return;
+      }
+      if (hasDriverRejection(message)) {
+        const refreshedDrivers = await driversQuery.refetch();
+        const refreshedAvailableDrivers = filterDriversByCurrentWarehouse(
+          refreshedDrivers.data ?? []
+        );
+        setSelectedDriverIds(
+          getDriverSelectionValidation(
+            selectedDriverIds,
+            refreshedAvailableDrivers
+          ).validIds.slice(0, 2)
+        );
+        toast.error(message);
+        return;
+      }
+
+      toast.error(message);
     } finally {
       createTripSubmittingRef.current = false;
+      setIsCreatingTrip(false);
     }
   };
 
@@ -698,9 +950,9 @@ const DispatchPage = () => {
             isVehiclesError={vehiclesQuery.isError}
             isDriversError={driversQuery.isError}
             isSubmitting={
-              warehouseRedispatchMode
-                ? createTripFromWarehouse.isPending
-                : manualDispatch.isPending
+              manualDispatch.isPending ||
+              createTripFromWarehouse.isPending ||
+              isCreatingTrip
             }
             isPreviewing={simulatePacking.isPending}
             isPlanningEnabled={selectedLpnIds.length > 0}

@@ -101,7 +101,6 @@ const OrderDetailInfo = ({ order }: Props) => {
                         <InfoRow icon={Layers} label="Loại hàng hóa" value={categoryLabel} />
                         <InfoRow icon={Hash} label="Tổng số kiện" value={order.totalPackageQuantity ?? order.quantity} />
                         <InfoRow icon={Package} label="Loại đóng gói" value={order.packingType} />
-                        <InfoRow icon={PackageCheck} label="Loại thùng" value={packageSummary} />
                         <InfoRow icon={Thermometer} label="Nhiệt độ" value={`${order.tempCondition}°C`} />
                         <InfoRow icon={DollarSign} label="Giá trị hàng hóa" value={
                             formatCurrency(order.cargoValue)
@@ -144,14 +143,6 @@ const OrderDetailInfo = ({ order }: Props) => {
                         <InfoRow icon={User} label="Người nhận" value={order.receiverName ?? "—"} />
                         <InfoRow icon={Phone} label="SĐT người nhận" value={order.receiverPhone ?? "—"} />
                         <InfoRow icon={Tag} label="Address" value={order.destination?.address ?? "—"} />
-                        <p className="text-xs font-semibold uppercase text-muted-foreground mt-4 mb-2">
-                            Báo giá
-                        </p>
-                        <p className="text-sm text-muted-foreground italic">
-                            {quotations.length > 0
-                                ? "Đã có báo giá cho đơn hàng"
-                                : "Chưa có báo giá"}
-                        </p>
                     </div>
                 </div>
 

@@ -10,6 +10,28 @@ import type {
 import { read, toNumber, unwrapData } from "./dispatch-api.helpers";
 import { API_SUFFIX } from "./util.api";
 
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+const normalizeDriverIds = (driverIds: string[]) => {
+  const normalizedIds = driverIds
+    .map((driverId) => driverId.trim())
+    .filter(Boolean);
+  const uniqueIds = Array.from(new Set(normalizedIds));
+  const hasInvalidId =
+    uniqueIds.length !== normalizedIds.length ||
+    uniqueIds.some(
+      (driverId) =>
+        driverId.toUpperCase() === "N/A" || !UUID_PATTERN.test(driverId)
+    );
+
+  if (hasInvalidId || uniqueIds.length < 1 || uniqueIds.length > 2) {
+    throw new Error("Vui lòng chọn 1 hoặc 2 tài xế khả dụng từ danh sách.");
+  }
+
+  return uniqueIds;
+};
+
 const normalizePackingResult = (
   item: TDispatchPackingResult | Record<string, any>
 ): TDispatchPackingResult => {
@@ -68,6 +90,7 @@ const simulatePacking = async (data: TDispatchPackingRequest) => {
 };
 
 const manualDispatch = async (data: TManualDispatchRequest) => {
+  const driverIds = normalizeDriverIds(data.driverIds);
   const formData = new FormData();
   if (data.incidentId) {
     formData.append("IncidentId", data.incidentId);
@@ -78,7 +101,7 @@ const manualDispatch = async (data: TManualDispatchRequest) => {
   formData.append("VehicleId", data.vehicleId);
   formData.append("PlannedStartTime", data.plannedStartTime);
   formData.append("PlannedEndTime", data.plannedEndTime);
-  data.driverIds.forEach((driverId) => formData.append("DriverIds", driverId));
+  driverIds.forEach((driverId) => formData.append("DriverIds", driverId));
   if (data.screenshotBase64) {
     formData.append("ScreenshotBase64", data.screenshotBase64);
   }

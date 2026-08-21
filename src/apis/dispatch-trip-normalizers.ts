@@ -163,6 +163,77 @@ const buildRouteLegsFromStops = (
   }));
 };
 
+const normalizeDisplayText = (value?: string | null) => {
+  const text = value?.trim();
+  if (!text || text.toUpperCase() === "N/A") return null;
+  return text;
+};
+
+const readDriverDisplayName = (item: Record<string, any>) =>
+  normalizeDisplayText(read<string | null>(item, "fullName", "FullName")) ??
+  normalizeDisplayText(read<string | null>(item, "driverName", "DriverName")) ??
+  normalizeDisplayText(read<string | null>(item, "name", "Name")) ??
+  normalizeDisplayText(read<string | null>(item, "email", "Email")) ??
+  normalizeDisplayText(read<string | null>(item, "userName", "UserName"));
+
+const normalizeTripDriverNames = (item: Record<string, any>) => {
+  const drivers = read<unknown>(item, "drivers", "Drivers");
+  const tripDrivers = read<unknown>(item, "tripDrivers", "TripDrivers");
+  const driverItems = Array.isArray(drivers)
+    ? drivers
+    : Array.isArray(tripDrivers)
+      ? tripDrivers
+      : [];
+
+  const driverNames = driverItems
+    .map((driverItem) => {
+      if (!driverItem || typeof driverItem !== "object") return null;
+
+      const raw = driverItem as Record<string, any>;
+      const nestedDriver = read<Record<string, any> | null>(
+        raw,
+        "driver",
+        "Driver"
+      );
+
+      return nestedDriver
+        ? readDriverDisplayName(nestedDriver)
+        : readDriverDisplayName(raw);
+    })
+    .filter((name): name is string => Boolean(name));
+
+  if (driverNames.length > 0) return driverNames.join(", ");
+
+  return (
+    normalizeDisplayText(read<string | null>(item, "driver", "Driver")) ??
+    normalizeDisplayText(read<string | null>(item, "driverName", "DriverName")) ??
+    normalizeDisplayText(
+      read<string | null>(item, "primaryDriverName", "PrimaryDriverName")
+    )
+  );
+};
+
+const normalizeTripVehicleName = (item: Record<string, any>) => {
+  const vehicle = read<Record<string, any> | string | null>(
+    item,
+    "vehicle",
+    "Vehicle"
+  );
+
+  if (typeof vehicle === "string") return normalizeDisplayText(vehicle);
+  if (vehicle) {
+    return (
+      normalizeDisplayText(read<string | null>(vehicle, "truckPlate", "TruckPlate")) ??
+      normalizeDisplayText(read<string | null>(vehicle, "plateNumber", "PlateNumber"))
+    );
+  }
+
+  return (
+    normalizeDisplayText(read<string | null>(item, "vehicle", "Vehicle")) ??
+    normalizeDisplayText(read<string | null>(item, "truckPlate", "TruckPlate"))
+  );
+};
+
 export const normalizeTripRoute = (
   item: TDispatchTripRoute | Record<string, any>
 ): TDispatchTripRoute => {
@@ -240,8 +311,8 @@ export const normalizeTrip = (
   return {
     tripId: read<string>(raw, "tripId", "TripId"),
     status: read<string>(raw, "status", "Status") || "UNKNOWN",
-    vehicle: read<string | null>(raw, "vehicle", "Vehicle"),
-    driver: read<string | null>(raw, "driver", "Driver"),
+    vehicle: normalizeTripVehicleName(raw),
+    driver: normalizeTripDriverNames(raw),
     plannedStartTime: read<string | null>(
       raw,
       "plannedStartTime",
@@ -275,12 +346,6 @@ export const normalizeCreatedTripDetails = (
   const status = (
     read<string>(item, "status", "Status") || "UNKNOWN"
   ).toUpperCase();
-  const vehicle = read<Record<string, any> | string | null>(
-    item,
-    "vehicle",
-    "Vehicle"
-  );
-  const drivers = read<unknown>(item, "drivers", "Drivers");
   const summary =
     read<Record<string, any> | null>(item, "summary", "Summary") ?? {};
   const lpnsRaw = read<unknown>(item, "lpns", "Lpns");
@@ -293,24 +358,8 @@ export const normalizeCreatedTripDetails = (
   return {
     tripId: read<string>(item, "tripId", "TripId"),
     status,
-    vehicle:
-      typeof vehicle === "string"
-        ? vehicle
-        : vehicle
-          ? read<string | null>(vehicle, "truckPlate", "TruckPlate")
-          : null,
-    driver: Array.isArray(drivers)
-      ? drivers
-          .map((driver) =>
-            read<string>(
-              driver as Record<string, any>,
-              "fullName",
-              "FullName"
-            )
-          )
-          .filter(Boolean)
-          .join(", ") || null
-      : read<string | null>(item, "driver", "Driver"),
+    vehicle: normalizeTripVehicleName(item),
+    driver: normalizeTripDriverNames(item),
     plannedStartTime: read<string | null>(
       item,
       "plannedStartTime",

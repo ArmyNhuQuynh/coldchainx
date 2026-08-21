@@ -60,18 +60,8 @@ const OrderWeightSection = ({ order }: Props) => {
                         value={formatNumber(order.expectedWeightKg, " kg")}
                     />
                     <WeightCard
-                        label="Actual Weight"
-                        value={formatNumber(order.actualWeightKg, " kg")}
-                        isActual
-                    />
-                    <WeightCard
                         label="Expected CBM"
                         value={formatNumber(order.expectedCbm, " m³")}
-                    />
-                    <WeightCard
-                        label="Actual CBM"
-                        value={formatNumber(order.actualCbm, " m³")}
-                        isActual
                     />
                     <WeightCard
                         label="Tổng số kiện"
@@ -80,14 +70,6 @@ const OrderWeightSection = ({ order }: Props) => {
                     <WeightCard
                         label="Kích thước"
                         value={dimension}
-                    />
-                    <WeightCard
-                        label="CBM khách gửi"
-                        value={formatNumber(order.customerProvidedTotalCbm, " m³")}
-                    />
-                    <WeightCard
-                        label="Cách tính CBM"
-                        value={getCbmMethodLabel(order.cbmEstimationMethod)}
                     />
                 </div>
             </CardContent>
