@@ -1,4 +1,3 @@
-import { formatShortTripId } from "@/components/tracking/shared/tracking-formatters";
 import TripTrackingView from "@/components/tracking/trip-tracking-view";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -41,9 +40,7 @@ const ShipmentTrackingPage = () => {
         </div>
         <div>
           <h1 className="text-3xl font-semibold">
-            {tripId
-              ? `Hành trình ${formatShortTripId(tripId)}`
-              : "Theo dõi vận chuyển"}
+            Theo dõi vận chuyển
           </h1>
           <p className="mt-1 text-muted-foreground">
             Đơn {order?.trackingCode ?? orderId ?? ""}

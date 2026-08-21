@@ -16,7 +16,6 @@ import type { TDispatchTrip } from "@/schemas/dispatch.schema";
 import { AlertTriangle, Clock, PackageCheck, Play, Truck, User } from "lucide-react";
 import {
   canStartPickingTrip,
-  formatShortTripId,
   formatTripDateTime,
   getTripProgress,
   getTripStatusClassName,
@@ -103,12 +102,11 @@ const TripTable = ({
                       onClick={() => onSelect(trip)}
                     >
                       <TableCell className="pl-5">
-                        <div className="font-semibold">
-                          {formatShortTripId(trip.tripId)}
-                        </div>
-                        <div className="mt-1 max-w-[180px] truncate text-xs text-muted-foreground">
-                          {trip.tripId}
-                        </div>
+                         <div className="mt-1 max-w-[180px] truncate text-xs text-muted-foreground">
+                            {trip.tripId
+                               ? trip.tripId.slice(0, 8)
+                                   : formatTripDateTime(trip.plannedStartTime)}
+                          </div>
                       </TableCell>
                       <TableCell>
                         <Badge
@@ -124,7 +122,7 @@ const TripTable = ({
                       <TableCell>
                         <span className="flex items-center gap-1.5">
                           <Truck className="h-3.5 w-3.5 text-muted-foreground" />
-                          {trip.vehicle || "N/A"}
+                          {trip.vehicle || "Chưa có xe"}
                         </span>
                       </TableCell>
                       <TableCell>

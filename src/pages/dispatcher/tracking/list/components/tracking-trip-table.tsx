@@ -13,6 +13,7 @@ import {
 import { cn } from "@/lib/utils";
 import type { TTrackingTrip } from "@/schemas/monitoring.schema";
 import {
+  AlertTriangle,
   Clock,
   MapPinned,
   Navigation,
@@ -23,7 +24,6 @@ import {
 } from "lucide-react";
 import TrackingStatusBadge from "@/components/tracking/shared/tracking-status-badge";
 import {
-  formatShortTripId,
   formatTemperature,
   formatTrackingDateTime,
   getDeviceStatusClassName,
@@ -100,10 +100,12 @@ const TrackingTripTable = ({ trips, isLoading, onOpenDetail }: Props) => {
                   >
                     <TableCell className="pl-5">
                       <div className="font-semibold">
-                        {formatShortTripId(trip.tripId)}
+                        Chuyến đang theo dõi
                       </div>
                       <div className="mt-1 max-w-[180px] truncate text-xs text-muted-foreground">
-                        {trip.tripId}
+                        {formatTrackingDateTime(
+                          trip.startedAt || trip.plannedStartTime,
+                        )}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -118,12 +120,22 @@ const TrackingTripTable = ({ trips, isLoading, onOpenDetail }: Props) => {
                       <div className="space-y-1.5">
                         <span className="flex items-center gap-1.5">
                           <Truck className="h-3.5 w-3.5 text-muted-foreground" />
-                          {trip.vehicle?.truckPlate || "N/A"}
+                          {trip.vehicle?.truckPlate || "Chưa có xe"}
                         </span>
-                        <span className="flex max-w-[220px] items-center gap-1.5 truncate text-sm text-muted-foreground">
-                          <User className="h-3.5 w-3.5 shrink-0" />
-                          <span className="truncate">{trip.driver || "N/A"}</span>
-                        </span>
+                        {trip.driver ? (
+                          <span className="flex max-w-[220px] items-center gap-1.5 truncate text-sm text-muted-foreground">
+                            <User className="h-3.5 w-3.5 shrink-0" />
+                            <span className="truncate">{trip.driver}</span>
+                          </span>
+                        ) : (
+                          <Badge
+                            variant="outline"
+                            className="w-fit gap-1.5 border-amber-200 bg-amber-50 text-amber-800"
+                          >
+                            <AlertTriangle className="h-3.5 w-3.5" />
+                            Chưa gán tài xế
+                          </Badge>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell>

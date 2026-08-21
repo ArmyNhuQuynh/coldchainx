@@ -57,7 +57,7 @@ const VehicleEditPage = () => {
             <div>
               <h1 className="text-3xl font-semibold">Chỉnh sửa xe tải</h1>
               <p className="text-muted-foreground">
-                {vehicle.truckPlate || vehicle.vehicleId}
+                {vehicle.truckPlate || "Xe chưa có biển số"}
               </p>
             </div>
           </div>

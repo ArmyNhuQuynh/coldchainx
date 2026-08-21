@@ -41,7 +41,7 @@ const getWorkflowSteps = (incident: TIncident): WorkflowStep[] => {
         at: incident.handledAt,
       },
       {
-        label: "Đóng Incident",
+        label: "Hệ thống đóng Incident",
         statuses: [INCIDENT_STATUS.RESOLVED],
         at: incident.resolvedAt,
         note: incident.resolutionNote,
@@ -71,7 +71,7 @@ const getWorkflowSteps = (incident: TIncident): WorkflowStep[] => {
         at: incident.externalReeferPlan?.redispatchPlannedAt,
       },
       {
-        label: "Đóng Incident",
+        label: "Hệ thống đóng Incident",
         statuses: [INCIDENT_STATUS.RESOLVED],
         at: incident.resolvedAt,
         note: incident.resolutionNote,
@@ -99,7 +99,7 @@ const getWorkflowSteps = (incident: TIncident): WorkflowStep[] => {
         note: incident.redispatchPlan,
       },
       {
-        label: "Đóng Incident",
+        label: "Hệ thống đóng Incident",
         statuses: [INCIDENT_STATUS.RESOLVED],
         at: incident.resolvedAt,
         note: incident.resolutionNote,
@@ -121,7 +121,7 @@ const getWorkflowSteps = (incident: TIncident): WorkflowStep[] => {
       note: incident.transloadNote,
     },
     {
-      label: "Đóng Incident",
+      label: "Hệ thống đóng Incident",
       statuses: [INCIDENT_STATUS.RESOLVED],
       at: incident.resolvedAt,
       note: incident.resolutionNote,
@@ -129,6 +129,7 @@ const getWorkflowSteps = (incident: TIncident): WorkflowStep[] => {
   ];
 };
 
+// ─── Vertical (dạng cũ, dùng trong sidebar grid) ────────────────────────────
 const IncidentTimelinePanel = ({ incident }: { incident: TIncident }) => {
   const steps = getWorkflowSteps(incident);
   const matchedIndex = steps.findIndex((step) =>
@@ -140,7 +141,7 @@ const IncidentTimelinePanel = ({ incident }: { incident: TIncident }) => {
     <Card className="gap-0 rounded-lg py-0">
       <CardHeader className="border-b px-5 py-4">
         <CardTitle className="flex items-center gap-2 text-lg">
-          <Clock3 className="h-5 w-5 text-blue-700" /> Tiến trình cứu hộ
+          <Clock3 className="h-5 w-5 text-blue-700" /> Lịch sử xử lý
         </CardTitle>
         <p className="mt-1 text-xs text-muted-foreground">
           Bước hiện tại được xác định từ status backend: {incident.status}
@@ -172,11 +173,17 @@ const IncidentTimelinePanel = ({ incident }: { incident: TIncident }) => {
                   }`}
                 />
                 <div className="min-w-0">
-                  <p className={`text-sm font-medium ${!completed && !active ? "text-muted-foreground" : ""}`}>
+                  <p
+                    className={`text-sm font-medium ${
+                      !completed && !active ? "text-muted-foreground" : ""
+                    }`}
+                  >
                     {step.label}
                   </p>
                   {active && (
-                    <p className="mt-1 text-xs font-medium text-blue-700">Đang ở bước này</p>
+                    <p className="mt-1 text-xs font-medium text-blue-700">
+                      Đang ở bước này
+                    </p>
                   )}
                   {step.at && (
                     <p className="mt-1 text-xs text-muted-foreground">
@@ -188,6 +195,95 @@ const IncidentTimelinePanel = ({ incident }: { incident: TIncident }) => {
                       {step.note}
                     </p>
                   )}
+                </div>
+              </li>
+            );
+          })}
+        </ol>
+      </CardContent>
+    </Card>
+  );
+};
+
+// ─── Horizontal stepper – thay thế RescueProgressPanel ở đầu trang ──────────
+export const IncidentTimelineHorizontal = ({
+  incident,
+}: {
+  incident: TIncident;
+}) => {
+  const steps = getWorkflowSteps(incident);
+  const matchedIndex = steps.findIndex((step) =>
+    step.statuses.includes(incident.status),
+  );
+  const currentIndex = matchedIndex >= 0 ? matchedIndex : 0;
+
+  return (
+    <Card className="gap-0 rounded-lg py-0">
+      <CardHeader className="border-b px-5 py-4">
+        <div className="flex items-center gap-2">
+          <Clock3 className="h-5 w-5 text-blue-700" />
+          <CardTitle className="text-lg">Lịch sử xử lý</CardTitle>
+        </div>
+      </CardHeader>
+      <CardContent className="p-5">
+        <ol className="flex items-start">
+          {steps.map((step, index) => {
+            const completed = index < currentIndex;
+            const active = index === currentIndex;
+            const Icon = completed ? CheckCircle2 : active ? CircleDot : Circle;
+            const isLast = index === steps.length - 1;
+
+            return (
+              <li key={step.label} className="flex min-w-0 flex-1 items-start">
+                <div className="flex w-full flex-col">
+                  {/* Icon + đường kẻ ngang */}
+                  <div className="flex items-center">
+                    <span
+                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+                        completed
+                          ? "border-emerald-500 bg-emerald-500 text-white"
+                          : active
+                            ? "border-blue-600 bg-blue-600 text-white"
+                            : "border-border bg-background text-muted-foreground/40"
+                      }`}
+                    >
+                      <Icon className="h-4 w-4" />
+                    </span>
+                    {!isLast && (
+                      <span
+                        className={`h-0.5 flex-1 transition-colors ${
+                          completed ? "bg-emerald-400" : "bg-border"
+                        }`}
+                      />
+                    )}
+                  </div>
+                  {/* Label + metadata */}
+                  <div className="mt-2 pr-3">
+                    <p
+                      className={`text-sm font-semibold leading-tight ${
+                        completed
+                          ? "text-emerald-700"
+                          : active
+                            ? "text-blue-700"
+                            : "text-muted-foreground"
+                      }`}
+                    >
+                      {step.label}
+                    </p>
+                    {active && (
+                      <p className="mt-0.5 text-xs font-medium text-blue-600">
+                        Đang ở bước này
+                      </p>
+                    )}
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      {step.at ? formatIncidentDate(step.at) : "—"}
+                    </p>
+                    {step.note && (
+                      <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
+                        {step.note}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </li>
             );

@@ -27,7 +27,6 @@ const matchTripSearch = (trip: TDispatchTrip, search: string) => {
   if (!keyword) return true;
 
   return [
-    trip.tripId,
     trip.vehicle,
     trip.driver,
     trip.status,
@@ -56,7 +55,6 @@ const TripListPage = () => {
     if (!requestedTripId || trips.length === 0) return;
     const requestedTrip = trips.find((trip) => trip.tripId === requestedTripId);
     if (requestedTrip) {
-      setSearch(requestedTripId);
       setSelectedTrip(requestedTrip);
     }
   }, [requestedTripId, trips]);
@@ -109,10 +107,7 @@ const TripListPage = () => {
     try {
       const result = await startPicking.mutateAsync(trip.tripId);
       toast.success(
-        `Đã bắt đầu bốc hàng cho ${result.lpnCount} LPN trong trip ${result.tripId.slice(
-          0,
-          8,
-        )}.`,
+        `Đã bắt đầu bốc hàng cho ${result.lpnCount} LPN trong chuyến.`,
       );
       if (selectedTrip?.tripId === trip.tripId) {
         setSelectedTrip(null);

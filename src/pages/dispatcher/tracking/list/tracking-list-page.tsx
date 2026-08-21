@@ -5,10 +5,7 @@ import { MapPinned, Route } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import TrackingFilterBar from "./components/tracking-filter-bar";
-import {
-  TRACKING_ALL_STATUS,
-  formatShortTripId,
-} from "@/components/tracking/shared/tracking-formatters";
+import { TRACKING_ALL_STATUS } from "@/components/tracking/shared/tracking-formatters";
 import TrackingSummaryCards from "./components/tracking-summary-cards";
 import TrackingTripTable from "./components/tracking-trip-table";
 
@@ -102,9 +99,7 @@ const TrackingListPage = () => {
         </span>
         <span>
           {trips.length > 0
-            ? `Đang hiển thị ${trips.length} chuyến, ví dụ ${formatShortTripId(
-                trips[0]?.tripId
-              )}`
+            ? `Đang hiển thị ${trips.length} chuyến`
             : "Chưa có dữ liệu hiển thị"}
         </span>
         <div className="flex gap-2">

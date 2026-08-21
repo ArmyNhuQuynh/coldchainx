@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import type { TDriver } from "@/schemas/driver.schema";
 import { getDriverStatusLabel } from "@/types/enums/driver-status.enum";
-import { Activity, Hash, IdCard, type LucideIcon } from "lucide-react";
+import { Activity, IdCard, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
 type Props = {
@@ -42,13 +42,6 @@ const DriverStatusCard = ({ driver }: Props) => {
           icon: Activity,
           label: "Hiện tại",
           value: <Badge className={status.className}>{status.label}</Badge>,
-        }
-      : null,
-    hasValue(driver.driverId)
-      ? {
-          icon: Hash,
-          label: "Mã tài xế",
-          value: driver.driverId,
         }
       : null,
     {

@@ -9,7 +9,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import IncidentDetailHeader from "./components/incident-detail-header";
 import IncidentEvidencePanel from "./components/incident-evidence-panel";
 import IncidentOverviewPanel from "./components/incident-overview-panel";
-import IncidentTimelinePanel from "./components/incident-timeline-panel";
+import IncidentTimelinePanel, { IncidentTimelineHorizontal } from "./components/incident-timeline-panel";
 import RescueOperationPanel from "./components/rescue-operation-panel";
 import TripContextPanel from "./components/trip-context-panel";
 import { useQueryClient } from "@tanstack/react-query";
@@ -90,7 +90,6 @@ const IncidentDetailPage = () => {
     void trackingDetailQuery.refetch();
     void trackingListQuery.refetch();
   };
-
   return (
     <div className="space-y-5">
       <IncidentDetailHeader
@@ -100,17 +99,18 @@ const IncidentDetailPage = () => {
         onRefresh={handleRefresh}
       />
 
-      <div className="grid items-start gap-5 xl:grid-cols-[0.65fr_1fr_1.15fr]">
-        <IncidentTimelinePanel incident={incident} />
-        <div className="space-y-5">
-          <IncidentOverviewPanel incident={incident} />
-          <IncidentEvidencePanel evidences={incident.evidences ?? []} />
-        </div>
+      {/* Lịch sử xử lý nằm ngang – thay thế card Tiến trình cứu hộ */}
+      <IncidentTimelineHorizontal incident={incident} />
+
+      <IncidentOverviewPanel incident={incident} />
+
+      <div className="grid items-start gap-5 xl:grid-cols-[0.9fr_1.1fr]">
         <RescueOperationPanel
           incident={incident}
           trip={trip}
           isTripLoading={isTripLoading}
         />
+        <IncidentEvidencePanel evidences={incident.evidences ?? []} />
       </div>
 
       <TripContextPanel

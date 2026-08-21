@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import type { TVehicle } from "@/schemas/vehicle.schema";
 import { getVehicleStatusLabel } from "@/types/enums/vehicle-status.enum";
-import { Activity, Files, Hash, type LucideIcon } from "lucide-react";
+import { Activity, Files, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
 type Props = {
@@ -42,13 +42,6 @@ const VehicleStatusCard = ({ vehicle }: Props) => {
           icon: Activity,
           label: "Hiện tại",
           value: <Badge className={status.className}>{status.label}</Badge>,
-        }
-      : null,
-    hasValue(vehicle.vehicleId)
-      ? {
-          icon: Hash,
-          label: "Mã xe",
-          value: vehicle.vehicleId,
         }
       : null,
     {

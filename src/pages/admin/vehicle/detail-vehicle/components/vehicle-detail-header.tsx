@@ -30,7 +30,7 @@ const VehicleDetailHeader = ({ vehicle }: Props) => {
         <div className="flex items-center gap-3 flex-wrap">
           <h1 className="text-2xl font-semibold">Chi tiết xe tải</h1>
           <span className="text-2xl font-bold text-primary">
-            {vehicle.truckPlate || vehicle.vehicleId}
+            {vehicle.truckPlate || "Xe chưa có biển số"}
           </span>
           {status && <Badge className={status.className}>{status.label}</Badge>}
         </div>

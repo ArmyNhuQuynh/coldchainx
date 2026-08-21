@@ -85,7 +85,7 @@ const TripContextPanel = ({ trip, tripId, isLoading }: Props) => {
                   {trip.orders.map((order) => (
                     <div key={order.orderId || order.trackingCode} className="flex items-start justify-between gap-3 border-b px-1 py-2 last:border-b-0">
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-medium">{order.trackingCode || order.orderId}</p>
+                        <p className="truncate text-sm font-medium">{order.trackingCode || "Chưa có mã đơn"}</p>
                         <p className="mt-1 truncate text-xs text-muted-foreground">{order.itemName || "Không có tên hàng"}</p>
                       </div>
                       <span className="shrink-0 text-xs text-muted-foreground">{order.tempCondition || "—"}</span>

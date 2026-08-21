@@ -83,9 +83,6 @@ const formatDateTime = (value?: string | null) => {
   });
 };
 
-const formatTripCode = (tripId: string) =>
-  `TRIP-${tripId.slice(0, 8).toUpperCase()}`;
-
 const TripHistoryTable = ({
   rows,
   resourceHeader,
@@ -162,7 +159,7 @@ const TripHistoryTable = ({
                 rows.map((row) => (
                   <TableRow key={row.tripId}>
                     <TableCell className="font-semibold">
-                      {formatTripCode(row.tripId)}
+                      Chuyến giao hàng
                     </TableCell>
                     <TableCell>
                       <Badge

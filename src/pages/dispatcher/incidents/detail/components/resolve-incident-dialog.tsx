@@ -1,5 +1,4 @@
 import {
-  formatIncidentId,
   getIncidentErrorMessage,
   getResolveIncidentErrorMessage,
 } from "@/components/incidents/incident-formatters";
@@ -83,10 +82,9 @@ const ResolveIncidentDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>Đóng Incident?</DialogTitle>
+          <DialogTitle>Xử lý Incident thủ công?</DialogTitle>
           <DialogDescription>
-            Incident SC-{formatIncidentId(incident.incidentId)} · Trip{" "}
-            {formatIncidentId(incident.tripId)}
+            Chỉ dùng khi hệ thống yêu cầu xử lý thủ công đặc biệt.
           </DialogDescription>
         </DialogHeader>
         {blocker && (

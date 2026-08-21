@@ -27,7 +27,12 @@ const ReimbursementPage = () => {
     return (incidentsQuery.data ?? []).filter((incident) => {
       const matchesSearch =
         !keyword ||
-        [incident.incidentId, incident.tripId, incident.reportedByUsername, incident.description]
+        [
+          incident.reportedByUsername,
+          incident.description,
+          incident.incidentType,
+          incident.tripCode,
+        ]
           .filter(Boolean)
           .join(" ")
           .toLowerCase()
@@ -72,7 +77,7 @@ const ReimbursementPage = () => {
 
       <div className="relative max-w-xl">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input value={search} className="pl-9" placeholder="Tìm theo sự cố, trip, tài xế..." onChange={(event) => setSearch(event.target.value)} />
+        <Input value={search} className="pl-9" placeholder="Tìm theo loại sự cố, tài xế, mô tả..." onChange={(event) => setSearch(event.target.value)} />
       </div>
 
       {incidentsQuery.isError ? (

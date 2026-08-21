@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import TripTrackingView from "@/components/tracking/trip-tracking-view";
-import { formatShortTripId } from "@/components/tracking/shared/tracking-formatters";
 import { PATH_DISPATCHER_DASHBOARD } from "@/routes/path";
 import { ArrowLeft, MapPinned } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -33,7 +32,7 @@ const TrackingDetailPage = () => {
         </div>
         <div>
           <h1 className="text-3xl font-semibold">
-            Hành trình {formatShortTripId(tripId)}
+            Theo dõi hành trình
           </h1>
           <p className="mt-1 text-muted-foreground">
             Vị trí, nhiệt độ và lịch sử di chuyển của xe trong chuyến

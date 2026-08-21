@@ -29,7 +29,7 @@ const DriverDetailHeader = ({ driver, onEdit }: Props) => {
         <div className="flex items-center gap-3 flex-wrap">
           <h1 className="text-2xl font-semibold">Chi tiết tài xế</h1>
           <span className="text-2xl font-bold text-primary">
-            {driver.fullName || driver.driverId}
+            {driver.fullName || "Tài xế chưa có tên"}
           </span>
           {status && <Badge className={status.className}>{status.label}</Badge>}
         </div>

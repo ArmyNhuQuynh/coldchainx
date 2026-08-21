@@ -1,27 +1,22 @@
 import { Button } from "@/components/ui/button";
 import IncidentLoadError from "@/components/incidents/incident-load-error";
 import { useIncident } from "@/hooks/use-incident";
-import type { RootState } from "@/redux/store";
 import { PATH_DISPATCHER_DASHBOARD } from "@/routes/path";
 import type { TIncident } from "@/schemas/incident.schema";
 import { INCIDENT_STATUS } from "@/types/enums/incident-status.enum";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import { useMemo, useState } from "react";
-import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import IncidentFilterBar from "./components/incident-filter-bar";
 import IncidentSummaryStrip from "./components/incident-summary-strip";
 import IncidentTable from "./components/incident-table";
 import { sortIncidentsByDispatcherPriority } from "../detail/incident-workflow";
-import ResolveIncidentDialog from "../detail/components/resolve-incident-dialog";
 
 const matchesSearch = (incident: TIncident, search: string) => {
   const keyword = search.trim().toLowerCase();
   if (!keyword) return true;
 
   return [
-    incident.incidentId,
-    incident.tripId,
     incident.tripCode,
     incident.incidentType,
     incident.description,
@@ -35,7 +30,6 @@ const matchesSearch = (incident: TIncident, search: string) => {
 
 const IncidentListPage = () => {
   const navigate = useNavigate();
-  const currentRole = useSelector((state: RootState) => state.user.role);
   const { getAllIncidents } = useIncident();
   const incidentsQuery = getAllIncidents();
   const incidents = incidentsQuery.data ?? [];
@@ -45,12 +39,6 @@ const IncidentListPage = () => {
   const [incidentType, setIncidentType] = useState("ALL");
   const [queue, setQueue] = useState("ALL");
   const [rescue, setRescue] = useState("ALL");
-  const [resolveIncidentId, setResolveIncidentId] = useState<string | null>(
-    null,
-  );
-  const resolveTarget = resolveIncidentId
-    ? incidents.find((incident) => incident.incidentId === resolveIncidentId)
-    : null;
 
   const filteredIncidents = useMemo(
     () =>
@@ -153,23 +141,11 @@ const IncidentListPage = () => {
         <IncidentTable
           incidents={filteredIncidents}
           isLoading={incidentsQuery.isLoading}
-          currentRole={currentRole}
           onSelect={(incident) =>
             navigate(
               PATH_DISPATCHER_DASHBOARD.incident.detail(incident.incidentId),
             )
           }
-          onResolve={(incident) => setResolveIncidentId(incident.incidentId)}
-        />
-      )}
-      {resolveTarget && (
-        <ResolveIncidentDialog
-          open={Boolean(resolveIncidentId)}
-          incident={resolveTarget}
-          currentRole={currentRole}
-          onOpenChange={(open) => {
-            if (!open) setResolveIncidentId(null);
-          }}
         />
       )}
     </div>

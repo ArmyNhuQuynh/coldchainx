@@ -96,7 +96,7 @@ const buildPopupHtml = (
       <div><b>Thời gian:</b> ${escapeHtml(formatTrackingDateTime(point.timestamp))}</div>
       <div><b>Vĩ độ:</b> ${escapeHtml(formatCoordinate(point.lat))}</div>
       <div><b>Kinh độ:</b> ${escapeHtml(formatCoordinate(point.lon))}</div>
-      <div><b>Thiết bị:</b> ${escapeHtml(deviceCode || "N/A")}</div>
+      <div><b>Thiết bị:</b> ${escapeHtml(deviceCode || "Chưa có thiết bị")}</div>
       ${
         distanceMeters != null
           ? `<div style="color:#64748b;"><b>Gần điểm bấm:</b> ${Math.round(

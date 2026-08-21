@@ -5,7 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { IncidentExpenseBadge } from "@/components/incidents/incident-badges";
-import { formatIncidentDate, formatIncidentId, formatIncidentMoney } from "@/components/incidents/incident-formatters";
+import { formatIncidentDate, formatIncidentMoney } from "@/components/incidents/incident-formatters";
 import type { TIncident } from "@/schemas/incident.schema";
 import { INCIDENT_EXPENSE_STATUS } from "@/types/enums/incident-expense-status.enum";
 import { getIncidentTypeLabel } from "@/types/enums/incident-type.enum";
@@ -45,7 +45,7 @@ const ExpenseTable = ({
         <Table>
           <TableHeader className="bg-background">
             <TableRow>
-              <TableHead className="pl-5">Sự cố / Trip</TableHead>
+              <TableHead className="pl-5">Hồ sơ sự cố</TableHead>
               <TableHead>Người đề nghị</TableHead>
               <TableHead>Loại sự cố</TableHead>
               <TableHead className="text-right">Đề nghị</TableHead>
@@ -70,8 +70,8 @@ const ExpenseTable = ({
             {!isLoading && incidents.map((incident) => (
               <TableRow key={incident.incidentId} className="cursor-pointer" onClick={() => onView(incident)}>
                 <TableCell className="pl-5">
-                  <p className="font-semibold">SC-{formatIncidentId(incident.incidentId)}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">Trip {formatIncidentId(incident.tripId)}</p>
+                  <p className="font-semibold">{getIncidentTypeLabel(incident.incidentType)}</p>
+                  <p className="mt-1 max-w-56 truncate text-xs text-muted-foreground">{incident.description}</p>
                 </TableCell>
                 <TableCell>
                   <p className="font-medium">{incident.reportedByUsername || "—"}</p>

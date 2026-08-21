@@ -21,34 +21,30 @@ const continuedIncident: TIncident = {
   evidences: [],
 };
 
-describe("IncidentTable resolve action", () => {
+describe("IncidentTable dispatcher list", () => {
   afterEach(cleanup);
 
-  it("hiển thị CTA đóng cho Dispatcher khi Incident CONTINUED đủ điều kiện", () => {
-    const onResolve = vi.fn();
+  it("không hiển thị CTA đóng Incident trong bảng", () => {
     render(
       <IncidentTable
         incidents={[continuedIncident]}
-        currentRole="Dispatcher"
         onSelect={vi.fn()}
-        onResolve={onResolve}
-      />,
-    );
-
-    fireEvent.click(screen.getByRole("button", { name: "Đóng Incident" }));
-    expect(onResolve).toHaveBeenCalledWith(continuedIncident);
-  });
-
-  it("không hiển thị CTA đóng cho role không có quyền", () => {
-    render(
-      <IncidentTable
-        incidents={[continuedIncident]}
-        currentRole="Accountant"
-        onSelect={vi.fn()}
-        onResolve={vi.fn()}
       />,
     );
 
     expect(screen.queryByRole("button", { name: "Đóng Incident" })).toBeNull();
+  });
+
+  it("bấm vào dòng để mở chi tiết sự cố", () => {
+    const onSelect = vi.fn();
+    render(
+      <IncidentTable
+        incidents={[continuedIncident]}
+        onSelect={onSelect}
+      />,
+    );
+
+    fireEvent.click(screen.getByText("driver").closest("tr")!);
+    expect(onSelect).toHaveBeenCalledWith(continuedIncident);
   });
 });

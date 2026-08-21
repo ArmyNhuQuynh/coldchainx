@@ -1,20 +1,15 @@
-import {
-  formatIncidentDate,
-  formatIncidentId,
-} from "@/components/incidents/incident-formatters";
+import { formatIncidentDate } from "@/components/incidents/incident-formatters";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIncident } from "@/hooks/use-incident";
 import { useDispatchLookup } from "@/hooks/use-dispatch-lookup";
-import type { RootState } from "@/redux/store";
 import { PATH_DISPATCHER_DASHBOARD } from "@/routes/path";
 import type { TIncident, TIncidentRescuePlan } from "@/schemas/incident.schema";
 import type { TTrackingTrip } from "@/schemas/monitoring.schema";
 import { INCIDENT_STATUS } from "@/types/enums/incident-status.enum";
 import { INCIDENT_TYPE } from "@/types/enums/incident-type.enum";
-import { normalizeUserRole, USER_ROLE } from "@/types/enums/user-role.enum";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -28,7 +23,6 @@ import {
   Truck,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
-import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import AssessRiskDialog from "./assess-risk-dialog";
 import ContinueTripDialog from "./continue-trip-dialog";
@@ -36,11 +30,8 @@ import ExternalReeferDispatchForm from "./external-reefer-dispatch-form";
 import InboundRouteWarehouseDialog from "./inbound-route-warehouse-dialog";
 import RescueDispatchForm from "./rescue-dispatch-form";
 import RescueFallbackForm from "./rescue-fallback-form";
-import RescueProgressPanel from "./rescue-progress-panel";
-import ResolveIncidentDialog from "./resolve-incident-dialog";
 import {
   getIncidentPrimaryAction,
-  getIncidentResolveEligibility,
   isMandatoryExternalReeferIncident,
 } from "../incident-workflow";
 
@@ -276,26 +267,16 @@ const ExternalReeferTracking = ({ incident }: { incident: TIncident }) => {
   );
 };
 
-const RescueOperationPanel = ({ incident, trip, isTripLoading }: Props) => {
+const RescueOperationPanel = ({ incident, trip }: Props) => {
   const navigate = useNavigate();
   const { getAvailableLpns } = useDispatchLookup();
-  const currentRole = useSelector((state: RootState) => state.user.role);
   const [assessOpen, setAssessOpen] = useState(false);
   const [containmentOpen, setContainmentOpen] = useState(false);
   const [continueOpen, setContinueOpen] = useState(false);
-  const [resolveOpen, setResolveOpen] = useState(false);
   const action = getIncidentPrimaryAction(
     incident.status,
     incident.requiresRescue,
   );
-  const resolveEligibility = getIncidentResolveEligibility(
-    incident,
-    currentRole,
-  );
-  const normalizedRole = normalizeUserRole(currentRole);
-  const hasResolvePermission =
-    normalizedRole === USER_ROLE.DISPATCHER ||
-    normalizedRole === USER_ROLE.ADMIN;
   const redispatchTripId =
     incident.externalReeferPlan?.redispatchTripId ?? incident.tripId ?? null;
   const isNoShowReturnReady =
@@ -324,21 +305,19 @@ const RescueOperationPanel = ({ incident, trip, isTripLoading }: Props) => {
   }
   if (action === "TRACK_RESCUE") {
     return (
-      <>
-        <RescueProgressPanel
-          incident={incident}
-          trip={trip}
-          isTripLoading={isTripLoading}
-          canResolve={resolveEligibility.allowed}
-          onResolve={() => setResolveOpen(true)}
-        />
-        <ResolveIncidentDialog
-          open={resolveOpen}
-          incident={incident}
-          currentRole={currentRole}
-          onOpenChange={setResolveOpen}
-        />
-      </>
+      <StatusCard
+        title={
+          incident.transloadConfirmedAt
+            ? "Đã sang hàng"
+            : "Đang theo dõi sang hàng"
+        }
+        description={
+          incident.transloadConfirmedAt
+            ? "Chuyến đã tiếp tục vận chuyển. Incident sẽ do hệ thống tự đóng sau khi hàng hoàn và accountant hoàn tiền cho tài xế."
+            : "Theo dõi xe cứu hộ ở thanh tiến trình phía trên và xác nhận sang hàng khi hoàn tất bàn giao."
+        }
+        icon={incident.transloadConfirmedAt ? PackageCheck : Truck}
+      />
     );
   }
   if (action === "TRACK_EXTERNAL_REEFER") {
@@ -431,55 +410,38 @@ const RescueOperationPanel = ({ incident, trip, isTripLoading }: Props) => {
 
   if (action === "OPEN_REDISPATCH_TRIP") {
     return (
-      <>
-        <StatusCard
-          title="Trip mới đã được tạo"
-          description={
-            resolveEligibility.reason ||
-            incident.redispatchPlan ||
-            "Đã có xe ColdChainX cho chuyến giao lại. Incident đủ điều kiện vận hành để đóng."
-          }
-          icon={PackageCheck}
-        >
-          <div className="rounded-lg border p-3 text-sm">
-            <p className="text-muted-foreground">Trip redispatch</p>
-            <p className="mt-1 font-semibold">
-              {formatIncidentId(redispatchTripId)}
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              className="flex-1"
-              disabled={!redispatchTripId}
-              onClick={() =>
-                navigate(
-                  `${PATH_DISPATCHER_DASHBOARD.trip.root}?tripId=${encodeURIComponent(redispatchTripId ?? "")}`,
-                )
-              }
-            >
-              <ExternalLink className="h-4 w-4" /> Mở trip mới
-            </Button>
-            {hasResolvePermission && (
-              <Button
-                type="button"
-                className="flex-1"
-                disabled={!resolveEligibility.allowed}
-                onClick={() => setResolveOpen(true)}
-              >
-                <CheckCircle2 className="h-4 w-4" /> Đóng Incident
-              </Button>
-            )}
-          </div>
-        </StatusCard>
-        <ResolveIncidentDialog
-          open={resolveOpen}
-          incident={incident}
-          currentRole={currentRole}
-          onOpenChange={setResolveOpen}
-        />
-      </>
+      <StatusCard
+        title="Trip mới đã được tạo"
+        description={
+          incident.redispatchPlan ||
+          "Đã có xe ColdChainX cho chuyến giao lại. Incident sẽ do hệ thống tự đóng khi hoàn tất các điều kiện vận hành và hoàn tiền."
+        }
+        icon={PackageCheck}
+      >
+        <div className="rounded-lg border p-3 text-sm">
+          <p className="text-muted-foreground">Trip redispatch</p>
+          <p className="mt-1 font-semibold">
+            {redispatchTripId
+              ? "Đã tạo chuyến giao lại"
+              : "Chưa có chuyến giao lại"}
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            className="flex-1"
+            disabled={!redispatchTripId}
+            onClick={() =>
+              navigate(
+                `${PATH_DISPATCHER_DASHBOARD.trip.root}?tripId=${encodeURIComponent(redispatchTripId ?? "")}`,
+              )
+            }
+          >
+            <ExternalLink className="h-4 w-4" /> Mở trip mới
+          </Button>
+        </div>
+      </StatusCard>
     );
   }
 
@@ -518,7 +480,9 @@ const RescueOperationPanel = ({ incident, trip, isTripLoading }: Props) => {
     return <RescueFallbackForm incident={incident} plan={emergencyPlan} />;
   }
 
-  const resolutionBlocker = resolveEligibility.reason ?? null;
+  if (action === "RESOLVE") {
+    return null;
+  }
 
   return (
     <>
@@ -532,7 +496,7 @@ const RescueOperationPanel = ({ incident, trip, isTripLoading }: Props) => {
                 ? incident.status === INCIDENT_STATUS.MONITORING
                   ? "Đang theo dõi nhiệt độ"
                   : "Đã xử lý tại chỗ"
-                : "Theo dõi hoàn tất Incident"
+                : "Theo dõi xử lý sự cố"
         }
         description={
           action === "ASSESS_RISK"
@@ -542,8 +506,7 @@ const RescueOperationPanel = ({ incident, trip, isTripLoading }: Props) => {
               : action === "CONTINUE_TRIP"
                 ? incident.safeTimeCalculation ||
                   "Có thể cho chuyến tiếp tục hoặc đánh giá lại theo trạng thái thực tế."
-                : resolutionBlocker ||
-                  "Đã đủ điều kiện vận hành để đóng Incident."
+                : incident.handlingNote || "Theo dõi cập nhật tiếp theo từ hệ thống."
         }
         icon={
           action === "CONFIRM_CONTAINMENT"
@@ -610,15 +573,6 @@ const RescueOperationPanel = ({ incident, trip, isTripLoading }: Props) => {
               )}
             </>
           )}
-          {action === "RESOLVE" && hasResolvePermission && (
-            <Button
-              type="button"
-              disabled={Boolean(resolutionBlocker)}
-              onClick={() => setResolveOpen(true)}
-            >
-              <CheckCircle2 className="h-4 w-4" /> Đóng Incident
-            </Button>
-          )}
         </div>
       </StatusCard>
 
@@ -637,12 +591,6 @@ const RescueOperationPanel = ({ incident, trip, isTripLoading }: Props) => {
         open={continueOpen}
         incident={incident}
         onOpenChange={setContinueOpen}
-      />
-      <ResolveIncidentDialog
-        open={resolveOpen}
-        incident={incident}
-        currentRole={currentRole}
-        onOpenChange={setResolveOpen}
       />
     </>
   );

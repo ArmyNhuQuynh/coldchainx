@@ -2,7 +2,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { ScrollArea } from "@/components/ui/scroll-area";
 import IncidentEvidenceList from "@/components/incidents/incident-evidence-list";
 import { IncidentExpenseBadge, IncidentSeverityBadge } from "@/components/incidents/incident-badges";
-import { formatIncidentDate, formatIncidentId, formatIncidentMoney } from "@/components/incidents/incident-formatters";
+import { formatIncidentDate, formatIncidentMoney } from "@/components/incidents/incident-formatters";
 import type { TIncident } from "@/schemas/incident.schema";
 import { getIncidentTypeLabel } from "@/types/enums/incident-type.enum";
 
@@ -15,8 +15,8 @@ const ExpenseDetailDialog = ({ incident, onOpenChange }: Props) => (
   <Dialog open={Boolean(incident)} onOpenChange={onOpenChange}>
     <DialogContent className="max-h-[90vh] gap-0 overflow-hidden p-0 sm:max-w-4xl">
       <DialogHeader className="border-b px-6 py-5">
-        <DialogTitle>Chi phí sự cố SC-{formatIncidentId(incident?.incidentId)}</DialogTitle>
-        <DialogDescription>Trip {formatIncidentId(incident?.tripId)} · {getIncidentTypeLabel(incident?.incidentType)}</DialogDescription>
+        <DialogTitle>Chi phí sự cố</DialogTitle>
+        <DialogDescription>{getIncidentTypeLabel(incident?.incidentType)}</DialogDescription>
       </DialogHeader>
       {incident && (
         <ScrollArea className="max-h-[calc(90vh-96px)]">

@@ -798,7 +798,7 @@ const DispatchPage = () => {
       toast.success(
         warehouseRedispatchMode
           ? "Tạo chuyến mới từ kho thành công"
-          : `Đã tạo chuyến ${result.tripId}`,
+          : "Đã tạo chuyến thành công",
       );
       if (incidentMode) {
         navigate(`${PATH_DISPATCHER_DASHBOARD.trip.root}?tripId=${encodeURIComponent(result.tripId)}`);

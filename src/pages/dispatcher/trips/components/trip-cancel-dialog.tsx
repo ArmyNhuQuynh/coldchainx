@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import type { TDispatchTrip } from "@/schemas/dispatch.schema";
 import { AlertTriangle, Loader2 } from "lucide-react";
-import { formatShortTripId, getTripStatusLabel } from "./trip-helpers";
+import { getTripStatusLabel } from "./trip-helpers";
 
 type Props = {
   trip: TDispatchTrip | null;
@@ -34,7 +34,7 @@ const TripCancelDialog = ({
           <DialogTitle>Hủy bốc hàng?</DialogTitle>
           <DialogDescription>
             {trip
-              ? `Trip ${formatShortTripId(trip.tripId)} đang ở trạng thái ${getTripStatusLabel(
+              ? `Chuyến đang ở trạng thái ${getTripStatusLabel(
                   trip.status
                 )}. Sau khi hủy, BE sẽ đưa LPN về IN_STOCK và giải phóng xe/tài xế nếu chuyến chưa SHIPPING.`
               : ""}

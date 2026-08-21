@@ -133,7 +133,7 @@ describe("ResolveIncidentDialog", () => {
     });
     expect(onOpenChange).not.toHaveBeenCalled();
     expect(
-      screen.getByRole("heading", { name: "Đóng Incident?" }),
+      screen.getByRole("heading", { name: "Xử lý Incident thủ công?" }),
     ).toBeTruthy();
     expect(screen.getByLabelText("Ghi chú xử lý *")).toHaveProperty(
       "value",

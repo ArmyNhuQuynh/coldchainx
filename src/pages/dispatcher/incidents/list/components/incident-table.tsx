@@ -11,39 +11,24 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { TIncident } from "@/schemas/incident.schema";
-import { AlertTriangle, CheckCircle2, Truck } from "lucide-react";
+import { AlertTriangle, Truck } from "lucide-react";
 import {
-  IncidentExpenseBadge,
   IncidentSeverityBadge,
-  IncidentRiskBadge,
   IncidentStatusBadge,
 } from "@/components/incidents/incident-badges";
-import {
-  formatIncidentDate,
-  formatIncidentId,
-} from "@/components/incidents/incident-formatters";
+import { formatIncidentDate } from "@/components/incidents/incident-formatters";
 import { getIncidentTypeLabel } from "@/types/enums/incident-type.enum";
-import { formatIncidentMoney } from "@/components/incidents/incident-formatters";
-import {
-  getIncidentResolveEligibility,
-  isSlaOverdue,
-} from "../../detail/incident-workflow";
-import { Button } from "@/components/ui/button";
 
 type Props = {
   incidents: TIncident[];
   isLoading?: boolean;
-  currentRole?: string | null;
   onSelect: (incident: TIncident) => void;
-  onResolve: (incident: TIncident) => void;
 };
 
 const IncidentTable = ({
   incidents,
   isLoading,
-  currentRole,
   onSelect,
-  onResolve,
 }: Props) => (
   <Card className="min-w-0 gap-0 overflow-hidden rounded-lg py-0">
     <CardHeader className="border-b px-5 py-4">
@@ -64,24 +49,19 @@ const IncidentTable = ({
         <Table className="w-max min-w-full">
           <TableHeader className="bg-background">
             <TableRow>
-              <TableHead className="pl-5">Sự cố / Trip</TableHead>
+              <TableHead className="pl-5">Báo cáo</TableHead>
               <TableHead>Loại sự cố</TableHead>
               <TableHead>Severity</TableHead>
-              <TableHead>Risk</TableHead>
               <TableHead>Yêu cầu cứu hộ</TableHead>
-              <TableHead>Nhiệt độ</TableHead>
-              <TableHead>Safe time</TableHead>
-              <TableHead>Chi phí</TableHead>
               <TableHead>Trạng thái</TableHead>
               <TableHead>SLA / Báo lúc</TableHead>
-              <TableHead className="pr-5 text-right">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading &&
               Array.from({ length: 8 }).map((_, index) => (
                 <TableRow key={index}>
-                  <TableCell colSpan={11} className="px-5 py-3">
+                  <TableCell colSpan={6} className="px-5 py-3">
                     <Skeleton className="h-12 w-full" />
                   </TableCell>
                 </TableRow>
@@ -89,7 +69,7 @@ const IncidentTable = ({
 
             {!isLoading && incidents.length === 0 && (
               <TableRow>
-                <TableCell colSpan={11} className="h-56 text-center">
+                <TableCell colSpan={6} className="h-56 text-center">
                   <AlertTriangle className="mx-auto h-8 w-8 text-muted-foreground" />
                   <p className="mt-3 font-medium">Không có sự cố phù hợp</p>
                   <p className="mt-1 text-sm text-muted-foreground">
@@ -100,24 +80,19 @@ const IncidentTable = ({
             )}
 
             {!isLoading &&
-              incidents.map((incident) => {
-                const resolveEligibility = getIncidentResolveEligibility(
-                  incident,
-                  currentRole,
-                );
-
-                return (
+              incidents.map((incident) => (
                   <TableRow
                     key={incident.incidentId}
                     className="cursor-pointer"
+                    title="Bấm để xem chi tiết sự cố"
                     onClick={() => onSelect(incident)}
                   >
                     <TableCell className="pl-5">
                       <p className="font-semibold">
-                        SC-{formatIncidentId(incident.incidentId)}
+                        {incident.reportedByUsername || "Người báo cáo chưa rõ"}
                       </p>
                       <p className="mt-1 max-w-44 truncate text-xs text-muted-foreground">
-                        Trip {incident.tripCode || formatIncidentId(incident.tripId)}
+                        {incident.description}
                       </p>
                     </TableCell>
                     <TableCell>
@@ -132,9 +107,6 @@ const IncidentTable = ({
                       <IncidentSeverityBadge severity={incident.severity} />
                     </TableCell>
                     <TableCell>
-                      <IncidentRiskBadge risk={incident.riskLevel} />
-                    </TableCell>
-                    <TableCell>
                       {incident.requiresRescue ? (
                         <span className="flex items-center gap-1.5 text-sm font-medium text-rose-700">
                           <Truck className="h-4 w-4" /> Có
@@ -146,96 +118,18 @@ const IncidentTable = ({
                       )}
                     </TableCell>
                     <TableCell>
-                      <p
-                        className={
-                          incident.temperatureThresholdBreached
-                            ? "font-semibold text-rose-700"
-                            : "font-medium"
-                        }
-                      >
-                        {incident.latestTemperature != null
-                          ? `${incident.latestTemperature}°C`
-                          : "—"}
-                      </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {incident.temperatureSource || "Chưa có nguồn"}
-                      </p>
-                    </TableCell>
-                    <TableCell>
-                      <p
-                        className={
-                          incident.remainingSafeTimeMinutes === 0
-                            ? "font-semibold text-rose-700"
-                            : "font-medium"
-                        }
-                      >
-                        {incident.remainingSafeTimeMinutes != null
-                          ? `${incident.remainingSafeTimeMinutes} phút`
-                          : "Không xác định"}
-                      </p>
-                      <p className="mt-1 max-w-36 truncate text-xs text-muted-foreground">
-                        {incident.safeTimeCalculation || "—"}
-                      </p>
-                    </TableCell>
-                    <TableCell>
-                      <p className="text-sm font-medium">
-                        {formatIncidentMoney(incident.driverPaidAmount)}
-                      </p>
-                      <div className="mt-1">
-                        <IncidentExpenseBadge status={incident.expenseStatus} />
-                      </div>
-                    </TableCell>
-                    <TableCell>
                       <IncidentStatusBadge status={incident.status} />
                     </TableCell>
                     <TableCell>
-                      <p
-                        className={
-                          isSlaOverdue(incident)
-                            ? "font-semibold text-rose-700"
-                            : "text-muted-foreground"
-                        }
-                      >
-                        {isSlaOverdue(incident) ? "QUÁ SLA · " : "SLA · "}
+                      <p className="font-medium">
                         {formatIncidentDate(incident.slaDueAt)}
                       </p>
-                      <p className="mt-1 text-xs">
-                        Báo {formatIncidentDate(incident.reportedAt)}
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {formatIncidentDate(incident.reportedAt)}
                       </p>
-                      <p className="mt-1 max-w-40 truncate text-xs text-muted-foreground">
-                        {incident.reportedByUsername}
-                      </p>
-                    </TableCell>
-                    <TableCell className="pr-5 text-right">
-                      <div className="flex justify-end gap-2">
-                        {resolveEligibility.allowed && (
-                          <Button
-                            type="button"
-                            size="sm"
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              onResolve(incident);
-                            }}
-                          >
-                            <CheckCircle2 className="h-4 w-4" /> Đóng Incident
-                          </Button>
-                        )}
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            onSelect(incident);
-                          }}
-                        >
-                          Xem và xử lý
-                        </Button>
-                      </div>
                     </TableCell>
                   </TableRow>
-                );
-              })}
+              ))}
           </TableBody>
         </Table>
         <ScrollBar orientation="horizontal" />

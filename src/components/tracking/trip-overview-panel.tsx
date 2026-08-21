@@ -67,14 +67,14 @@ const TripOverviewPanel = ({ trip, tripDetails }: Props) => {
               <Truck className="h-3.5 w-3.5" />
               Xe
             </p>
-            <p className="mt-1 font-medium">{trip.vehicle?.truckPlate || "N/A"}</p>
+            <p className="mt-1 font-medium">{trip.vehicle?.truckPlate || "Chưa có xe"}</p>
           </div>
           <div>
             <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <User className="h-3.5 w-3.5" />
               Tài xế
             </p>
-            <p className="mt-1 line-clamp-1 font-medium">{trip.driver || "N/A"}</p>
+            <p className="mt-1 line-clamp-1 font-medium">{trip.driver || "Chưa gán tài xế"}</p>
           </div>
           <div>
             <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
