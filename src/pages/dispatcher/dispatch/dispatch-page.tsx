@@ -1,17 +1,19 @@
 import { useDispatchLookup } from "@/hooks/use-dispatch-lookup";
 import { useDispatchPlanning } from "@/hooks/use-dispatch";
 import { useIncident } from "@/hooks/use-incident";
+import { Button } from "@/components/ui/button";
 import { PATH_DISPATCHER_DASHBOARD } from "@/routes/path";
 import type {
   TDispatchPackingResult,
   TDispatchReadyLpn,
   TDispatchScheduleLookup,
 } from "@/schemas/dispatch.schema";
-import { Boxes, LockKeyhole, Siren } from "lucide-react";
+import { Boxes, LockKeyhole, PackageCheck, Siren } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { INCIDENT_STATUS } from "@/types/enums/incident-status.enum";
+import { INCIDENT_TYPE } from "@/types/enums/incident-type.enum";
 import DispatchScheduleSelector from "./components/dispatch-schedule-selector";
 import {
   getBlockingCompatibilityConflicts,
@@ -61,8 +63,9 @@ const DispatchPage = () => {
   const [searchParams] = useSearchParams();
   const incidentId = searchParams.get("incidentId")?.trim() || "";
   const incidentMode = Boolean(incidentId);
-  const { manualDispatch, simulatePacking } = useDispatchPlanning();
-  const { getIncident } = useIncident();
+  const { manualDispatch, createTripFromWarehouse, simulatePacking } =
+    useDispatchPlanning();
+  const { getAllIncidents, getIncident } = useIncident();
   const {
     getSchedules,
     searchCompatibleLpns,
@@ -72,8 +75,12 @@ const DispatchPage = () => {
     getAvailableLpns,
   } = useDispatchLookup();
   const incidentQuery = getIncident(incidentId || undefined);
+  const incidentsQuery = getAllIncidents(!incidentMode);
   const incident = incidentQuery.data;
   const externalPlan = incident?.externalReeferPlan;
+  const warehouseRedispatchMode =
+    incidentMode &&
+    incident?.incidentType === INCIDENT_TYPE.CUSTOMER_NO_SHOW_RETURN;
 
   const [selectedRouteId, setSelectedRouteId] = useState("");
   const [selectedScheduleId, setSelectedScheduleId] = useState("");
@@ -133,6 +140,47 @@ const DispatchPage = () => {
   const selectedLpnIds = useMemo(
     () => selectedLpns.map((lpn) => lpn.lpnId),
     [selectedLpns]
+  );
+  const selectedWarehouseIds = useMemo(
+    () =>
+      new Set(
+        selectedLpns
+          .map((lpn) => lpn.warehouseId)
+          .filter((warehouseId): warehouseId is string => Boolean(warehouseId)),
+      ),
+    [selectedLpns],
+  );
+  const selectedLpnsReadyForWarehouseRedispatch =
+    selectedLpns.length > 0 &&
+    selectedWarehouseIds.size === 1 &&
+    selectedLpns.every(
+      (lpn) =>
+        lpn.state?.trim().toUpperCase() === "IN_STOCK" && !lpn.tripId,
+    );
+  const matchingNoShowIncident = useMemo(
+    () =>
+      !incidentMode && selectedLpnsReadyForWarehouseRedispatch
+        ? (incidentsQuery.data ?? []).find(
+            (candidate) =>
+              candidate.incidentType ===
+                INCIDENT_TYPE.CUSTOMER_NO_SHOW_RETURN &&
+              candidate.status === INCIDENT_STATUS.READY_FOR_REDISPATCH &&
+              Boolean(candidate.externalReeferPlan?.arrivedAt) &&
+              candidate.externalReeferPlan?.destinationWarehouseId ===
+                selectedWarehouseId &&
+              hasExactLockedLpnSelection(
+                candidate.externalReeferPlan?.lpnIds ?? [],
+                selectedLpnIds,
+              ),
+          )
+        : undefined,
+    [
+      incidentMode,
+      incidentsQuery.data,
+      selectedLpnIds,
+      selectedLpnsReadyForWarehouseRedispatch,
+      selectedWarehouseId,
+    ],
   );
   const selectedCargoTotals = useMemo(
     () =>
@@ -379,6 +427,29 @@ const DispatchPage = () => {
       if (!hasExactLockedLpnSelection(requiredIncidentLpnIds, selectedLpnIds)) {
         messages.push(`Phải chọn đủ ${requiredIncidentLpnIds.length}/${requiredIncidentLpnIds.length} LPN của Incident.`);
       }
+      if (warehouseRedispatchMode && selectedLpns.length > 0) {
+        if (
+          selectedLpns.some(
+            (lpn) =>
+              lpn.state?.trim().toUpperCase() !== "IN_STOCK" ||
+              Boolean(lpn.tripId),
+          )
+        ) {
+          messages.push("Chỉ được tạo chuyến gần kho khi mọi LPN đang IN_STOCK và chưa có TripId.");
+        }
+
+        const warehouseIds = new Set(
+          selectedLpns
+            .map((lpn) => lpn.warehouseId)
+            .filter((warehouseId): warehouseId is string => Boolean(warehouseId)),
+        );
+        if (
+          warehouseIds.size !== 1 ||
+          !warehouseIds.has(selectedWarehouseId)
+        ) {
+          messages.push("Toàn bộ LPN của lần trả hàng phải nằm trong cùng kho đang giữ hàng.");
+        }
+      }
     } else {
       if (selectedLpns.length === 0) messages.push("Chọn ít nhất 1 LPN.");
     }
@@ -442,6 +513,7 @@ const DispatchPage = () => {
     incidentLpnsQuery.isLoading,
     incidentMode,
     incidentQuery.isError,
+    warehouseRedispatchMode,
     requiredIncidentLpnIds.length,
     requiredIncidentLpnSet,
     vehiclesQuery.isError,
@@ -480,17 +552,26 @@ const DispatchPage = () => {
 
     createTripSubmittingRef.current = true;
     try {
-      const result = await manualDispatch.mutateAsync({
-        incidentId: incidentMode ? incidentId : undefined,
-        ...(dispatchScheduleId ? { scheduleId: dispatchScheduleId } : {}),
+      const request = {
         lpnIds: selectedLpnIds,
         vehicleId: selectedVehicleId,
         driverIds: selectedDriverIds,
         plannedStartTime: new Date(plannedStartTime).toISOString(),
         plannedEndTime: new Date(plannedEndTime).toISOString(),
-      });
+      };
+      const result = warehouseRedispatchMode
+        ? await createTripFromWarehouse.mutateAsync(request)
+        : await manualDispatch.mutateAsync({
+            incidentId: incidentMode ? incidentId : undefined,
+            ...(dispatchScheduleId ? { scheduleId: dispatchScheduleId } : {}),
+            ...request,
+          });
 
-      toast.success(`Đã tạo chuyến ${result.tripId}`);
+      toast.success(
+        warehouseRedispatchMode
+          ? "Tạo chuyến mới từ kho thành công"
+          : `Đã tạo chuyến ${result.tripId}`,
+      );
       if (incidentMode) {
         navigate(`${PATH_DISPATCHER_DASHBOARD.trip.root}?tripId=${encodeURIComponent(result.tripId)}`);
         return;
@@ -515,11 +596,17 @@ const DispatchPage = () => {
         </div>
         <div>
           <h1 className="text-3xl font-semibold">
-            {incidentMode ? "Tạo lại chuyến từ Incident" : "Điều phối & Ghép chuyến"}
+            {warehouseRedispatchMode
+              ? "Tạo chuyến gần kho"
+              : incidentMode
+                ? "Tạo lại chuyến từ Incident"
+                : "Điều phối & Ghép chuyến"}
           </h1>
           <p className="mt-1 text-muted-foreground">
             {incidentMode
-              ? "Chọn xe và 1-2 tài xế tại đúng kho inbound; toàn bộ LPN đã được khóa."
+              ? warehouseRedispatchMode
+                ? "Chọn xe và 1-2 tài xế tại kho đang giữ hàng; toàn bộ LPN của lần trả hàng đã được khóa."
+                : "Chọn xe và 1-2 tài xế tại đúng kho inbound; toàn bộ LPN đã được khóa."
               : "Chọn LPN, xe, tài xế và thời gian vận hành trước khi tạo chuyến"}
           </p>
         </div>
@@ -528,10 +615,34 @@ const DispatchPage = () => {
       {incidentMode && (
         <div className="flex flex-col gap-3 rounded-lg border border-violet-300 bg-violet-50 p-4 text-violet-900 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="flex items-center gap-2 font-bold"><Siren className="h-5 w-5" /> TẠO LẠI CHUYẾN TỪ INCIDENT</p>
-            <p className="mt-1 text-sm">Kho xuất phát: {selectedWarehouseName || "Chưa cấu hình"}</p>
+            <p className="flex items-center gap-2 font-bold"><Siren className="h-5 w-5" /> {warehouseRedispatchMode ? "TẠO CHUYẾN GẦN KHO" : "TẠO LẠI CHUYẾN TỪ INCIDENT"}</p>
+            <p className="mt-1 text-sm">Kho xuất phát đã khóa: {selectedWarehouseName || "Chưa cấu hình"}</p>
           </div>
           <div className="flex items-center gap-2 text-sm font-semibold"><LockKeyhole className="h-4 w-4" /> Đã chọn {selectedLpnIds.length}/{requiredIncidentLpnIds.length} LPN</div>
+        </div>
+      )}
+
+      {!incidentMode && matchingNoShowIncident && (
+        <div className="flex flex-col gap-3 rounded-lg border border-violet-300 bg-violet-50 p-4 text-violet-900 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="flex items-center gap-2 font-bold">
+              <Siren className="h-5 w-5" /> NHÓM LPN KHÁCH VẮNG MẶT ĐÃ NHẬP KHO
+            </p>
+            <p className="mt-1 text-sm">
+              Đã nhận diện đủ {selectedLpnIds.length} LPN cùng kho. Mở chế độ
+              khóa kho và LPN để tạo chuyến giao lại.
+            </p>
+          </div>
+          <Button
+            type="button"
+            onClick={() =>
+              navigate(
+                `${PATH_DISPATCHER_DASHBOARD.dispatch.root}?incidentId=${encodeURIComponent(matchingNoShowIncident.incidentId)}&source=warehouse-return`,
+              )
+            }
+          >
+            <PackageCheck className="h-4 w-4" /> Tạo chuyến gần kho
+          </Button>
         </div>
       )}
 
@@ -586,7 +697,11 @@ const DispatchPage = () => {
             isLoadingDrivers={driversQuery.isLoading}
             isVehiclesError={vehiclesQuery.isError}
             isDriversError={driversQuery.isError}
-            isSubmitting={manualDispatch.isPending}
+            isSubmitting={
+              warehouseRedispatchMode
+                ? createTripFromWarehouse.isPending
+                : manualDispatch.isPending
+            }
             isPreviewing={simulatePacking.isPending}
             isPlanningEnabled={selectedLpnIds.length > 0}
             canPreviewPacking={canPreviewPacking}
@@ -594,7 +709,13 @@ const DispatchPage = () => {
             canCreateTrip={canCreateTrip}
             validationMessages={validationMessages}
             showPackingPreview={!incidentMode}
-            createButtonLabel={incidentMode ? "Tạo trip redispatch gấp" : undefined}
+            createButtonLabel={
+              warehouseRedispatchMode
+                ? "Tạo chuyến gần kho"
+                : incidentMode
+                  ? "Tạo trip redispatch gấp"
+                  : undefined
+            }
             onVehicleChange={handleVehicleChange}
             onDriverToggle={handleDriverToggle}
             onPlannedStartTimeChange={setPlannedStartTime}

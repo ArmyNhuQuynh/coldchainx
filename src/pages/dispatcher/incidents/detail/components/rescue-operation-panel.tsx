@@ -7,11 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIncident } from "@/hooks/use-incident";
+import { useDispatchLookup } from "@/hooks/use-dispatch-lookup";
 import type { RootState } from "@/redux/store";
 import { PATH_DISPATCHER_DASHBOARD } from "@/routes/path";
 import type { TIncident, TIncidentRescuePlan } from "@/schemas/incident.schema";
 import type { TTrackingTrip } from "@/schemas/monitoring.schema";
 import { INCIDENT_STATUS } from "@/types/enums/incident-status.enum";
+import { INCIDENT_TYPE } from "@/types/enums/incident-type.enum";
 import { normalizeUserRole, USER_ROLE } from "@/types/enums/user-role.enum";
 import {
   AlertTriangle,
@@ -276,6 +278,7 @@ const ExternalReeferTracking = ({ incident }: { incident: TIncident }) => {
 
 const RescueOperationPanel = ({ incident, trip, isTripLoading }: Props) => {
   const navigate = useNavigate();
+  const { getAvailableLpns } = useDispatchLookup();
   const currentRole = useSelector((state: RootState) => state.user.role);
   const [assessOpen, setAssessOpen] = useState(false);
   const [containmentOpen, setContainmentOpen] = useState(false);
@@ -295,6 +298,13 @@ const RescueOperationPanel = ({ incident, trip, isTripLoading }: Props) => {
     normalizedRole === USER_ROLE.ADMIN;
   const redispatchTripId =
     incident.externalReeferPlan?.redispatchTripId ?? incident.tripId ?? null;
+  const isNoShowReturnReady =
+    incident.incidentType === INCIDENT_TYPE.CUSTOMER_NO_SHOW_RETURN &&
+    incident.status === INCIDENT_STATUS.READY_FOR_REDISPATCH;
+  const noShowLpnsQuery = getAvailableLpns(
+    incident.externalReeferPlan?.destinationWarehouseId,
+    isNoShowReturnReady,
+  );
   if (incident.status === INCIDENT_STATUS.RESOLVED) {
     return (
       <StatusCard
@@ -337,15 +347,49 @@ const RescueOperationPanel = ({ incident, trip, isTripLoading }: Props) => {
 
   if (action === "CREATE_REDISPATCH_TRIP") {
     const plan = incident.externalReeferPlan;
-    const blocker = !plan?.destinationWarehouseId
-      ? "Thiếu kho đích tuyến trong externalReeferPlan."
-      : !plan.lpnIds?.length
-        ? "Backend chưa trả danh sách toàn bộ LPN đã inbound."
-        : null;
+    const isNoShowReturn =
+      incident.incidentType === INCIDENT_TYPE.CUSTOMER_NO_SHOW_RETURN;
+    const availableNoShowLpnIds = new Set(
+      (noShowLpnsQuery.data ?? [])
+        .filter(
+          (lpn) =>
+            lpn.state?.trim().toUpperCase() === "IN_STOCK" && !lpn.tripId,
+        )
+        .map((lpn) => lpn.lpnId),
+    );
+    const allNoShowLpnsAvailable = Boolean(
+      plan?.lpnIds?.length &&
+        plan.lpnIds.every((lpnId) => availableNoShowLpnIds.has(lpnId)),
+    );
+    let blocker: string | null = null;
+    if (!plan?.destinationWarehouseId) {
+      blocker = isNoShowReturn
+        ? "Thiếu kho đang giữ hàng trong hồ sơ trả hàng."
+        : "Thiếu kho đích tuyến trong externalReeferPlan.";
+    } else if (!plan.lpnIds?.length) {
+      blocker = isNoShowReturn
+        ? "Backend chưa trả danh sách LPN của lần trả hàng."
+        : "Backend chưa trả danh sách toàn bộ LPN đã inbound.";
+    } else if (isNoShowReturn && noShowLpnsQuery.isLoading) {
+      blocker = "Đang xác minh trạng thái LPN tại kho.";
+    } else if (isNoShowReturn && noShowLpnsQuery.isError) {
+      blocker = "Không tải được trạng thái LPN tại kho.";
+    } else if (isNoShowReturn && !allNoShowLpnsAvailable) {
+      blocker =
+        "Chỉ có thể tạo chuyến khi toàn bộ LPN đang IN_STOCK, chưa có TripId và nằm cùng kho.";
+    }
     return (
       <StatusCard
-        title="TẠO LẠI CHUYẾN TỪ INCIDENT"
-        description="Hàng đã inbound bằng seal. Tạo trip mới gấp từ đúng kho đích với toàn bộ LPN bị khóa."
+        title={
+          isNoShowReturn
+            ? "TẠO CHUYẾN GẦN KHO"
+            : "TẠO LẠI CHUYẾN TỪ INCIDENT"
+        }
+        description={
+          isNoShowReturn
+            ? "Hàng khách vắng mặt đã nhập lại kho. Tạo chuyến giao mới từ đúng kho đang giữ toàn bộ LPN."
+            : "Hàng đã inbound bằng seal. Tạo trip mới gấp từ đúng kho đích với toàn bộ LPN bị khóa."
+        }
         icon={Siren}
       >
         <div className="grid gap-3 sm:grid-cols-2">
@@ -367,18 +411,20 @@ const RescueOperationPanel = ({ incident, trip, isTripLoading }: Props) => {
             {blocker}
           </p>
         )}
-        <Button
-          type="button"
-          className="w-full"
-          disabled={Boolean(blocker)}
-          onClick={() =>
-            navigate(
-              `${PATH_DISPATCHER_DASHBOARD.dispatch.root}?incidentId=${encodeURIComponent(incident.incidentId)}`,
-            )
-          }
-        >
-          <PackageCheck className="h-4 w-4" /> Tạo lại chuyến gấp
-        </Button>
+        {(!isNoShowReturn || allNoShowLpnsAvailable) && (
+          <Button
+            type="button"
+            className="w-full"
+            disabled={Boolean(blocker)}
+            onClick={() =>
+              navigate(
+                `${PATH_DISPATCHER_DASHBOARD.dispatch.root}?incidentId=${encodeURIComponent(incident.incidentId)}${isNoShowReturn ? "&source=warehouse-return" : ""}`,
+              )
+            }
+          >
+            <PackageCheck className="h-4 w-4" /> {isNoShowReturn ? "Tạo chuyến gần kho" : "Tạo lại chuyến gấp"}
+          </Button>
+        )}
       </StatusCard>
     );
   }

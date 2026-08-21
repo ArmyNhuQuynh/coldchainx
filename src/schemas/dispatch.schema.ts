@@ -200,6 +200,15 @@ export type TManualDispatchRequest = {
   screenshotBase64?: string | null;
 };
 
+export type TWarehouseRedispatchRequest = {
+  lpnIds: string[];
+  vehicleId: string;
+  driverIds: string[];
+  plannedStartTime: string;
+  plannedEndTime: string;
+  screenshotBase64?: string | null;
+};
+
 export type TManualDispatchResult = {
   tripId: string;
   lifoPdfUrl?: string | null;

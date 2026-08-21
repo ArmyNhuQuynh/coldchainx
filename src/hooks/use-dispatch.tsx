@@ -2,6 +2,7 @@ import { dispatchApi } from "@/apis/dispatch.api";
 import type {
   TDispatchPackingRequest,
   TManualDispatchRequest,
+  TWarehouseRedispatchRequest,
 } from "@/schemas/dispatch.schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -23,8 +24,21 @@ export const useDispatchPlanning = () => {
     },
   });
 
+  const createTripFromWarehouse = useMutation({
+    mutationFn: (data: TWarehouseRedispatchRequest) =>
+      dispatchApi.createTripFromWarehouse(data),
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["dispatch"] }),
+        queryClient.invalidateQueries({ queryKey: ["drivers"] }),
+        queryClient.invalidateQueries({ queryKey: ["driver"] }),
+        queryClient.invalidateQueries({ queryKey: ["incidents"] }),
+      ]),
+  });
+
   return {
     simulatePacking,
     manualDispatch,
+    createTripFromWarehouse,
   };
 };

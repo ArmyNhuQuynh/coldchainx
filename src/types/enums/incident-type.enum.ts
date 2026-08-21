@@ -5,6 +5,7 @@ export const INCIDENT_TYPE = {
   TEMP_EXCURSION: "TEMP_EXCURSION",
   DAMAGE_CARGO: "DAMAGE_CARGO",
   DELAY: "DELAY",
+  CUSTOMER_NO_SHOW_RETURN: "CUSTOMER_NO_SHOW_RETURN",
 } as const;
 
 export type TIncidentType =
@@ -30,6 +31,8 @@ export const normalizeIncidentType = (
       return INCIDENT_TYPE.DAMAGE_CARGO;
     case INCIDENT_TYPE.DELAY:
       return INCIDENT_TYPE.DELAY;
+    case INCIDENT_TYPE.CUSTOMER_NO_SHOW_RETURN:
+      return INCIDENT_TYPE.CUSTOMER_NO_SHOW_RETURN;
     default:
       return null;
   }
@@ -49,6 +52,8 @@ export const getIncidentTypeLabel = (type?: string | null) => {
       return "Hư hỏng hàng hóa";
     case INCIDENT_TYPE.DELAY:
       return "Chậm hành trình";
+    case INCIDENT_TYPE.CUSTOMER_NO_SHOW_RETURN:
+      return "Khách vắng mặt · hàng trả về kho";
     default:
       return type || "Không xác định";
   }

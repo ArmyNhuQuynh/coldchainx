@@ -5,6 +5,7 @@ import type {
   TDispatchPackingResult,
   TManualDispatchRequest,
   TManualDispatchResult,
+  TWarehouseRedispatchRequest,
 } from "@/schemas/dispatch.schema";
 import { read, toNumber, unwrapData } from "./dispatch-api.helpers";
 import { API_SUFFIX } from "./util.api";
@@ -91,7 +92,27 @@ const manualDispatch = async (data: TManualDispatchRequest) => {
   return unwrapData<TManualDispatchResult>(response.data);
 };
 
+const createTripFromWarehouse = async (data: TWarehouseRedispatchRequest) => {
+  const formData = new FormData();
+  formData.append("VehicleId", data.vehicleId);
+  data.driverIds.forEach((driverId) => formData.append("DriverIds", driverId));
+  formData.append("PlannedStartTime", data.plannedStartTime);
+  formData.append("PlannedEndTime", data.plannedEndTime);
+  if (data.screenshotBase64) {
+    formData.append("ScreenshotBase64", data.screenshotBase64);
+  }
+
+  const response = await apiRequest.baseApi.post<
+    TDispatchLookupEnvelope<TManualDispatchResult> | TManualDispatchResult
+  >(`${API_SUFFIX.DISPATCH_API}/create-trip-from-warehouse`, formData, {
+    params: { lpnIds: data.lpnIds },
+  });
+
+  return unwrapData<TManualDispatchResult>(response.data);
+};
+
 export const dispatchApi = {
   simulatePacking,
   manualDispatch,
+  createTripFromWarehouse,
 };
